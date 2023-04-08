@@ -1,4 +1,4 @@
-package com.example;
+package com.laird;
 
 import com.fs.starfarer.api.EveryFrameScript;
 

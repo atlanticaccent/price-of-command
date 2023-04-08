@@ -14,12 +14,12 @@ val modName = rootDir.name
  * Where your Starsector game is installed to.
  * Note: On Linux, if you installed Starsector into your home directory, you have to write /home/<user>/ instead of ~/
  */
-val starsectorDirectory = "C:/Program Files (x86)/Fractal Softworks/Starsector"
+val starsectorDirectory = "E:/Games/Starsector"
 
 // Defaults to the name of your mod, with spaces replaced by hyphens.
 val modFolderName = modName.replace(" ", "-")
 
-val shouldAutomaticallyCreateMetadataFiles = false
+val shouldAutomaticallyCreateMetadataFiles = true
 /**
  * END OF RECOMMENDED VARIABLES TO CHANGE.
  */
@@ -27,14 +27,14 @@ val shouldAutomaticallyCreateMetadataFiles = false
 /**
  * Modify these if you wish to have mod_info.json and the Version Checker files updated for you automatically.
  */
-val modVersion = "1.0.0"
+val modVersion = "0.0.1"
 val jarFileName = "${modName}.jar"
-val modId = "yourName_uniqueid"
-val modAuthor = "Your Name"
+val modId = "officer_expansion"
+val modAuthor = "AtlanticAccent"
 val modDescription = "Mod description."
 val gameVersion = "0.95a-RC15"
 val jars = arrayOf("jars/$jarFileName")
-val modPlugin = "com.example.ExampleLifecyclePlugin"
+val modPlugin = "com.laird.ExampleLifecyclePlugin"
 val isUtilityMod = false
 val masterVersionFile = "https://raw.githubusercontent.com/githubname/githubrepo/master/$modId.version"
 val modThreadId = "00000"
@@ -67,7 +67,7 @@ dependencies {
     // Shouldn't need to change anything in dependencies below here
     implementation(fileTree("libs") { include("*.jar") })
 
-    val kotlinVersionInLazyLib = "1.4.21"
+    val kotlinVersionInLazyLib = "1.6.21"
     // Get kotlin sdk from LazyLib during runtime, only use it here during compile time
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersionInLazyLib")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersionInLazyLib")
@@ -188,7 +188,7 @@ kotlin.sourceSets.main {
 
 // Don't touch stuff below here unless you know what you're doing.
 plugins {
-    kotlin("jvm") version "1.3.60"
+    kotlin("jvm") version "1.5.31"
     java
 }
 

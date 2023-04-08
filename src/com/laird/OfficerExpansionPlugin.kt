@@ -1,10 +1,17 @@
-package com.example
+package com.laird
 
 import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.characters.OfficerDataAPI
 import com.thoughtworks.xstream.XStream
+import org.apache.log4j.Level
 
-class ExampleLifecyclePlugin : BaseModPlugin() {
+class OfficerExpansionPlugin : BaseModPlugin() {
+    companion object {
+        val logger = Global.getLogger(Companion::class.java).apply { level = Level.ALL }
+
+        var officers: MutableList<OfficerDataAPI> = mutableListOf()
+    }
 
     override fun onNewGameAfterTimePass() {
         super.onNewGameAfterTimePass()
@@ -12,6 +19,12 @@ class ExampleLifecyclePlugin : BaseModPlugin() {
 
     override fun onGameLoad(newGame: Boolean) {
         super.onGameLoad(newGame)
+
+        officers = Global.getSector().playerFleet.fleetData.officersCopy
+
+        logger.debug("officers: $officers")
+
+        Global.getSector().addTransientListener(PostBattleListener())
 
         // Showing that we can compile and run Java files as well.
         // This does nothing and can be deleted.
