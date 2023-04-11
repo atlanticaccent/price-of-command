@@ -34,7 +34,7 @@ val modAuthor = "AtlanticAccent"
 val modDescription = "Mod description."
 val gameVersion = "0.95a-RC15"
 val jars = arrayOf("jars/$jarFileName")
-val modPlugin = "com.laird.ExampleLifecyclePlugin"
+val modPlugin = "com.laird.OfficerExpansionPlugin"
 val isUtilityMod = false
 val masterVersionFile = "https://raw.githubusercontent.com/githubname/githubrepo/master/$modId.version"
 val modThreadId = "00000"
@@ -157,7 +157,7 @@ tasks {
     // If enabled, will copy your mod to the /mods directory when run (and whenever gradle syncs).
     // Disabled by default, as it is not needed if your mod directory is symlinked into your /mods folder.
     register<Copy>("install-mod") {
-        val enabled = false;
+        val enabled = true;
 
         if (!enabled) return@register
 
