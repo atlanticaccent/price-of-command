@@ -1,0 +1,18 @@
+{
+	"id":"oe_fatigue",
+	"governingAptitude":"oe_condition",
+	"compressHullmods":false,
+	"elite": false,
+	"scope":"CUSTOM",
+	"scopeStr": "This officer",
+	"effectGroups":[
+		{
+			"requiredSkillLevel":0,
+			"effectBasedOnLevel": false,
+			"effects":[
+				{"type":"DESCRIPTION", "script":"com.laird.oe_FatigueSkill$Level0"},
+				{"type":"SHIP", "script":"com.laird.oe_FatigueSkill$Level1"},
+			]
+		},
+	],
+}

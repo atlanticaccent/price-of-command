@@ -154,6 +154,16 @@ tasks {
         }
     }
 
+    register<Delete>("uninstall-mod") {
+        val enabled = true;
+
+        if (!enabled) return@register
+
+        println("Deleting old version...")
+
+        modInModsFolder.deleteRecursively()
+    }
+
     // If enabled, will copy your mod to the /mods directory when run (and whenever gradle syncs).
     // Disabled by default, as it is not needed if your mod directory is symlinked into your /mods folder.
     register<Copy>("install-mod") {
