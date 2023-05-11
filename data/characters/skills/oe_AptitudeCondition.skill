@@ -5,7 +5,7 @@
 		{
 			"requiredSkillLevel":0,
 			"effects":[
-				{"type":"DESCRIPTION", "script":"com.fs.starfarer.api.impl.campaign.skills.AptitudeDesc$Level0"},
+				{"type":"DESCRIPTION", "script":"com.laird.oe_AptitudeConditionDesc$Level0"},
 			]
 		},
 	],

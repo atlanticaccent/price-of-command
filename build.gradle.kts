@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  * The name of your mod. Used to create a mod folder name (and the name of your mod, if using auto-updated mod_info.json).
  * Defaults to the name of the mod's folder.
  */
-val modName = rootDir.name
+val modName: String = rootDir.name
 
 /**
  * Where your Starsector game is installed to.
@@ -31,7 +31,7 @@ val modVersion = "0.0.1"
 val jarFileName = "${modName}.jar"
 val modId = "officer_expansion"
 val modAuthor = "AtlanticAccent"
-val modDescription = "Mod description."
+val modDescription = "Mod description. "
 val gameVersion = "0.95a-RC15"
 val jars = arrayOf("jars/$jarFileName")
 val modPlugin = "com.laird.OfficerExpansionPlugin"

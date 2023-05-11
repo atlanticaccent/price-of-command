@@ -5,6 +5,7 @@
 	"elite": false,
 	"scope":"CUSTOM",
 	"scopeStr": "This officer",
+	"permanent": true,
 	"effectGroups":[
 		{
 			"requiredSkillLevel":0,

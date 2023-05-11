@@ -1,7 +1,7 @@
 package com.laird.commands
 
 import com.fs.starfarer.api.Global
-import com.laird.PostBattleListener
+import com.laird.ConditionManager
 import org.lazywizard.console.BaseCommand
 import org.lazywizard.console.BaseCommand.CommandResult
 import org.lazywizard.console.Console
@@ -19,7 +19,7 @@ class InjureOfficer: BaseCommand {
         val officer = officers.find { officer -> officer.person.nameString.contains(officer_name, true) }?.person
         if (officer != null) {
             try {
-                PostBattleListener.injureOfficer(officer, Global.getSector().clock.timestamp)
+                ConditionManager.injureOfficer(officer)
             } catch (e: Exception) {
                 Console.showException("Error: ", e)
             }
