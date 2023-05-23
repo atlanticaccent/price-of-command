@@ -1,11 +1,32 @@
 id,name,order,tier,reqPoints,reqPointsPerExtraSkill,description,author,combat officer,admiral,admin,tags,icon,
-oe_injury,Wound,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+oe_injury_1,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
 The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
 
-And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/injury.png
-oe_fatigue,Fatigue,0,0,0,,"We're still human, at the end of the day.
-Even if they splice half a fish into your genome, or replace everything soft with plastics and steel.
-Because if you aren't tired after fighting to kill? To live?
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+oe_injury_2,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
 
-You aren't human.",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated",graphics/icons/skills/fatigue.png
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+oe_injury_3,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
+
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+oe_injury_4,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
+
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+oe_injury_5,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
+
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+oe_injury_6,Wound,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
+
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+oe_injury_7,Wound,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
+
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+oe_grave_injury,Grave Injury,0,0,0,,"Argh",Capt Owie,TRUE,,,"npc_only, deprecated",graphics/icons/skills/zombie-2.png
+oe_fatigue,Fatigue,0,0,0,,"Never underestimate the ",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
 oe_aptitude_condition,,0,,,,,,,,,,graphics/icons/skills/category_condition.png

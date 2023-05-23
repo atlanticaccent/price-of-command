@@ -1,9 +1,8 @@
-package com.laird.memory
+package com.officer_expansion.memory
 
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.SectorEntityToken
 import com.fs.starfarer.api.campaign.rules.MemoryAPI
-import lunalib.lunaExtensions.getList
 import org.lwjgl.util.vector.Vector2f
 
 class EscapedMemory(private val base: MemoryAPI): MemoryAPI by base {

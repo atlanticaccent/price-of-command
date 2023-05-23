@@ -1,9 +1,10 @@
-package com.laird
+package com.officer_expansion
 
 import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.OfficerDataAPI
-import com.laird.conditions.Condition
+import com.fs.starfarer.api.characters.PersonAPI
+import com.officer_expansion.conditions.Condition
 import com.thoughtworks.xstream.XStream
 
 class OfficerExpansionPlugin : BaseModPlugin() {
@@ -23,13 +24,10 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         logger().debug("officers: $officers")
 
         @Suppress("UNCHECKED_CAST")
-        val savedInjuries = Global.getSector().memoryWithoutUpdate.escape()[CONDITION_MAP] as? MutableMap<String, MutableList<Condition>> ?: mutableMapOf()
-        ConditionManager.conditionMap.run {
-            clear()
-            putAll(savedInjuries)
-        }
+        val savedInjuries = Global.getSector().memoryWithoutUpdate.escape()[CONDITION_MAP] as? MutableMap<PersonAPI, MutableList<Condition>> ?: mutableMapOf()
+        ConditionManager.conditionMap = savedInjuries
 
-        Global.getSector().addTransientListener(oe_PostBattleListener)
+        Global.getSector().addTransientListener(oe_CampaignEventListener)
         Global.getSector().addTransientScript(ConditionManager.oe_ConditionManagerEveryFrame)
     }
 

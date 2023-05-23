@@ -1,4 +1,4 @@
-package com.laird
+package com.officer_expansion
 
 const val INJURIES = "oe_injuries"
 const val INJURED_FROM = "oe_injured_from"

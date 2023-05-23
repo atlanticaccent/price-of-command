@@ -1,4 +1,4 @@
-package com.laird.memory
+package com.officer_expansion.memory
 
 import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global

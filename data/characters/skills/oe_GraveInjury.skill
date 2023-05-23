@@ -1,5 +1,5 @@
 {
-	"id":"oe_fatigue",
+	"id":"oe_grave_injury",
 	"governingAptitude":"oe_condition",
 	"compressHullmods":false,
 	"elite": false,
@@ -11,8 +11,8 @@
 			"requiredSkillLevel":0,
 			"effectBasedOnLevel": false,
 			"effects":[
-				{"type":"DESCRIPTION", "script":"com.officer_expansion.skills.oe_FatigueSkill$Level0"},
-				{"type":"SHIP", "script":"com.officer_expansion.skills.oe_FatigueSkill$Level1"},
+				{"type":"DESCRIPTION", "script":"com.officer_expansion.skills.oe_GraveInjurySkill$Level0"},
+				{"type":"SHIP", "script":"com.officer_expansion.skills.oe_GraveInjurySkill$Level1"},
 			]
 		},
 	],

@@ -1,4 +1,4 @@
-package com.laird
+package com.officer_expansion.skills
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.DescriptionSkillEffect
@@ -10,14 +10,15 @@ import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.impl.campaign.skills.BaseSkillEffectDescription
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
-import com.laird.conditions.Fatigue
+import com.officer_expansion.ConditionManager
+import com.officer_expansion.conditions.GraveInjury
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
 import java.awt.Color
 
-class oe_FatigueSkill {
+class oe_GraveInjurySkill {
     class Level0 : DescriptionSkillEffect {
         override fun getString(): String {
-            return "This officer is fatigued from a recent battle"
+            return "This officer has been injured"
         }
 
         override fun getHighlights(): Array<String> {
@@ -40,17 +41,17 @@ class oe_FatigueSkill {
         ) {
             init(stats, skill)
 
-            ConditionManager.findByStats(stats)
-                ?.let { (officer, conditions) -> Pair(officer, conditions.filterIsInstance<Fatigue>()) }
-                ?.takeIf { (_, conditions) -> conditions.isNotEmpty() }?.also { (officer, conditions) ->
-                    val fatigue = conditions.first()
-                    val fatiguedSince = fatigue.startDate.toDateString()
-                    val fatiguedFor = fatigue.remaining().duration.getRoundedValueMaxOneAfterDecimal()
-                    info.setParaOrbitronLarge()
-                    info.addPara("${officer.nameString} is fatigued for the next $fatiguedFor days. They will be at greater risk of injury during this time.", 1f)
-                    info.setParaFontDefault()
-                    info.addPara("They have been fatigued since $fatiguedSince due to a previous battle", 1f)
-                } ?: run {
+            ConditionManager.findByStats(stats)?.let { (officer, conditions) ->
+                conditions.filterIsInstance<GraveInjury>().firstOrNull()?.let { officer to it }
+            }?.also { (officer, injury) ->
+                info.addPara("${officer.nameString} has suffered a %s.", 0f, tc, hc, "grave injury")
+                info.addPara(
+                    "They will recover in %s days.",
+                    0f,
+                    hc,
+                    injury.remaining().duration.getRoundedValueMaxOneAfterDecimal()
+                )
+            } ?: run {
                 info.addPara("bugg", 0f)
             }
         }

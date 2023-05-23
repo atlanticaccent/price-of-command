@@ -1,4 +1,4 @@
-package com.laird
+package com.officer_expansion.skills
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.DescriptionSkillEffect
@@ -10,9 +10,9 @@ import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.impl.campaign.skills.BaseSkillEffectDescription
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
-import com.laird.conditions.Fatigue
-import com.laird.conditions.Injury
-import lunalib.lunaExtensions.getList
+import com.officer_expansion.ConditionManager
+import com.officer_expansion.conditions.Injury
+import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
 import java.awt.Color
 
 class oe_InjurySkill {
@@ -41,32 +41,50 @@ class oe_InjurySkill {
         ) {
             init(stats, skill)
 
-            ConditionManager.findByStats(stats)
-                ?.let { (officer, conditions) -> Pair(officer, conditions.filterIsInstance<Injury>()) }
-                ?.takeIf { (_, conditions) -> conditions.isNotEmpty() }?.also { (officer, conditions) ->
+            val suffix = skill.id.removePrefix("oe_injury_").toInt()
+
+            ConditionManager.findByStats(stats)?.let { (officer, conditions) ->
+                officer to conditions.filterIsInstance<Injury>().filter { it.injurySkillSuffix == suffix }
+            }?.takeIf { (_, conditions) -> conditions.isNotEmpty() }?.also { (officer, conditions) ->
+                    // this is overcomplicated to account for mods that increase officer levels beyond 7
                     val injuries = conditions.size
                     val transformedText = if (injuries == 1) {
                         "an injury"
                     } else {
                         "$injuries injuries"
                     }
-                    info.setParaOrbitronLarge()
                     info.addPara("${officer.nameString} has suffered $transformedText.", 0f)
 
                     val settings = Global.getSettings()
                     val disabledNames = conditions.map { settings.getSkillSpec(it.skill).name }
                     val last = disabledNames.last()
-                    info.addPara("Until they recover, they cannot use these previously learned skill(s):", 0f)
                     if (disabledNames.size > 1) {
                         val concatenated = disabledNames.subList(0, disabledNames.size - 1).joinToString(", ")
-                        info.addPara("%s and %s", 0f, hc, hc, concatenated, last)
+                        info.addPara(
+                            "Until they recover they will not be able to use their skills in %s or %s.",
+                            0f,
+                            hc,
+                            concatenated,
+                            last
+                        )
+                        val rems =
+                            conditions.map { it.remaining().duration.getRoundedValueMaxOneAfterDecimal() }.sorted()
+                        val remsConcat = rems.subList(0, rems.size - 1).joinToString(", ")
+                        val remLast = rems.last()
+                        info.addPara(
+                            "They will recover from injuries in %s and %s days.", 0f, hc, remsConcat, remLast
+                        )
                     } else {
-                        info.addPara("%s", 0f, hc, hc, last)
+                        info.addPara(
+                            "Until they recover they will not be able to use their skill in %s.", 0f, hc, last
+                        )
+                        info.addPara(
+                            "They will recover in %s days.",
+                            0f,
+                            hc,
+                            conditions.last().remaining().duration.getRoundedValueMaxOneAfterDecimal()
+                        )
                     }
-
-                    val lastInjured = conditions.maxOf { it.startDate }.toDateString()
-                    info.setParaFontDefault()
-                    info.addPara("They were last injured on $lastInjured", 1f)
                 } ?: run {
                 info.addPara("bugg", 0f)
             }

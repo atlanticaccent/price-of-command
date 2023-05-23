@@ -1,3 +1,7 @@
 command,class,tags,syntax,help
-TestCommand,com.laird.commands.TestCommand,"cheat",TestCommand,"foo"
-InjureOfficer,com.laird.commands.InjureOfficer,"cheat",InjureOfficer <Officer's name>,"You monster"
+TestCommand,com.officer_expansion.commands.TestCommand,"cheat",TestCommand,"foo"
+InjureOfficer,com.officer_expansion.commands.InjureOfficer,"cheat",InjureOfficer <Officer's name>,"You monster"
+GravelyInjureOfficer,com.officer_expansion.commands.GravelyInjureOfficer,"cheat",GravelyInjureOfficer <Officer's name>,"You absolute monster"
+HealOfficer,com.officer_expansion.commands.HealOfficer,"cheat",HealOfficer <Officer's name> [num injuries to heal],"You angel"
+FatigueOfficer,com.officer_expansion.commands.FatigueOfficer,"cheat",FatigueOfficer <Officer's name>,"You slavedriver"
+RestOfficer,com.officer_expansion.commands.RestOfficer,"cheat",RestOfficer <Officer's name>,"You sandman"
