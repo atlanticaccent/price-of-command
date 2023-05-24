@@ -74,6 +74,7 @@ class HealOfficer : BaseCommand {
                 ?.run { subList(0, minOf(this.size, count)) }?.forEach { injury ->
                 injury.expired = true
             }
+            return CommandResult.SUCCESS
         } catch (e: Exception) {
             Console.showException("Error: ", e)
         }
