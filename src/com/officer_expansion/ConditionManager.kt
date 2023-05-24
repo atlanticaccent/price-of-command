@@ -23,12 +23,7 @@ object ConditionManager {
         override fun advance(p0: Float) {
             conditionMap = conditionMap.mapValues { (target, extantConditions) ->
                 val (removed, conditions) = extantConditions.partition { condition ->
-                    if (condition is ResolvableCondition) {
-                        val resolved = condition.tryResolve()
-                        resolved
-                    } else {
-                        condition.expired
-                    }
+                    condition.expired || (condition is ResolvableCondition && condition.tryResolve())
                 }
 
                 if (removed.isNotEmpty()) {
