@@ -107,7 +107,15 @@ tasks {
                                 "id": "lw_lazylib",
                                 "name": "LazyLib",
                                 # "version": "2.6" # If a specific version or higher is required, include this line
-                            }
+                            },
+                            {
+                                "id": "lunalib",
+                                "name": "LunaLib",
+                            },
+                            {
+                                "id": "MagicLib",
+                                "name": "MagicLib",
+                            },
                         ]
                     }
                 """.trimIndent()
