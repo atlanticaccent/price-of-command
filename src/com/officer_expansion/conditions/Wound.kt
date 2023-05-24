@@ -53,7 +53,7 @@ open class Injury private constructor(
     val skill: String
         get() = _skill ?: throw IllegalStateException("Injury Skill ID Not Set")
     private var _level: Int? = null
-    private val level: Int
+    val level: Int
         get() = _level ?: throw IllegalStateException("Injury Skill Level Not Set")
 
     companion object {
