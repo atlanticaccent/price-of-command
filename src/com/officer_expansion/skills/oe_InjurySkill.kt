@@ -10,6 +10,7 @@ import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.impl.campaign.skills.BaseSkillEffectDescription
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
+import com.fs.starfarer.rpg.Person
 import com.officer_expansion.ConditionManager
 import com.officer_expansion.conditions.Injury
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
@@ -67,20 +68,22 @@ class oe_InjurySkill {
                             concatenated,
                             last
                         )
+                        info.addSkillPanel(Person().overwriteSkills(conditions), 0f)
                         val rems =
                             conditions.map { it.remaining().duration.getRoundedValueMaxOneAfterDecimal() }.sorted()
                         val remsConcat = rems.subList(0, rems.size - 1).joinToString(", ")
                         val remLast = rems.last()
                         info.addPara(
-                            "They will recover from injuries in %s and %s days.", 0f, hc, remsConcat, remLast
+                            "They will recover from injuries in %s and %s days.", 2f, hc, remsConcat, remLast
                         )
                     } else {
                         info.addPara(
                             "Until they recover they will not be able to use their skill in %s.", 0f, hc, last
                         )
+                        info.addSkillPanel(Person().overwriteSkills(conditions), 0f)
                         info.addPara(
                             "They will recover in %s days.",
-                            0f,
+                            2f,
                             hc,
                             conditions.last().remaining().duration.getRoundedValueMaxOneAfterDecimal()
                         )
@@ -94,4 +97,12 @@ class oe_InjurySkill {
 
         override fun unapply(p0: MutableShipStatsAPI?, p1: ShipAPI.HullSize?, p2: String?) = Unit
     }
+}
+
+fun Person.overwriteSkills(injuries: List<Injury>) : Person {
+    for (injury in injuries) {
+        this.stats.setSkillLevel(injury.skill, injury.level.toFloat())
+    }
+
+    return this
 }
