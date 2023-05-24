@@ -14,7 +14,7 @@ private val FATIGUE_VARIANCE
     get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "fatigue_variance") ?: 2f
 private val FATIGUE_RANGE = FATIGUE_VARIANCE * 2
 private val FATIGUE_MIN = FATIGUE_BASE - FATIGUE_VARIANCE
-private val FATIGUE_CHANCE
+val FATIGUE_CHANCE
     get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "fatigue_rate")?.div(100) ?: 1f
 
 private val FATIGUE_EXTEND_RATE
@@ -25,6 +25,8 @@ class Fatigue(
 ) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate))) {
     companion object {
         fun generateDuration(seed: Long): Float = FATIGUE_MIN + Random(seed).nextFloat() * FATIGUE_RANGE
+
+        fun fatigueEnabled() = LunaSettings.getBoolean(OfficerExpansionPlugin.modID, "fatigue_toggle") ?: true
     }
 
     override fun tryResolve(): Boolean {
@@ -36,7 +38,7 @@ class Fatigue(
     @NonPublic
     override fun tryInflict(): Outcome = run {
         val conditions = target.conditions()
-        if (ConditionManager.rand.nextFloat() <= FATIGUE_CHANCE) {
+        if (fatigueEnabled() && ConditionManager.rand.nextFloat() <= FATIGUE_CHANCE) {
             conditions.filterIsInstance<Fatigue>().firstOrNull()?.let {
                 if (ConditionManager.rand.nextFloat() <= FATIGUE_EXTEND_RATE) {
                     it.duration.duration += this.duration.duration

@@ -4,7 +4,7 @@ import com.fs.starfarer.api.campaign.BaseCampaignEventListener
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl
-import com.officer_expansion.conditions.Outcome
+import com.officer_expansion.conditions.Fatigue
 
 object oe_CampaignEventListener : BaseCampaignEventListener(false) {
     override fun reportPlayerEngagement(result: EngagementResultAPI) {
@@ -12,11 +12,11 @@ object oe_CampaignEventListener : BaseCampaignEventListener(false) {
             result.winnerResult
         } else {
             result.loserResult
-        }.deployed.map { it.captain }.filter { it.faction.isPlayerFaction }
+        }.deployed.map { it.captain }.filter { it.faction.isPlayerFaction && !it.isPlayer }
 
         for (officer in deployedPlayerOfficers) {
             if (!officer.isAICore) {
-                if (!ConditionManager.fatigueOfficer(officer)) {
+                if (!ConditionManager.fatigueOfficer(officer) || !Fatigue.fatigueEnabled()) {
                     ConditionManager.injureOfficer(officer)
                 }
             }
@@ -34,7 +34,7 @@ object oe_CampaignEventListener : BaseCampaignEventListener(false) {
 
             // TODO: add confirmation dialog when no uninjured officers assigned
             FleetInteractionDialogPluginImpl.OptionId.values().forEach {
-                dialog.optionPanel.addOptionConfirmation(it, oe_EvilOptionDelegate(dialog, it))
+                dialog.optionPanel.addOptionConfirmation(it, oe_EvilOptionDelegate(dialog, it, true))
             }
 
             dialog.optionPanel.addOption(

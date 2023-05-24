@@ -7,7 +7,7 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI
 import java.awt.Robot
 import java.awt.event.KeyEvent
 
-class oe_EvilOptionDelegate(private val dialog: InteractionDialogAPI, private val optionId: OptionId) : BaseStoryPointActionDelegate() {
+class oe_EvilOptionDelegate(private val dialog: InteractionDialogAPI, private val optionId: OptionId, private val accept: Boolean = false) : BaseStoryPointActionDelegate() {
     companion object {
         const val OPTION_ID = "oe_fleet_interaction_dialog_sp_option_evil"
     }
@@ -21,7 +21,11 @@ class oe_EvilOptionDelegate(private val dialog: InteractionDialogAPI, private va
     override fun withSPInfo(): Boolean = false
 
     override fun createDescription(info: TooltipMakerAPI?) {
-        Robot().apply { keyPress(KeyEvent.VK_SPACE); keyRelease(KeyEvent.VK_SPACE) }
+        if (accept) {
+            Robot().apply { keyPress(KeyEvent.VK_SPACE); keyRelease(KeyEvent.VK_SPACE) }
+        } else {
+            Robot().apply { keyPress(KeyEvent.VK_ESCAPE); keyRelease(KeyEvent.VK_ESCAPE) }
+        }
     }
 
     override fun getLogText(): String = "Such a lust for revenge! Whoooooo?"

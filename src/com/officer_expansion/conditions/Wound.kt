@@ -95,7 +95,7 @@ open class Injury private constructor(
         val conditions = target.conditions()
         val skills =
             target.stats.skillsCopy.filter { !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent }
-        if (conditions.any { it is Fatigue || it is Wound }) {
+        if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
             if (skills.isNotEmpty()) {
                 val removed = skills.random()
                 _skill = removed.skill.id

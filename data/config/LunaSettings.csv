@@ -16,5 +16,5 @@ fatigue_duration,Fatigue Base Duration,Double,5,,"The base duration of fatigue b
 fatigue_variance,Fatigue Duration Variation,Double,2,,"The maximum amount fatigue base duration will be increased or decreased by.
 Thus, the duration of all injuries is randomly and evenly distributed in the interval:
 (Fatigue Base Duration - Fatigue Duration Variation) <= Fatigue Duration <= (Fatigue Base Duration + Fatigue Duration Variation)",,,Fatigue
-
 fatigue_extension_rate,Fatigue Extend Chance,Double,10,,"Percentage chance that an officer will be fatigued for longer instead of being injured, if they are already fatigued when engaging in an exhausting activity.",,,Fatigue
+fatigue_toggle,Enable/Disable Fatigue,Boolean,true,,"Toggle to disable or re-enable the fatigue mechanic",,,Fatigue
