@@ -29,7 +29,7 @@ sealed class Outcome {
     class Applied<T : Condition>(val condition: T) : Outcome()
     object Failed : Outcome()
 
-    fun failed(block: () -> Outcome) : Outcome {
+    fun failed(block: () -> Outcome): Outcome {
         return if (this is Failed) {
             block()
         } else {
@@ -41,7 +41,7 @@ sealed class Outcome {
 sealed class ResolvableCondition(target: PersonAPI, startDate: Long, override val duration: Duration.Time) :
     Condition(target, startDate, duration) {
     open fun tryResolve(): Boolean =
-        (clock().getElapsedDaysSince(startDate) >= duration.duration).then { expired = true }
+        expired || (clock().getElapsedDaysSince(startDate) >= duration.duration).then { expired = true }
 
     override fun remaining(): Duration.Time = Duration.Time(duration.duration - clock().getElapsedDaysSince(startDate))
 
