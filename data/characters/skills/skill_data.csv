@@ -23,5 +23,7 @@ Projected recovery time is roughly two weeks, with no additional stress.",Chief 
 oe_injury_7,Injury,0,0,0,,"The odds of being stabbed on a starship are low but never zero.","Officer Botano, following mutiny on the Arcana",TRUE,,,"npc_only, deprecated",graphics/icons/skills/sharp-hazard.png
 oe_grave_injury,Grave Injury,0,0,0,,"That wound will never truly heal.
 She will carry it for the rest of her life.","Thar Kun, Personal Physician to High Hegemon [REDACTED]",TRUE,,,"npc_only, deprecated",graphics/icons/skills/zombie-2.png
-oe_fatigue,Fatigue,0,0,0,,"Never underestimate the ",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
+oe_fatigue,Fatigue,0,0,0,,"I've seen plenty of good men die.
+In glorious combat, for the good of others. In back alleys, in drunken, meaningless brawls.
+But the thing I've seen kill the most men? Simple tiredness.",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
 oe_aptitude_condition,,0,,,,,,,,,,graphics/icons/skills/category_condition.png
