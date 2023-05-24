@@ -8,6 +8,8 @@ import com.officer_expansion.conditions.*
 import kotlin.random.Random
 
 object ConditionManager {
+    const val CONDITION_MAP = "oe_persistent_condition_map"
+
     val now: Long
         get() = Global.getSector().clock.timestamp
     val rand: Random by lazy { Random(now) }

@@ -2,29 +2,22 @@ package com.officer_expansion
 
 import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
-import com.fs.starfarer.api.characters.OfficerDataAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.officer_expansion.conditions.Condition
 import com.thoughtworks.xstream.XStream
 
+
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
-        var officers: MutableList<OfficerDataAPI> = mutableListOf()
-    }
-
-    override fun onNewGameAfterTimePass() {
-        super.onNewGameAfterTimePass()
+        const val modID = "officer_expansion"
     }
 
     override fun onGameLoad(newGame: Boolean) {
         super.onGameLoad(newGame)
 
-        officers = Global.getSector().playerFleet.fleetData.officersCopy
-
-        logger().debug("officers: $officers")
-
-        @Suppress("UNCHECKED_CAST")
-        val savedInjuries = Global.getSector().memoryWithoutUpdate.escape()[CONDITION_MAP] as? MutableMap<PersonAPI, MutableList<Condition>> ?: mutableMapOf()
+        @Suppress("UNCHECKED_CAST") val savedInjuries =
+            Global.getSector().memoryWithoutUpdate.escape()[ConditionManager.CONDITION_MAP] as? MutableMap<PersonAPI, MutableList<Condition>>
+                ?: mutableMapOf()
         ConditionManager.conditionMap = savedInjuries
 
         Global.getSector().addTransientListener(oe_CampaignEventListener)
@@ -34,7 +27,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
     override fun beforeGameSave() {
         super.beforeGameSave()
 
-        Global.getSector().memoryWithoutUpdate.escape()[CONDITION_MAP] = ConditionManager.conditionMap
+        Global.getSector().memoryWithoutUpdate.escape()[ConditionManager.CONDITION_MAP] = ConditionManager.conditionMap
     }
 
     /**

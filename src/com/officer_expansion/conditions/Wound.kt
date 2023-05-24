@@ -1,18 +1,28 @@
 package com.officer_expansion.conditions
 
+import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
-import com.officer_expansion.ConditionManager
-import com.officer_expansion.conditions
-import com.officer_expansion.then
+import com.officer_expansion.*
+import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 
-private const val INJURY_RATE = 0.5
-private const val INJURY_BASE = 10
-private const val INJURY_VARIANCE = 4f
-private const val INJURY_RANGE = INJURY_VARIANCE * 2f
-private const val INJURY_MIN = INJURY_BASE - INJURY_RANGE
+//private const val INJURY_RATE = 0.5
+//private const val INJURY_BASE = 10
+//private const val INJURY_VARIANCE = 4f
+//private const val INJURY_RANGE = INJURY_VARIANCE * 2f
+//private const val INJURY_MIN = INJURY_BASE - INJURY_VARIANCE
 
-private const val EXTEND_RATE = 0.5
+private val INJURY_RATE
+    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_rate")?.div(100) ?: 0.5f
+private val INJURY_BASE
+    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_duration") ?: 10f
+private val INJURY_VARIANCE
+    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_variance") ?: 4f
+private val INJURY_RANGE = INJURY_VARIANCE * 2
+private val INJURY_MIN = INJURY_BASE - INJURY_VARIANCE
+
+private val EXTEND_RATE
+    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_extension_rate")?.div(100) ?: 0.5f
 
 private val IGNORE_LIST = arrayOf(
     "aptitude_combat",
@@ -47,7 +57,7 @@ sealed class Wound(
 }
 
 open class Injury private constructor(
-    officer: PersonAPI, startDate: Long, val injurySkillSuffix: Int
+    officer: PersonAPI, startDate: Long, val injurySkillSuffix: Int, private var testOverride: Boolean = false
 ) : Wound(officer, startDate) {
     private var _skill: String? = null
     val skill: String
@@ -64,6 +74,8 @@ open class Injury private constructor(
             val available = suffixRange.subtract(taken)
             return available.randomOrNull() ?: suffixRange.random()
         }
+
+        fun createTestInjury(officer: PersonAPI) = Injury(officer, clock().timestamp, pickInjurySuffix(officer), true)
     }
 
     constructor(officer: PersonAPI, startDate: Long) : this(officer, startDate, pickInjurySuffix(officer))
@@ -88,7 +100,7 @@ open class Injury private constructor(
                 val removed = skills.random()
                 _skill = removed.skill.id
                 _level = removed.level.toInt()
-                if (ConditionManager.rand.nextFloat() >= INJURY_RATE) {
+                if (ConditionManager.rand.nextFloat() <= INJURY_RATE || testOverride) {
                     target.stats.setSkillLevel("oe_fatigue", 0f)
 
                     val injuries = target.conditions().filterIsInstance<Injury>()
@@ -111,6 +123,7 @@ open class Injury private constructor(
 
 class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate) {
     override fun tryResolve(): Boolean = super.tryResolve().then {
+        // TODO inflict a scar when resolved
         target.stats.setSkillLevel("oe_grave_injury", 0f)
     }
 
@@ -118,6 +131,7 @@ class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate)
     override fun tryInflict(): Outcome {
         target.stats.setSkillLevel("oe_grave_injury", 1f)
 
+        // TODO chance to fail if already gravely injured
         return Outcome.Applied(this)
     }
 }

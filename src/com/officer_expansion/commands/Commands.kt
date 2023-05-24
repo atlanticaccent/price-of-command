@@ -3,10 +3,7 @@ package com.officer_expansion.commands
 import com.fs.starfarer.api.characters.OfficerDataAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.officer_expansion.ConditionManager
-import com.officer_expansion.conditions.Fatigue
-import com.officer_expansion.conditions.GraveInjury
-import com.officer_expansion.conditions.Wound
-import com.officer_expansion.conditions.tryInflictAppend
+import com.officer_expansion.conditions.*
 import com.officer_expansion.playerOfficers
 import org.lazywizard.console.BaseCommand
 import org.lazywizard.console.BaseCommand.CommandResult
@@ -27,8 +24,8 @@ class InjureOfficer : BaseCommand {
         if (officer != null) {
             try {
                 ConditionManager.fatigueOfficer(officer)
-                val res = ConditionManager.injureOfficer(officer)
-                Console.showMessage("Succeeded injuring officer: $res")
+                val res = Injury.createTestInjury(officer).tryInflictAppend()
+                Console.showMessage("Injuring officer: $res")
             } catch (e: Exception) {
                 Console.showException("Error: ", e)
             }
