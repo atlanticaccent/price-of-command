@@ -1,6 +1,5 @@
 package com.officer_expansion.conditions
 
-import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
 import com.officer_expansion.*
 import lunalib.lunaSettings.LunaSettings
