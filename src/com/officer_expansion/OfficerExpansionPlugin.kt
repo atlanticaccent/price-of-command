@@ -4,8 +4,8 @@ import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
 import com.officer_expansion.conditions.Condition
+import com.officer_expansion.fleet_interaction.oe_FleetInteractionEveryFrame
 import com.thoughtworks.xstream.XStream
-
 
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
@@ -22,6 +22,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
 
         Global.getSector().addTransientListener(oe_CampaignEventListener)
         Global.getSector().addTransientScript(ConditionManager.oe_ConditionManagerEveryFrame)
+        Global.getSector().addTransientScript(oe_FleetInteractionEveryFrame)
     }
 
     override fun beforeGameSave() {

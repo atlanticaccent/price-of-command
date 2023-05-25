@@ -1,4 +1,4 @@
-package com.officer_expansion
+package com.officer_expansion.fleet_interaction
 
 import com.fs.starfarer.api.campaign.BaseStoryPointActionDelegate
 import com.fs.starfarer.api.campaign.InteractionDialogAPI

@@ -1,4 +1,4 @@
-package com.officer_expansion
+package com.officer_expansion.fleet_interaction
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.BaseCustomDialogDelegate
@@ -8,6 +8,9 @@ import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.util.Misc
+import com.officer_expansion.logger
+import com.officer_expansion.playerFleet
+import com.officer_expansion.playerOfficers
 import lunalib.lunaExtensions.addLunaElement
 import lunalib.lunaExtensions.addLunaSpriteElement
 import lunalib.lunaUI.elements.LunaSpriteElement
