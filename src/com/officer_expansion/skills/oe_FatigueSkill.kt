@@ -12,7 +12,6 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
 import com.officer_expansion.ConditionManager
 import com.officer_expansion.conditions.Fatigue
-import com.officer_expansion.toDateString
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
 import java.awt.Color
 
@@ -46,12 +45,14 @@ class oe_FatigueSkill {
                 ?.let { (officer, conditions) -> Pair(officer, conditions.filterIsInstance<Fatigue>()) }
                 ?.takeIf { (_, conditions) -> conditions.isNotEmpty() }?.also { (officer, conditions) ->
                     val fatigue = conditions.first()
-                    val fatiguedSince = fatigue.startDate.toDateString()
                     val fatiguedFor = fatigue.remaining().duration.getRoundedValueMaxOneAfterDecimal()
-                    info.setParaOrbitronLarge()
-                    info.addPara("${officer.nameString} is fatigued for the next $fatiguedFor days. They will be at greater risk of injury during this time.", 1f)
+                    info.addPara(
+                        "${officer.nameString} is fatigued for the next %s days. They will be at greater risk of injury during this time.",
+                        1f,
+                        hc,
+                        fatiguedFor
+                    )
                     info.setParaFontDefault()
-                    info.addPara("They have been fatigued since $fatiguedSince due to a previous battle", 1f)
                 } ?: run {
                 info.addPara("bugg", 0f)
             }
