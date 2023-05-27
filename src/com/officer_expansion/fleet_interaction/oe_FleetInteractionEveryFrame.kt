@@ -20,10 +20,7 @@ object oe_FleetInteractionEveryFrame : EveryFrameScript {
     override fun advance(amount: Float) {
         val dialog = Global.getSector().campaignUI.currentInteractionDialog
         if (dialog != null && dialog.plugin is FleetInteractionDialogPluginImpl && shouldAppendOption(dialog.optionPanel)) {
-            // TODO: add confirmation dialog when no uninjured officers assigned
-            FleetInteractionDialogPluginImpl.OptionId.values().forEach {
-                dialog.optionPanel.addOptionConfirmation(it, oe_EvilOptionDelegate(dialog, it, true))
-            }
+            val options = dialog.optionPanel
 
             dialog.optionPanel.addOption(
                 "Reassign captains",
@@ -31,7 +28,7 @@ object oe_FleetInteractionEveryFrame : EveryFrameScript {
                 "Last minute reassignment of captains to ships"
             )
 
-            dialog.optionPanel.addOptionConfirmation(
+            options.addOptionConfirmation(
                 oe_FleetInteractionOptionDelegate.OPTION_ID, oe_FleetInteractionOptionDelegate(dialog)
             )
         }
