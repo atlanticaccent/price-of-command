@@ -1,5 +1,13 @@
 {
   "bonusXP" : {
     "reassignOfficers" : 0
-  }
+  },
+  "officerBaseProb" : 0.35,
+  "officerProbPerColonySize" : 0.07,
+  "officerAdditionalBaseProb" : 0.3,
+
+  "baseNumOfficers" : 12,
+
+  "officerSalaryBase" : 350,
+  "officerSalaryPerLevel" : 200,
 }
