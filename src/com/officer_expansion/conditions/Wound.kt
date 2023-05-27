@@ -5,12 +5,6 @@ import com.officer_expansion.*
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 
-//private const val INJURY_RATE = 0.5
-//private const val INJURY_BASE = 10
-//private const val INJURY_VARIANCE = 4f
-//private const val INJURY_RANGE = INJURY_VARIANCE * 2f
-//private const val INJURY_MIN = INJURY_BASE - INJURY_VARIANCE
-
 private val INJURY_RATE
     get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_rate")?.div(100) ?: 0.5f
 private val INJURY_BASE
@@ -33,7 +27,7 @@ private val IGNORE_LIST = arrayOf(
     "oe_fatigue",
 )
 
-sealed class Wound(
+abstract class Wound(
     officer: PersonAPI, startDate: Long
 ) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate))) {
     companion object {
@@ -73,8 +67,6 @@ open class Injury private constructor(
             val available = suffixRange.subtract(taken)
             return available.randomOrNull() ?: suffixRange.random()
         }
-
-        fun createTestInjury(officer: PersonAPI) = Injury(officer, clock().timestamp, pickInjurySuffix(officer), true)
     }
 
     constructor(officer: PersonAPI, startDate: Long) : this(officer, startDate, pickInjurySuffix(officer))
@@ -89,35 +81,45 @@ open class Injury private constructor(
         target.stats.decreaseSkill("oe_injury_$injurySkillSuffix")
     }
 
-    @NonPublic
-    override fun tryInflict() = run {
+    override fun precondition(): Outcome {
         val conditions = target.conditions()
         val skills =
             target.stats.skillsCopy.filter { !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent }
         if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
             if (skills.isNotEmpty()) {
-                val removed = skills.random()
-                _skill = removed.skill.id
-                _level = removed.level.toInt()
                 if (ConditionManager.rand.nextFloat() <= INJURY_RATE || testOverride) {
-                    target.stats.setSkillLevel("oe_fatigue", 0f)
-
-                    val injuries = target.conditions().filterIsInstance<Injury>()
-                        .filter { it.injurySkillSuffix == injurySkillSuffix }.size + 1
-
-                    target.stats.setSkillLevel("oe_injury_$injurySkillSuffix", injuries.toFloat())
-
-                    target.stats.setSkillLevel(removed.skill.id, 0f)
-
-                    return@run Outcome.Applied(this)
+                    return Outcome.Applied(this)
                 }
             } else {
-                return@run Outcome.Failed
+                return Outcome.Failed
             }
         }
 
-        Outcome.NOOP
+        return Outcome.NOOP
     }
+
+    @NonPublic
+    override fun inflict() : Outcome.Applied<Injury> {
+        val skills =
+            target.stats.skillsCopy.filter { !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent }
+        val removed = skills.random()
+
+        _skill = removed.skill.id
+        _level = removed.level.toInt()
+
+        target.stats.setSkillLevel("oe_fatigue", 0f)
+
+        val injuries = target.conditions().filterIsInstance<Injury>()
+            .filter { it.injurySkillSuffix == injurySkillSuffix }.size + 1
+
+        target.stats.setSkillLevel("oe_injury_$injurySkillSuffix", injuries.toFloat())
+
+        target.stats.setSkillLevel(skill, 0f)
+
+        return Outcome.Applied(this)
+    }
+
+    override fun failed(): Condition = GraveInjury(target, startDate)
 }
 
 class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate) {
@@ -126,8 +128,13 @@ class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate)
         target.stats.setSkillLevel("oe_grave_injury", 0f)
     }
 
+    override fun precondition(): Outcome {
+        // TODO chance to fail if already gravely injured
+        return Outcome.Applied(this)
+    }
+
     @NonPublic
-    override fun tryInflict(): Outcome {
+    override fun inflict(): Outcome.Applied<GraveInjury> {
         target.stats.setSkillLevel("oe_grave_injury", 1f)
 
         // TODO chance to fail if already gravely injured

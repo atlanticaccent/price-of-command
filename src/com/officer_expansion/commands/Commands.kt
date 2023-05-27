@@ -3,6 +3,7 @@ package com.officer_expansion.commands
 import com.fs.starfarer.api.characters.OfficerDataAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.officer_expansion.ConditionManager
+import com.officer_expansion.clock
 import com.officer_expansion.conditions.*
 import com.officer_expansion.playerOfficers
 import org.lazywizard.console.BaseCommand
@@ -23,8 +24,16 @@ class InjureOfficer : BaseCommand {
         val officer = playerOfficers().findByName(officer_name)
         if (officer != null) {
             try {
-                ConditionManager.fatigueOfficer(officer)
-                val res = Injury.createTestInjury(officer).tryInflictAppend()
+                val override = { condition: Condition ->
+                    if (condition.target.nameString == officer.nameString && condition is Injury) {
+                        Outcome.Applied(condition)
+                    } else {
+                        null
+                    }
+                }
+                Condition.preconditions.add(override)
+                val res = Injury(officer, clock().timestamp).tryInflictAppend()
+                Condition.preconditions.remove(override)
                 Console.showMessage("Injuring officer: $res")
             } catch (e: Exception) {
                 Console.showException("Error: ", e)
@@ -86,7 +95,7 @@ class FatigueOfficer : BaseCommand {
 
         if (officer != null) {
             try {
-                ConditionManager.fatigueOfficer(officer)
+                Fatigue(officer, clock().timestamp).tryInflictAppend()
                 Console.showMessage("Succeeded fatiguing officer")
             } catch (e: Exception) {
                 Console.showException("Error: ", e)

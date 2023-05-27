@@ -35,10 +35,11 @@ class Fatigue(
         }
     }
 
-    @NonPublic
-    override fun tryInflict(): Outcome = run {
+    override fun precondition(): Outcome {
         val conditions = target.conditions()
-        if (fatigueEnabled() && ConditionManager.rand.nextFloat() <= FATIGUE_CHANCE) {
+        return if (!fatigueEnabled()) {
+            Outcome.Failed
+        } else if (ConditionManager.rand.nextFloat() <= FATIGUE_CHANCE) {
             conditions.filterIsInstance<Fatigue>().firstOrNull()?.let {
                 if (ConditionManager.rand.nextFloat() <= FATIGUE_EXTEND_RATE) {
                     it.duration.duration += this.duration.duration
@@ -49,7 +50,6 @@ class Fatigue(
                 }
             } ?: run {
                 if (conditions.filterIsInstance<Wound>().isEmpty()) {
-                    target.stats.setSkillLevel("oe_fatigue", 1f)
                     Outcome.Applied(this)
                 } else {
                     Outcome.Failed
@@ -59,6 +59,14 @@ class Fatigue(
             Outcome.NOOP
         }
     }
+
+    @NonPublic
+    override fun inflict(): Outcome.Applied<Fatigue> {
+        target.stats.setSkillLevel("oe_fatigue", 1f)
+        return Outcome.Applied(this)
+    }
+
+    override fun failed(): Condition = Injury(target, startDate)
 
     override fun pastTense() = "fatigued"
 }
