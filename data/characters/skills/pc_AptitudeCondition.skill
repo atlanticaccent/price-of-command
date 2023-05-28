@@ -1,0 +1,12 @@
+{
+	"id":"pc_aptitude_condition",
+	"governingAptitude":"pc_condition",
+	"effectGroups":[
+		{
+			"requiredSkillLevel":0,
+			"effects":[
+				{"type":"DESCRIPTION", "script":"com.price_of_command.skills.pc_AptitudeConditionDesc$Level0"},
+			]
+		},
+	],
+}

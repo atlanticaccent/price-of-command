@@ -1,29 +1,29 @@
 id,name,order,tier,reqPoints,reqPointsPerExtraSkill,description,author,combat officer,admiral,admin,tags,icon,
-oe_injury_1,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
+pc_injury_1,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
 The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
 
 And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/brain-freeze.png
-oe_injury_2,Injury,0,0,0,,"I'd very much like to know why bridge consoles keep catching fire during combat, with apparently no bearing on where the ship is actually hit.
+pc_injury_2,Injury,0,0,0,,"I'd very much like to know why bridge consoles keep catching fire during combat, with apparently no bearing on where the ship is actually hit.
 This is the third electrical burn we've had on the bridge in as many sorties and I'm going to run out of bridge crew at this rate.",Ship Maintenance Log EM-461-Psi,TRUE,,,"npc_only, deprecated",graphics/icons/skills/burns.png
-oe_injury_3,Injury,0,0,0,,"CLASS 70B DIRECTED ENERGY 'LASER' WEAPON
+pc_injury_3,Injury,0,0,0,,"CLASS 70B DIRECTED ENERGY 'LASER' WEAPON
 WARNING
 AVOID EYE OR SKIN EXPOSURE TO DIRECT OR SCATTERED RADIATION",Warning on TekKon IR Pulse Laser housing,TRUE,,,"npc_only, deprecated",graphics/icons/skills/conjunctivitis.png
-oe_injury_4,Injury,0,0,0,,"Internal spalling, direct penetration by munitions, or any other depressurisation event are any spacer's worst nightmare.
+pc_injury_4,Injury,0,0,0,,"Internal spalling, direct penetration by munitions, or any other depressurisation event are any spacer's worst nightmare.
 However, modern ship hulls and internal compartments - even bridge viewports - demonstrate high degrees of self-sealing capability.
 Unfortunately, modern science is still working on keeping the crew in the way in one piece...","Hegemony Annual Technical Starship Readout, c162",TRUE,,,"npc_only, deprecated",graphics/icons/skills/destroy-1.png
-oe_injury_5,Injury,0,0,0,,"Warning: TriTachyon maintains no liability in the event of inertial dampener failure due to any or all of the following scenarios, including but not limited to:
+pc_injury_5,Injury,0,0,0,,"Warning: TriTachyon maintains no liability in the event of inertial dampener failure due to any or all of the following scenarios, including but not limited to:
 A) Acts of War, Terrorism or Police Action
 ...
 G.X.III) Hegemony Tax Force Repossession of Ship Power Core
 ......
 Z.omega.5.$) Failure to Appease Hypothetical Artificial Intelligence Constructs",TriTachyon Inertial Dampener Installation Waiver,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
-oe_injury_6,Injury,0,0,0,,"Oblique fracture of the right ulna.
+pc_injury_6,Injury,0,0,0,,"Oblique fracture of the right ulna.
 Surgical intervention unnecessary beyond insertion of standard piezoelectric recovery stimulation mesh.
 Projected recovery time is roughly two weeks, with no additional stress.",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/fracture.png
-oe_injury_7,Injury,0,0,0,,"The odds of being stabbed on a starship are low but never zero.","Officer Botano, following mutiny on the Arcana",TRUE,,,"npc_only, deprecated",graphics/icons/skills/sharp-hazard.png
-oe_grave_injury,Grave Injury,0,0,0,,"That wound will never truly heal.
+pc_injury_7,Injury,0,0,0,,"The odds of being stabbed on a starship are low but never zero.","Officer Botano, following mutiny on the Arcana",TRUE,,,"npc_only, deprecated",graphics/icons/skills/sharp-hazard.png
+pc_grave_injury,Grave Injury,0,0,0,,"That wound will never truly heal.
 She will carry it for the rest of her life.","Thar Kun, Personal Physician to High Hegemon [REDACTED]",TRUE,,,"npc_only, deprecated",graphics/icons/skills/zombie-2.png
-oe_fatigue,Fatigue,0,0,0,,"I've seen plenty of good men die.
+pc_fatigue,Fatigue,0,0,0,,"I've seen plenty of good men die.
 In glorious combat, for the good of others. In back alleys, in drunken, meaningless brawls.
 But the thing I've seen kill the most men? Simple tiredness.",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
-oe_aptitude_condition,,0,,,,,,,,,,graphics/icons/skills/category_condition.png
+pc_aptitude_condition,,0,,,,,,,,,,graphics/icons/skills/category_condition.png

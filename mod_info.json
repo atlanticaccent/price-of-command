@@ -8,7 +8,7 @@
     "description": "Mod description. ",
     "gameVersion": "0.96a-RC8",
     "jars":["jars/officer-expansion.jar"],
-    "modPlugin":"com.commanders_choice.OfficerExpansionPlugin",
+    "modPlugin":"com.price_of_command.OfficerExpansionPlugin",
     "dependencies": [
         {
             "id": "lw_lazylib",

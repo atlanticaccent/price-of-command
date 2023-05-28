@@ -1,0 +1,19 @@
+{
+	"id":"pc_injury_6",
+	"governingAptitude":"pc_condition",
+	"compressHullmods":false,
+	"elite": false,
+	"scope":"CUSTOM",
+	"scopeStr": "This officer",
+	"permanent": true,
+	"effectGroups":[
+		{
+			"requiredSkillLevel":0,
+			"effectBasedOnLevel": false,
+			"effects":[
+				{"type":"DESCRIPTION", "script":"com.price_of_command.skills.pc_InjurySkill$Level0"},
+				{"type":"SHIP", "script":"com.price_of_command.skills.pc_InjurySkill$Level1"},
+			]
+		},
+	],
+}
