@@ -29,7 +29,7 @@ val shouldAutomaticallyCreateMetadataFiles = true
  */
 val modVersion = "0.0.1"
 val jarFileName = "${modName}.jar"
-val modId = "officer_expansion"
+val modId = "price_of_command"
 val modAuthor = "AtlanticAccent"
 val modDescription = "Mod description. "
 val gameVersion = "0.96a-RC8"
