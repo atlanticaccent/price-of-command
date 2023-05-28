@@ -5,7 +5,7 @@
 		{
 			"requiredSkillLevel":0,
 			"effects":[
-				{"type":"DESCRIPTION", "script":"com.officer_expansion.skills.oe_AptitudeConditionDesc$Level0"},
+				{"type":"DESCRIPTION", "script":"com.commanders_choice.skills.oe_AptitudeConditionDesc$Level0"},
 			]
 		},
 	],

@@ -1,11 +1,11 @@
 @file:Suppress("OPT_IN_IS_NOT_ENABLED")
 
-package com.officer_expansion.conditions
+package com.commanders_choice.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
-import com.officer_expansion.ConditionManager
-import com.officer_expansion.clock
-import com.officer_expansion.then
+import com.commanders_choice.ConditionManager
+import com.commanders_choice.clock
+import com.commanders_choice.then
 
 abstract class Condition(val target: PersonAPI, val startDate: Long, open val duration: Duration) {
     companion object {

@@ -1,11 +1,11 @@
-package com.officer_expansion.commands
+package com.commanders_choice.commands
 
 import com.fs.starfarer.api.characters.OfficerDataAPI
 import com.fs.starfarer.api.characters.PersonAPI
-import com.officer_expansion.ConditionManager
-import com.officer_expansion.clock
-import com.officer_expansion.conditions.*
-import com.officer_expansion.playerOfficers
+import com.commanders_choice.ConditionManager
+import com.commanders_choice.clock
+import com.commanders_choice.conditions.*
+import com.commanders_choice.playerOfficers
 import org.lazywizard.console.BaseCommand
 import org.lazywizard.console.BaseCommand.CommandResult
 import org.lazywizard.console.Console

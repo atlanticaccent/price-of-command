@@ -1,4 +1,4 @@
-package com.officer_expansion.memory
+package com.commanders_choice.memory
 
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.SectorEntityToken

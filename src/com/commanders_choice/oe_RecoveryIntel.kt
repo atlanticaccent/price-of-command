@@ -1,8 +1,8 @@
-package com.officer_expansion
+package com.commanders_choice
 
 import com.fs.starfarer.api.impl.campaign.intel.MessageIntel
 import com.fs.starfarer.api.util.Misc
-import com.officer_expansion.conditions.Condition
+import com.commanders_choice.conditions.Condition
 
 class oe_RecoveryIntel private constructor(name: String) :
     MessageIntel("$name has recovered", Misc.getBasePlayerColor()) {

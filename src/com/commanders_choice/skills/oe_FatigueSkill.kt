@@ -1,4 +1,4 @@
-package com.officer_expansion.skills
+package com.commanders_choice.skills
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.DescriptionSkillEffect
@@ -10,8 +10,8 @@ import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.impl.campaign.skills.BaseSkillEffectDescription
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
-import com.officer_expansion.ConditionManager
-import com.officer_expansion.conditions.Fatigue
+import com.commanders_choice.ConditionManager
+import com.commanders_choice.conditions.Fatigue
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
 import java.awt.Color
 

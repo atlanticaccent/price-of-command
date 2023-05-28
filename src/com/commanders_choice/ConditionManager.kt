@@ -1,10 +1,10 @@
-package com.officer_expansion
+package com.commanders_choice
 
 import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
-import com.officer_expansion.conditions.*
+import com.commanders_choice.conditions.*
 import kotlin.random.Random
 
 object ConditionManager {

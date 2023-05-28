@@ -1,4 +1,4 @@
-package com.officer_expansion.fleet_interaction
+package com.commanders_choice.fleet_interaction
 
 import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global

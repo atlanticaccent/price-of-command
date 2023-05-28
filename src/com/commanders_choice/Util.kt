@@ -1,4 +1,4 @@
-package com.officer_expansion
+package com.commanders_choice
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.CampaignClockAPI
@@ -6,7 +6,7 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.rules.HasMemory
 import com.fs.starfarer.api.campaign.rules.MemoryAPI
 import com.fs.starfarer.api.characters.OfficerDataAPI
-import com.officer_expansion.memory.EscapedMemory
+import com.commanders_choice.memory.EscapedMemory
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 

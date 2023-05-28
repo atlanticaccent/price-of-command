@@ -1,7 +1,7 @@
-package com.officer_expansion.conditions
+package com.commanders_choice.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
-import com.officer_expansion.*
+import com.commanders_choice.*
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 

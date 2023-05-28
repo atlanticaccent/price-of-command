@@ -1,7 +1,7 @@
 command,class,tags,syntax,help
-TestCommand,com.officer_expansion.commands.TestCommand,"cheat",TestCommand,"foo"
-InjureOfficer,com.officer_expansion.commands.InjureOfficer,"cheat",InjureOfficer <Officer's name>,"You monster"
-GravelyInjureOfficer,com.officer_expansion.commands.GravelyInjureOfficer,"cheat",GravelyInjureOfficer <Officer's name>,"You absolute monster"
-HealOfficer,com.officer_expansion.commands.HealOfficer,"cheat",HealOfficer <Officer's name> [num injuries to heal],"You angel"
-FatigueOfficer,com.officer_expansion.commands.FatigueOfficer,"cheat",FatigueOfficer <Officer's name>,"You slavedriver"
-RestOfficer,com.officer_expansion.commands.RestOfficer,"cheat",RestOfficer <Officer's name>,"You sandman"
+TestCommand,com.commanders_choice.commands.TestCommand,"cheat",TestCommand,"foo"
+InjureOfficer,com.commanders_choice.commands.InjureOfficer,"cheat",InjureOfficer <Officer's name>,"You monster"
+GravelyInjureOfficer,com.commanders_choice.commands.GravelyInjureOfficer,"cheat",GravelyInjureOfficer <Officer's name>,"You absolute monster"
+HealOfficer,com.commanders_choice.commands.HealOfficer,"cheat",HealOfficer <Officer's name> [num injuries to heal],"You angel"
+FatigueOfficer,com.commanders_choice.commands.FatigueOfficer,"cheat",FatigueOfficer <Officer's name>,"You slavedriver"
+RestOfficer,com.commanders_choice.commands.RestOfficer,"cheat",RestOfficer <Officer's name>,"You sandman"

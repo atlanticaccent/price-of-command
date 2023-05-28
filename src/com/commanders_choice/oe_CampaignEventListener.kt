@@ -1,8 +1,8 @@
-package com.officer_expansion
+package com.commanders_choice
 
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener
 import com.fs.starfarer.api.combat.EngagementResultAPI
-import com.officer_expansion.conditions.*
+import com.commanders_choice.conditions.*
 
 object oe_CampaignEventListener : BaseCampaignEventListener(false) {
     override fun reportPlayerEngagement(result: EngagementResultAPI) {

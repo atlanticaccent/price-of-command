@@ -1,10 +1,10 @@
-package com.officer_expansion.conditions
+package com.commanders_choice.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
-import com.officer_expansion.ConditionManager
-import com.officer_expansion.OfficerExpansionPlugin
-import com.officer_expansion.conditions
-import com.officer_expansion.then
+import com.commanders_choice.ConditionManager
+import com.commanders_choice.OfficerExpansionPlugin
+import com.commanders_choice.conditions
+import com.commanders_choice.then
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 

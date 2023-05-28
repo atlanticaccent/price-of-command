@@ -1,6 +1,5 @@
-package com.officer_expansion.relfection
+package com.commanders_choice.relfection
 
-import com.fs.starfarer.api.characters.SkillSpecAPI
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType

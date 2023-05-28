@@ -1,11 +1,11 @@
-package com.officer_expansion
+package com.commanders_choice
 
 import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
-import com.officer_expansion.conditions.Condition
-import com.officer_expansion.fleet_interaction.oe_FleetInteractionEveryFrame
-import com.officer_expansion.relfection.ReflectionUtils
+import com.commanders_choice.conditions.Condition
+import com.commanders_choice.fleet_interaction.oe_FleetInteractionEveryFrame
+import com.commanders_choice.relfection.ReflectionUtils
 import com.thoughtworks.xstream.XStream
 
 class OfficerExpansionPlugin : BaseModPlugin() {

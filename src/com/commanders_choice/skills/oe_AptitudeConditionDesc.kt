@@ -1,4 +1,4 @@
-package com.officer_expansion.skills
+package com.commanders_choice.skills
 
 import com.fs.starfarer.api.characters.DescriptionSkillEffect
 import com.fs.starfarer.api.impl.campaign.skills.AptitudeDesc
