@@ -129,7 +129,10 @@ class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate)
     }
 
     override fun precondition(): Outcome {
-        // TODO chance to fail if already gravely injured
+        // TODO if already gravely injured, roll for terminal outcome
+//        if (ConditionManager.rand.nextFloat() <= DEATH_RATE) {
+//            return Outcome.Terminal(this)
+//        }
         return Outcome.Applied(this)
     }
 
