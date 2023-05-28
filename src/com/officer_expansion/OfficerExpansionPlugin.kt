@@ -5,6 +5,7 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
 import com.officer_expansion.conditions.Condition
 import com.officer_expansion.fleet_interaction.oe_FleetInteractionEveryFrame
+import com.officer_expansion.relfection.ReflectionUtils
 import com.thoughtworks.xstream.XStream
 
 class OfficerExpansionPlugin : BaseModPlugin() {
@@ -23,6 +24,11 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         Global.getSector().addTransientListener(oe_CampaignEventListener)
         Global.getSector().addTransientScript(ConditionManager.oe_ConditionManagerEveryFrame)
         Global.getSector().addTransientScript(oe_FleetInteractionEveryFrame)
+
+        val settings = Global.getSettings()
+        settings.skillIds.map { settings.getSkillSpec(it) }.filter { it.tags.contains("officer_expansion") }.forEach {
+            ReflectionUtils.set("Ó00000", it, "oe_condition")
+        }
     }
 
     override fun beforeGameSave() {
