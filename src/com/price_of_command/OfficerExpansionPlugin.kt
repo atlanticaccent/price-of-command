@@ -28,7 +28,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
 
         val settings = Global.getSettings()
         settings.skillIds.map { settings.getSkillSpec(it) }.filter { it.tags.contains("officer_expansion") }.forEach {
-            ReflectionUtils.set("Ó00000", it, "oe_condition")
+            ReflectionUtils.set("Ó00000", it as SkillSpec, "pc_condition")
         }
     }
 
