@@ -49,4 +49,12 @@ fun Boolean.then(block: () -> Unit): Boolean {
     return this
 }
 
+fun <T> Boolean.andThenOrNull(block: () -> T?) : T? {
+    return if (this) {
+        block()
+    } else {
+        null
+    }
+}
+
 fun clock(): CampaignClockAPI = Global.getSector().clock

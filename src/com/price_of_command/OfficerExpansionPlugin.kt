@@ -27,9 +27,10 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         Global.getSector().addTransientScript(pc_FleetInteractionEveryFrame)
 
         val settings = Global.getSettings()
-        settings.skillIds.map { settings.getSkillSpec(it) }.filter { it.tags.contains("officer_expansion") }.forEach {
-            ReflectionUtils.set("Ó00000", it as SkillSpec, "pc_condition")
-        }
+        settings.skillIds.map { settings.getSkillSpec(it) }
+            .filter { it.tags.any { tag -> setOf("pc_quirk", "pc_condition").contains(tag) } }.forEach {
+                ReflectionUtils.set("Ó00000", it as SkillSpec, "pc_condition")
+            }
     }
 
     override fun beforeGameSave() {

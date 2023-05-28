@@ -4,15 +4,11 @@ package com.price_of_command.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.ConditionManager
+import com.price_of_command.andThenOrNull
 import com.price_of_command.clock
 import com.price_of_command.then
 
 abstract class Condition(val target: PersonAPI, val startDate: Long, open val duration: Duration) {
-    companion object {
-        val mutators: MutableList<ConditionMutator> = mutableListOf()
-        val preconditions: MutableList<(Condition) -> Outcome?> = mutableListOf()
-    }
-
     var expired = false
 
     sealed class Duration {
@@ -27,7 +23,9 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, open val du
 
     private fun preconditionOverrides(): Outcome {
         val result = run result@{
-            preconditions.mapNotNull { it(this) }.reduceOrNull { acc, value ->
+            val preconditions = ConditionManager.preconditions.mapNotNull { it.preconditionWithPriority(this) }
+            val max = preconditions.maxOfOrNull { it.second }
+            preconditions.mapNotNull { (it.second == max).andThenOrNull { it.first } }.reduceOrNull { acc, value ->
                 when (value) {
                     is Outcome.Failed -> return@result Outcome.Failed
                     is Outcome.NOOP -> acc
@@ -45,7 +43,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, open val du
     abstract fun inflict(): Outcome
 
     private fun mutationOverrides(): Condition? =
-        mutators.mapNotNull { it.mutateWithPriority(this) }.maxByOrNull { it.second }?.first
+        ConditionManager.mutators.mapNotNull { it.mutateWithPriority(this) }.maxByOrNull { it.second }?.first
 
     open fun mutation(): Condition? = null
 

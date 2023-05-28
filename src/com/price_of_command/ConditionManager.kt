@@ -15,6 +15,40 @@ object ConditionManager {
     val rand: Random by lazy { Random(now) }
 
     var conditionMap: Map<PersonAPI, List<Condition>> = emptyMap()
+    internal val preconditions: MutableList<ConditionGate> = mutableListOf()
+    internal val mutators: MutableList<ConditionMutator> = mutableListOf()
+
+    fun addPreconditionOverride(gate: ConditionGate) = preconditions.add(gate)
+
+    fun addPreconditionOverride(gate: (Condition) -> Outcome?) {
+        preconditions.add(object : ConditionGate() {
+            override fun precondition(condition: Condition): Outcome? = gate(condition)
+        })
+    }
+
+    fun addPreconditionOverride(gate: (Condition) -> Outcome?, priority: Int) {
+        preconditions.add(object : ConditionGate() {
+            override fun priority(): Int = priority
+
+            override fun precondition(condition: Condition): Outcome? = gate(condition)
+        })
+    }
+
+    fun addMutationOverride(mutation: ConditionMutator) = mutators.add(mutation)
+
+    fun addMutationOverride(mutation: (Condition) -> Condition?) {
+        mutators.add(object : ConditionMutator() {
+            override fun mutate(condition: Condition): Condition? = mutation(condition)
+        })
+    }
+
+    fun addMutationOverride(mutation: (Condition) -> Condition?, priority: Int) {
+        mutators.add(object : ConditionMutator() {
+            override fun priority(): Int = priority
+
+            override fun mutate(condition: Condition): Condition? = mutation(condition)
+        })
+    }
 
     fun findByStats(stats: MutableCharacterStatsAPI): Pair<PersonAPI, List<Condition>>? =
         conditionMap.entries.find { (person, _) ->
