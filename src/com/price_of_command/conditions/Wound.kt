@@ -36,7 +36,7 @@ abstract class Wound(
         fun tryExtendWounds(target: PersonAPI): Outcome {
             val wounds = target.conditions().filterIsInstance<Wound>()
 
-            return if (wounds.isNotEmpty() && ConditionManager.rand.nextFloat() >= EXTEND_RATE) {
+            return if (wounds.isNotEmpty()) {
                 val extended = wounds.random()
                 extended.extendRandomly(ConditionManager.now)
                 Outcome.Applied(extended)
@@ -119,7 +119,7 @@ open class Injury private constructor(
         return Outcome.Applied(this)
     }
 
-    override fun failed(): Condition = GraveInjury(target, startDate)
+    override fun failed(): Condition = ExtendWounds(target, startDate)
 }
 
 class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate) {
@@ -140,7 +140,24 @@ class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate)
     override fun inflict(): Outcome.Applied<GraveInjury> {
         target.stats.setSkillLevel("pc_grave_injury", 1f)
 
-        // TODO chance to fail if already gravely injured
         return Outcome.Applied(this)
     }
 }
+
+class ExtendWounds(target: PersonAPI, startDate: Long) : Condition(target, startDate) {
+    override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() >= EXTEND_RATE) {
+        Outcome.Applied(this)
+    } else {
+        Outcome.Failed
+    }
+
+    override fun failed(): Condition = GraveInjury(target, startDate)
+
+    @NonPublic
+    override fun inflict(): Outcome = Wound.tryExtendWounds(target).applied { Outcome.NOOP }
+
+    override fun mutation(): Condition = NullCondition(target, startDate)
+
+    override fun pastTense(): String = ""
+}
+

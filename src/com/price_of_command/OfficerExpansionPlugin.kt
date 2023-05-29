@@ -4,7 +4,9 @@ import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.loading.SkillSpec
-import com.price_of_command.conditions.Condition
+import com.price_of_command.conditions.LastingCondition
+import com.price_of_command.conditions.ConditionGate
+import com.price_of_command.conditions.ConditionMutator
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
 import com.price_of_command.relfection.ReflectionUtils
 import com.thoughtworks.xstream.XStream
@@ -14,13 +16,15 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         const val modID = "officer_expansion"
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onGameLoad(newGame: Boolean) {
         super.onGameLoad(newGame)
 
-        @Suppress("UNCHECKED_CAST") val savedInjuries =
-            Global.getSector().memoryWithoutUpdate.escape()[ConditionManager.CONDITION_MAP] as? MutableMap<PersonAPI, MutableList<Condition>>
-                ?: mutableMapOf()
-        ConditionManager.conditionMap = savedInjuries
+        val memory = Global.getSector().memoryWithoutUpdate.escape()
+        ConditionManager.conditionMap =
+            memory[ConditionManager.CONDITION_MAP] as? Map<PersonAPI, List<LastingCondition>> ?: mapOf()
+        ConditionManager.preconditions = memory[ConditionManager.PRECONDITIONS] as? List<ConditionGate> ?: listOf()
+        ConditionManager.mutators = memory[ConditionManager.MUTATORS] as? List<ConditionMutator> ?: listOf()
 
         Global.getSector().addTransientListener(pc_CampaignEventListener)
         Global.getSector().addTransientScript(ConditionManager.pc_ConditionManagerEveryFrame)
@@ -36,7 +40,10 @@ class OfficerExpansionPlugin : BaseModPlugin() {
     override fun beforeGameSave() {
         super.beforeGameSave()
 
-        Global.getSector().memoryWithoutUpdate.escape()[ConditionManager.CONDITION_MAP] = ConditionManager.conditionMap
+        val memory = Global.getSector().memoryWithoutUpdate.escape()
+        memory[ConditionManager.CONDITION_MAP] = ConditionManager.conditionMap
+        memory[ConditionManager.PRECONDITIONS] = ConditionManager.preconditions
+        memory[ConditionManager.MUTATORS] = ConditionManager.MUTATORS
     }
 
     /**

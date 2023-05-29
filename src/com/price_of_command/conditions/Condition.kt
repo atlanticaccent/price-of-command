@@ -8,18 +8,8 @@ import com.price_of_command.andThenOrNull
 import com.price_of_command.clock
 import com.price_of_command.then
 
-abstract class Condition(val target: PersonAPI, val startDate: Long, open val duration: Duration) {
+abstract class Condition(val target: PersonAPI, val startDate: Long) {
     var expired = false
-
-    sealed class Duration {
-        object Indefinite : Duration()
-        class Time(var duration: Float) : Duration()
-    }
-
-    open fun remaining(): Duration = when (val duration = duration) {
-        is Duration.Time -> Duration.Time(duration.duration - clock().getElapsedDaysSince(startDate))
-        else -> Duration.Indefinite
-    }
 
     private fun preconditionOverrides(): Outcome {
         val result = run result@{
@@ -53,7 +43,8 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, open val du
 
     @OptIn(NonPublic::class)
     fun tryInflictAppend(): Outcome {
-        val outcome = preconditionOverrides().noop { precondition() }
+        val outcome = preconditionOverrides()
+            .noop { precondition() }
             .failed { return@tryInflictAppend failed()?.tryInflictAppend() ?: Outcome.NOOP }
 //            .terminal { /* DIE */ }
             .applied {
@@ -63,6 +54,18 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, open val du
             }
         (outcome as? Outcome.Applied<*>)?.let { ConditionManager.appendCondition(this.target, this) }
         return outcome
+    }
+}
+
+abstract class LastingCondition(target: PersonAPI, startDate: Long, open val duration: Duration) : Condition(target, startDate) {
+    sealed class Duration {
+        object Indefinite : Duration()
+        class Time(var duration: Float) : Duration()
+    }
+
+    open fun remaining(): Duration = when (val duration = duration) {
+        is Duration.Time -> Duration.Time(duration.duration - clock().getElapsedDaysSince(startDate))
+        else -> Duration.Indefinite
     }
 }
 
@@ -82,7 +85,7 @@ sealed class Outcome {
 }
 
 abstract class ResolvableCondition(target: PersonAPI, startDate: Long, override val duration: Duration.Time) :
-    Condition(target, startDate, duration) {
+    LastingCondition(target, startDate, duration) {
     open fun tryResolve(): Boolean =
         expired || (clock().getElapsedDaysSince(startDate) >= duration.duration).then { expired = true }
 
@@ -91,6 +94,15 @@ abstract class ResolvableCondition(target: PersonAPI, startDate: Long, override 
     fun extendRandomly(seed: Long) {
         duration.duration += Wound.generateDuration(seed)
     }
+}
+
+class NullCondition(target: PersonAPI, startDate: Long) : Condition(target, startDate) {
+    override fun precondition(): Outcome = Outcome.NOOP
+
+    @NonPublic
+    override fun inflict(): Outcome = Outcome.NOOP
+
+    override fun pastTense(): String = "noop"
 }
 
 @RequiresOptIn(message = "random bullshit, ignore me")

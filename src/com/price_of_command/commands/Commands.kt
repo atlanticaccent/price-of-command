@@ -24,16 +24,15 @@ class InjureOfficer : BaseCommand {
         val officer = playerOfficers().findByName(officer_name)
         if (officer != null) {
             try {
-                val override = { condition: Condition ->
+                val override = ConditionManager.addPreconditionOverride { condition ->
                     if (condition.target.nameString == officer.nameString && condition is Injury) {
                         Outcome.Applied(condition)
                     } else {
                         null
                     }
                 }
-                Condition.preconditions.add(override)
                 val res = Injury(officer, clock().timestamp).tryInflictAppend()
-                Condition.preconditions.remove(override)
+                ConditionManager.removePreconditionOverride(override)
                 Console.showMessage("Injuring officer: $res")
             } catch (e: Exception) {
                 Console.showException("Error: ", e)

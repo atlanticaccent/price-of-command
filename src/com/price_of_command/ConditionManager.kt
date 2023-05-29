@@ -7,48 +7,18 @@ import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.conditions.*
 import kotlin.random.Random
 
-object ConditionManager {
+object ConditionManager : OverrideManager {
     const val CONDITION_MAP = "pc_persistent_condition_map"
+    const val PRECONDITIONS = "pc_persistent_preconditions"
+    const val MUTATORS = "pc_persistent_mutators"
 
     val now: Long
         get() = Global.getSector().clock.timestamp
     val rand: Random by lazy { Random(now) }
 
-    var conditionMap: Map<PersonAPI, List<Condition>> = emptyMap()
-    internal val preconditions: MutableList<ConditionGate> = mutableListOf()
-    internal val mutators: MutableList<ConditionMutator> = mutableListOf()
-
-    fun addPreconditionOverride(gate: ConditionGate) = preconditions.add(gate)
-
-    fun addPreconditionOverride(gate: (Condition) -> Outcome?) {
-        preconditions.add(object : ConditionGate() {
-            override fun precondition(condition: Condition): Outcome? = gate(condition)
-        })
-    }
-
-    fun addPreconditionOverride(gate: (Condition) -> Outcome?, priority: Int) {
-        preconditions.add(object : ConditionGate() {
-            override fun priority(): Int = priority
-
-            override fun precondition(condition: Condition): Outcome? = gate(condition)
-        })
-    }
-
-    fun addMutationOverride(mutation: ConditionMutator) = mutators.add(mutation)
-
-    fun addMutationOverride(mutation: (Condition) -> Condition?) {
-        mutators.add(object : ConditionMutator() {
-            override fun mutate(condition: Condition): Condition? = mutation(condition)
-        })
-    }
-
-    fun addMutationOverride(mutation: (Condition) -> Condition?, priority: Int) {
-        mutators.add(object : ConditionMutator() {
-            override fun priority(): Int = priority
-
-            override fun mutate(condition: Condition): Condition? = mutation(condition)
-        })
-    }
+    internal var conditionMap: Map<PersonAPI, List<Condition>> = emptyMap()
+    override var preconditions: List<ConditionGate> = listOf()
+    override var mutators: List<ConditionMutator> = listOf()
 
     fun findByStats(stats: MutableCharacterStatsAPI): Pair<PersonAPI, List<Condition>>? =
         conditionMap.entries.find { (person, _) ->
@@ -79,25 +49,6 @@ object ConditionManager {
         val conditions = conditionMap[officer]?.plus(condition) ?: listOf(condition)
         conditionMap = conditionMap.plus(officer to conditions)
         return conditions
-    }
-
-    fun fatigueOfficer(officer: PersonAPI): Boolean {
-        val fatigue = Fatigue(officer, now)
-
-        return when (fatigue.tryInflictAppend()) {
-            is Outcome.Failed -> false
-            else -> true
-        }
-    }
-
-    fun injureOfficer(officer: PersonAPI): Boolean {
-        val injury = Injury(officer, now)
-
-        return when (injury.tryInflictAppend().failed { Wound.tryExtendWounds(officer) }
-            .failed { GraveInjury(officer, now).tryInflictAppend() }) {
-            is Outcome.Failed -> false
-            else -> true
-        }
     }
 }
 

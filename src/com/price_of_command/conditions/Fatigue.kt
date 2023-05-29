@@ -66,7 +66,7 @@ class Fatigue(
         return Outcome.Applied(this)
     }
 
-    override fun failed(): Condition = Injury(target, startDate)
+    override fun failed(): LastingCondition = Injury(target, startDate)
 
     override fun pastTense() = "fatigued"
 }
