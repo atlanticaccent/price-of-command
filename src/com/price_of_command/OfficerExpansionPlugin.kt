@@ -16,6 +16,14 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         const val modID = "officer_expansion"
     }
 
+    override fun onApplicationLoad() {
+        val settings = Global.getSettings()
+        settings.skillIds.map { settings.getSkillSpec(it) }
+            .filter { it.tags.any { tag -> setOf("pc_quirk", "pc_condition").contains(tag) } }.forEach {
+                ReflectionUtils.set("Ó00000", it as SkillSpec, "pc_condition")
+            }
+    }
+
     @Suppress("UNCHECKED_CAST")
     override fun onGameLoad(newGame: Boolean) {
         super.onGameLoad(newGame)
@@ -29,12 +37,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         Global.getSector().addTransientListener(pc_CampaignEventListener)
         Global.getSector().addTransientScript(ConditionManager.pc_ConditionManagerEveryFrame)
         Global.getSector().addTransientScript(pc_FleetInteractionEveryFrame)
-
-        val settings = Global.getSettings()
-        settings.skillIds.map { settings.getSkillSpec(it) }
-            .filter { it.tags.any { tag -> setOf("pc_quirk", "pc_condition").contains(tag) } }.forEach {
-                ReflectionUtils.set("Ó00000", it as SkillSpec, "pc_condition")
-            }
+        Global.getSector().addTransientScript(pc_OfficerEconomyModEveryFrame)
     }
 
     override fun beforeGameSave() {
