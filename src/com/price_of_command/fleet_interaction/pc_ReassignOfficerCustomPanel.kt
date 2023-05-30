@@ -6,9 +6,11 @@ import com.fs.starfarer.api.campaign.CustomDialogDelegate
 import com.fs.starfarer.api.campaign.FleetMemberPickerListener
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
+import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.util.Misc
 import com.price_of_command.logger
+import com.price_of_command.pc_CampaignEventListener
 import com.price_of_command.playerFleet
 import com.price_of_command.playerOfficers
 import lunalib.lunaExtensions.addLunaElement
@@ -28,6 +30,7 @@ class pc_ReassignOfficerCustomPanel private constructor(private val originalOffi
             return playerFleet().fleetData.membersListCopy.mapNotNull { it.captain?.run { it to this } }.toMap()
         }
     }
+    private var restoreCheckbox: ButtonAPI? = null
 
     constructor() : this(fleetAssignments())
 
@@ -102,18 +105,36 @@ class pc_ReassignOfficerCustomPanel private constructor(private val originalOffi
             ele.onHoverExit { ele.backgroundColor = Misc.getDarkPlayerColor().darker() }
         }
 
+        val checkboxString = "Restore fleet assignments after battle or closing dialog"
+        val checkboxWidth = info.computeStringWidth(checkboxString) + (2 * opad)
+        val checkbox = info.addCheckbox(checkboxWidth, 16f, checkboxString, ButtonAPI.UICheckboxSize.SMALL, 0f)
+        checkbox.isChecked = pc_CampaignEventListener.restoreFleetAssignments
+        restoreCheckbox = checkbox
+        info.addCustomDoNotSetPosition(checkbox).position.inTL(0f, 500f + 16f)
     }
 
     override fun hasCancelButton(): Boolean = true
 
     override fun customDialogConfirm() {
         logger().debug("customDialogConfirm() called")
+        setFleetAssignmentRestore()
     }
 
     override fun customDialogCancel() {
         logger().debug("Cancelled, reverting officer assignments")
-        originalOfficerAssignments.forEach { (ship, captain) ->
-            ship.captain = captain
+        playerFleet().fleetData.membersInPriorityOrder.forEach {
+            it.captain = originalOfficerAssignments[it]
+            if (it.captain.isPlayer) {
+                it.isFlagship = true
+            }
+        }
+        setFleetAssignmentRestore()
+    }
+
+    private fun setFleetAssignmentRestore() {
+        pc_CampaignEventListener.restoreFleetAssignments = restoreCheckbox?.isChecked ?: true
+        if (pc_CampaignEventListener.restoreFleetAssignments) {
+            pc_CampaignEventListener.fleetAssignment = originalOfficerAssignments
         }
     }
 }

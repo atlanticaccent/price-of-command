@@ -4,10 +4,13 @@ import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.OptionPanelAPI
 import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl
+import com.price_of_command.pc_CampaignEventListener
 
 object pc_FleetInteractionEveryFrame : EveryFrameScript {
+    var fleetInteractionWasOpen = false
+
     private fun shouldAppendOption(optionPanel: OptionPanelAPI): Boolean {
-        return !optionPanel.hasOption(pc_FleetInteractionOptionDelegate.OPTION_ID) && FleetInteractionDialogPluginImpl.OptionId.values()
+        return !optionPanel.hasOption(pc_AutoClosingOptionDelegate.OPTION_ID) && FleetInteractionDialogPluginImpl.OptionId.values()
             .any {
                 optionPanel.hasOption(it)
             }
@@ -24,13 +27,21 @@ object pc_FleetInteractionEveryFrame : EveryFrameScript {
 
             dialog.optionPanel.addOption(
                 "Reassign captains",
-                pc_FleetInteractionOptionDelegate.OPTION_ID,
+                pc_AutoClosingOptionDelegate.OPTION_ID,
                 "Last minute reassignment of captains to ships"
             )
 
             options.addOptionConfirmation(
-                pc_FleetInteractionOptionDelegate.OPTION_ID, pc_FleetInteractionOptionDelegate(dialog)
+                pc_AutoClosingOptionDelegate.OPTION_ID, pc_ReassignOfficerOptionDelegate(dialog)
             )
+
+            dialog.setOptionOnEscape("foo", pc_AutoClosingOptionDelegate.OPTION_ID)
+
+            fleetInteractionWasOpen = true
+        }
+        if (dialog == null && fleetInteractionWasOpen) {
+            fleetInteractionWasOpen = false
+            pc_CampaignEventListener.restoreFleetAssignments()
         }
     }
 }

@@ -1,16 +1,36 @@
 package com.price_of_command
 
+import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener
+import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
+import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.price_of_command.conditions.*
 
 object pc_CampaignEventListener : BaseCampaignEventListener(false) {
+    private const val RESTORE_FLEET_ASSIGNMENTS = "pc_restore_fleet_assignments"
+    private const val FLEET_ASSIGNMENT_TO_RESTORE = "pc_fleet_assignments_to_restore"
+
+    var restoreFleetAssignments: Boolean
+        get() = Global.getSector().memoryWithoutUpdate.escape()[RESTORE_FLEET_ASSIGNMENTS] as? Boolean ?: true
+        set(value) {
+            Global.getSector().memoryWithoutUpdate.escape()[RESTORE_FLEET_ASSIGNMENTS] = value
+        }
+    @Suppress("UNCHECKED_CAST")
+    var fleetAssignment: Map<FleetMemberAPI, PersonAPI>?
+        get() = Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] as? Map<FleetMemberAPI, PersonAPI>
+        set(value) {
+            Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] = value
+        }
+
     override fun reportPlayerEngagement(result: EngagementResultAPI) {
         val deployedPlayerOfficers = if (result.didPlayerWin()) {
             result.winnerResult
         } else {
             result.loserResult
         }.deployed.map { it.captain }.filter { it.faction.isPlayerFaction && !it.isPlayer }
+
+        restoreFleetAssignments()
 
         for (officer in deployedPlayerOfficers) {
             if (!officer.isAICore) {
@@ -30,6 +50,18 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
                     }
                 }
                 // TODO: outcome can be terminal
+            }
+        }
+    }
+
+    fun restoreFleetAssignments() {
+        val fleetAssignment = fleetAssignment
+        if (restoreFleetAssignments && fleetAssignment != null) {
+            playerFleet().fleetData.membersInPriorityOrder.forEach {
+                it.captain = fleetAssignment[it]
+                if (it.captain.isPlayer) {
+                    it.isFlagship = true
+                }
             }
         }
     }

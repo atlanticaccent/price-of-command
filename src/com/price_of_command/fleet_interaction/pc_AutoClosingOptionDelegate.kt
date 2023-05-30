@@ -6,7 +6,7 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI
 import java.awt.Robot
 import java.awt.event.KeyEvent
 
-class pc_FleetInteractionOptionDelegate(private val dialog: InteractionDialogAPI) : BaseStoryPointActionDelegate() {
+open class pc_AutoClosingOptionDelegate(private val accept: Boolean = false, val block: () -> Unit) : BaseStoryPointActionDelegate() {
     companion object {
         const val OPTION_ID = "pc_fleet_interaction_dialog_sp_option"
     }
@@ -16,13 +16,22 @@ class pc_FleetInteractionOptionDelegate(private val dialog: InteractionDialogAPI
     override fun withSPInfo(): Boolean = false
 
     override fun createDescription(info: TooltipMakerAPI) {
-        dialog.showCustomDialog(800f, 500f, pc_ReassignOfficerCustomPanel())
+        block()
 
+        val key = if (accept) {
+            KeyEvent.VK_SPACE
+        } else {
+            KeyEvent.VK_ESCAPE
+        }
         val robot = Robot()
-        robot.keyPress(KeyEvent.VK_ESCAPE)
-        robot.keyRelease(KeyEvent.VK_ESCAPE)
+        robot.keyPress(key)
+        robot.keyRelease(key)
     }
 
     override fun getLogText(): String =
         "Why are we still here? Just to suffer? Every night, I can feel my leg... And my arm... even my fingers... The body I've lost... the comrades I've lost... won't stop hurting... It's like they're all still there. You feel it, too, don't you? I'm gonna make them give back our past!"
 }
+
+class pc_ReassignOfficerOptionDelegate(private val dialog: InteractionDialogAPI) : pc_AutoClosingOptionDelegate(false, {
+    dialog.showCustomDialog(800f, 500f, pc_ReassignOfficerCustomPanel())
+})

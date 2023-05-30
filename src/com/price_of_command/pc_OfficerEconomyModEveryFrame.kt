@@ -7,7 +7,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Stats
 import org.magiclib.kotlin.getMarketsInLocation
 
 object pc_OfficerEconomyModEveryFrame : EveryFrameScript {
-    var markets : List<MarketAPI> = emptyList()
+    var markets: List<MarketAPI> = emptyList()
 
     override fun advance(amount: Float) {
         val currentMarkets = Global.getSector().economy.starSystemsWithMarkets.flatMap { it.getMarketsInLocation() }
