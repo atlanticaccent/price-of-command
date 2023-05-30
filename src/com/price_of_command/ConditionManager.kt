@@ -50,6 +50,11 @@ object ConditionManager : OverrideManager {
         conditionMap = conditionMap.plus(officer to conditions)
         return conditions
     }
+
+    fun killOfficer(officer: PersonAPI) {
+        playerFleet().fleetData.removeOfficer(officer)
+        playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }?.captain = null
+    }
 }
 
 fun PersonAPI.conditions(): List<Condition> = ConditionManager.conditionMap[this] ?: emptyList()

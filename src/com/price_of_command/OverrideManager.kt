@@ -14,16 +14,16 @@ interface OverrideManager {
         preconditions = preconditions.plus(gate)
     }
 
-    fun addPreconditionOverride(gate: (Condition) -> Outcome?): ConditionGate {
-        val gate = object : ConditionGate() {
+    fun addPreconditionOverride(oneOff: Boolean = false, gate: (Condition) -> Outcome?): ConditionGate {
+        val gate = object : ConditionGate(oneOff) {
             override fun precondition(condition: Condition): Outcome? = gate(condition)
         }
         preconditions = preconditions.plus(gate)
         return gate
     }
 
-    fun addPreconditionOverride(gate: (Condition) -> Outcome?, priority: Int): ConditionGate {
-        val gate = object : ConditionGate() {
+    fun addPreconditionOverride(oneOff: Boolean = false, gate: (Condition) -> Outcome?, priority: Int): ConditionGate {
+        val gate = object : ConditionGate(oneOff) {
             override fun priority(): Int = priority
 
             override fun precondition(condition: Condition): Outcome? = gate(condition)
@@ -40,16 +40,16 @@ interface OverrideManager {
         mutators = mutators.plus(mutation)
     }
 
-    fun addMutationOverride(mutation: (Condition) -> Condition?): ConditionMutator {
-        val mutator = object : ConditionMutator() {
+    fun addMutationOverride(oneOff: Boolean = false, mutation: (Condition) -> Condition?): ConditionMutator {
+        val mutator = object : ConditionMutator(oneOff) {
             override fun mutate(condition: Condition): Condition? = mutation(condition)
         }
         mutators = mutators.plus(mutator)
         return mutator
     }
 
-    fun addMutationOverride(mutation: (Condition) -> Condition?, priority: Int): ConditionMutator {
-        val mutator = object : ConditionMutator() {
+    fun addMutationOverride(oneOff: Boolean = false, mutation: (Condition) -> Condition?, priority: Int): ConditionMutator {
+        val mutator = object : ConditionMutator(oneOff) {
             override fun priority(): Int = priority
 
             override fun mutate(condition: Condition): Condition? = mutation(condition)

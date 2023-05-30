@@ -24,7 +24,7 @@ class InjureOfficer : BaseCommand {
         val officer = playerOfficers().findByName(officer_name)
         if (officer != null) {
             try {
-                val override = ConditionManager.addPreconditionOverride { condition ->
+                ConditionManager.addPreconditionOverride(true) { condition ->
                     if (condition.target.nameString == officer.nameString && condition is Injury) {
                         Outcome.Applied(condition)
                     } else {
@@ -32,7 +32,6 @@ class InjureOfficer : BaseCommand {
                     }
                 }
                 val res = Injury(officer, clock().timestamp).tryInflictAppend()
-                ConditionManager.removePreconditionOverride(override)
                 Console.showMessage("Injuring officer: $res")
             } catch (e: Exception) {
                 Console.showException("Error: ", e)
@@ -119,6 +118,36 @@ class RestOfficer : BaseCommand {
                     Console.showMessage("Succeeded resting officer")
                 } else {
                     Console.showMessage("Officer is not fatigued")
+                }
+            } catch (e: Exception) {
+                Console.showException("Error: ", e)
+            }
+            return CommandResult.SUCCESS
+        }
+
+        Console.showMessage("Could not find officer by name")
+        return CommandResult.BAD_SYNTAX
+    }
+}
+
+class KillOfficer : BaseCommand {
+    override fun runCommand(args: String, ctx: BaseCommand.CommandContext): CommandResult {
+        val officer = playerOfficers().findByName(args)
+
+        if (officer != null) {
+            try {
+                val res = object : Condition(officer, clock().timestamp) {
+                    override fun precondition(): Outcome = Outcome.Terminal(this)
+
+                    @NonPublic
+                    override fun inflict(): Outcome = Outcome.NOOP
+
+                    override fun pastTense(): String = "died"
+                }.tryInflictAppend()
+                if (res is Outcome.Terminal<*>) {
+                    Console.showMessage("Succeeded in killing officer")
+                } else {
+                    Console.showMessage("Failed to kill officer")
                 }
             } catch (e: Exception) {
                 Console.showException("Error: ", e)

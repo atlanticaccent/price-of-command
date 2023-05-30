@@ -5,3 +5,4 @@ GravelyInjureOfficer,com.price_of_command.commands.GravelyInjureOfficer,"cheat",
 HealOfficer,com.price_of_command.commands.HealOfficer,"cheat",HealOfficer <Officer's name> [num injuries to heal],"You angel"
 FatigueOfficer,com.price_of_command.commands.FatigueOfficer,"cheat",FatigueOfficer <Officer's name>,"You slavedriver"
 RestOfficer,com.price_of_command.commands.RestOfficer,"cheat",RestOfficer <Officer's name>,"You sandman"
+KillOfficer,com.price_of_command.commands.KillOfficer,"cheat",KillOfficer <Officer's name>,"You murderer"

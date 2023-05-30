@@ -16,6 +16,8 @@ private val INJURY_MIN = INJURY_BASE - INJURY_VARIANCE
 
 private val EXTEND_RATE
     get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_extension_rate")?.div(100) ?: 0.5f
+private val DEATH_RATE
+    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_death_rate")?.div(100) ?: 0.1f
 
 private val IGNORE_LIST = arrayOf(
     "aptitude_combat",
@@ -129,16 +131,20 @@ class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate)
     }
 
     override fun precondition(): Outcome {
-        // TODO if already gravely injured, roll for terminal outcome
-//        if (ConditionManager.rand.nextFloat() <= DEATH_RATE) {
-//            return Outcome.Terminal(this)
-//        }
+        if (target.conditions().any { it is GraveInjury } && ConditionManager.rand.nextFloat() <= DEATH_RATE) {
+            return Outcome.Terminal(this)
+        }
         return Outcome.Applied(this)
     }
 
     @NonPublic
     override fun inflict(): Outcome.Applied<GraveInjury> {
-        target.stats.setSkillLevel("pc_grave_injury", 1f)
+        target.conditions().filterIsInstance<GraveInjury>().firstOrNull()?.extendRandomly(this.startDate) ?: run {
+            target.stats.setSkillLevel(
+                "pc_grave_injury",
+                1f
+            )
+        }
 
         return Outcome.Applied(this)
     }

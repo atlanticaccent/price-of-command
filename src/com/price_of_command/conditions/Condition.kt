@@ -23,6 +23,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long) {
                 }
             }
         }
+        ConditionManager.preconditions = ConditionManager.preconditions.filter { !it.oneOff }
 
         return result ?: Outcome.NOOP
     }
@@ -32,8 +33,11 @@ abstract class Condition(val target: PersonAPI, val startDate: Long) {
     @NonPublic
     abstract fun inflict(): Outcome
 
-    private fun mutationOverrides(): Condition? =
-        ConditionManager.mutators.mapNotNull { it.mutateWithPriority(this) }.maxByOrNull { it.second }?.first
+    private fun mutationOverrides(): Condition? {
+        val result = ConditionManager.mutators.mapNotNull { it.mutateWithPriority(this) }.maxByOrNull { it.second }?.first
+        ConditionManager.mutators = ConditionManager.mutators.filter { !it.oneOff }
+        return result
+    }
 
     open fun mutation(): Condition? = null
 
@@ -46,13 +50,13 @@ abstract class Condition(val target: PersonAPI, val startDate: Long) {
         val outcome = preconditionOverrides()
             .noop { precondition() }
             .failed { return@tryInflictAppend failed()?.tryInflictAppend() ?: Outcome.NOOP }
-//            .terminal { /* DIE */ }
             .applied {
                 val mutation = mutationOverrides() ?: mutation()
                 if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend()
                 else inflict()
             }
         (outcome as? Outcome.Applied<*>)?.let { ConditionManager.appendCondition(this.target, this) }
+        (outcome as? Outcome.Terminal<*>).let { ConditionManager.killOfficer(this.target) }
         return outcome
     }
 }

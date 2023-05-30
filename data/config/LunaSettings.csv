@@ -5,9 +5,14 @@ An officer has to be fatigued before they will be injured.",0,100,Injuries
 injury_duration,Injury Base Length,Double,10,,"The base duration of injuries before randomisation.",,,Injuries
 injury_variance,Injury Duration Variation,Double,4,,"The maximum amount injury base duration will be increased or decreased by.
 Thus, the duration of all injuries is randomly and evenly distributed in the interval:
-(Injury Base Duration - Injury Duration Variation) <= Injury Duration <= (Injury Base Duration + Injury Duration Variation)",,,Injuries
+(Injury Base Duration — Injury Duration Variation) <= Injury Duration <= (Injury Base Duration + Injury Duration Variation)",,,Injuries
 
-injury_extension_rate,Injury Extend Chance,Double,50,,"Percentage chance that the duration of an existing injury (if it exists) on an officer will be increased, if there are no skills left to remove from an officer instead of inflicting the officer with a Grave Injury.",,,Injuries
+injury_extension_rate,Injury Extend Chance,Double,50,,"Percentage chance that the duration of an existing injury (if it exists) on an officer will be increased if there are no skills left to remove from an officer.
+If this check fails then a Grave Injury will be inflicted on the officer instead. Increasing this value correspondingly reduces the chance officers will die when badly wounded.",,,Injuries
+
+death_rate,Death Chance,Double,10,,"Percentage chance that an officer will be die if they suffer a Grave Injury whilst already Gravely Injured.
+Thus, if an officer is already Gravely Injured, the chance they will die is:
+Fatigue Chance x Injury Chance x (1 - Injury Extend Chance) x Death Chance",0,100,Injuries
 
 fatigue_heading,Fatigue,Header,Fatigue,,,,,Fatigue
 fatigue_rate,Fatigue Chance,Double,100,,"Percentage chance that an officer will be fatigued after exhausting activities, like combat.
