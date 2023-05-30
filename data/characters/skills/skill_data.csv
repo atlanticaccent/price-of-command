@@ -3,8 +3,8 @@ pc_injury_1,Injury,0,0,0,,"Commander, please find attached my latest medical rep
 The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
 
 And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/brain-freeze.png
-pc_injury_2,Injury,0,0,0,,"I'd very much like to know why bridge consoles keep catching fire during combat, with apparently no bearing on where the ship is actually hit.
-This is the third electrical burn we've had on the bridge in as many sorties and I'm going to run out of bridge crew at this rate.",Ship Maintenance Log EM-461-Psi,TRUE,,,"npc_only, deprecated",graphics/icons/skills/burns.png
+pc_injury_2,Injury,0,0,0,,"I'd very much like to know why bridge consoles keep catching fire whenever we take hits in combat, regardless of where the ship is actually hit.
+This is the third electrical burn we've had on the bridge in as many sorties - I'm going to run out of bridge crew at this rate!",Maintenance Complaints Log EM-461-Psi,TRUE,,,"npc_only, deprecated",graphics/icons/skills/burns.png
 pc_injury_3,Injury,0,0,0,,"CLASS 70B DIRECTED ENERGY 'LASER' WEAPON
 WARNING
 AVOID EYE OR SKIN EXPOSURE TO DIRECT OR SCATTERED RADIATION",Warning on TekKon IR Pulse Laser housing,TRUE,,,"npc_only, deprecated",graphics/icons/skills/conjunctivitis.png
@@ -17,9 +17,8 @@ A) Acts of War, Terrorism or Police Action
 G.X.III) Hegemony Tax Force Repossession of Ship Power Core
 ......
 Z.omega.5.$) Failure to Appease Hypothetical Artificial Intelligence Constructs",TriTachyon Inertial Dampener Installation Waiver,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
-pc_injury_6,Injury,0,0,0,,"Oblique fracture of the right ulna.
-Surgical intervention unnecessary beyond insertion of standard piezoelectric recovery stimulation mesh.
-Projected recovery time is roughly two weeks, with no additional stress.",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/fracture.png
+pc_injury_6,Injury,0,0,0,,"Oblique fracture of the right ulna. Surgical intervention unnecessary beyond insertion of standard piezoelectric recovery stimulation mesh.
+Projected recovery time is roughly two weeks, provided no further stress.",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/fracture.png
 pc_injury_7,Injury,0,0,0,,"The odds of being stabbed on a starship are low but never zero.","Officer Botano, following mutiny on the Arcana",TRUE,,,"npc_only, deprecated",graphics/icons/skills/sharp-hazard.png
 pc_grave_injury,Grave Injury,0,0,0,,"That wound will never truly heal.
 She will carry it for the rest of her life.","Thar Kun, Personal Physician to High Hegemon [REDACTED]",TRUE,,,"npc_only, deprecated",graphics/icons/skills/zombie-2.png
