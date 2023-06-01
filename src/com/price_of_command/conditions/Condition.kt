@@ -8,8 +8,10 @@ import com.price_of_command.andThenOrNull
 import com.price_of_command.clock
 import com.price_of_command.then
 
-abstract class Condition(val target: PersonAPI, val startDate: Long) {
+abstract class Condition(val target: PersonAPI, val startDate: Long, var rootConditions: List<Condition>) {
     var expired = false
+    val rootCondition
+        get() = rootConditions.firstOrNull()
 
     private fun preconditionOverrides(): Outcome {
         val result = run result@{
@@ -59,9 +61,16 @@ abstract class Condition(val target: PersonAPI, val startDate: Long) {
         (outcome as? Outcome.Terminal<*>).let { ConditionManager.killOfficer(this.target) }
         return outcome
     }
+
+    fun extendRootConditions() = this.rootConditions.plus(this)
 }
 
-abstract class LastingCondition(target: PersonAPI, startDate: Long, open val duration: Duration) : Condition(target, startDate) {
+abstract class LastingCondition(
+    target: PersonAPI,
+    startDate: Long,
+    open val duration: Duration,
+    rootConditions: List<Condition>
+) : Condition(target, startDate, rootConditions) {
     sealed class Duration {
         object Indefinite : Duration()
         class Time(var duration: Float) : Duration()
@@ -88,8 +97,13 @@ sealed class Outcome {
     inline fun terminal(block: Outcome.() -> Outcome): Outcome = (this as? Terminal<*>)?.block() ?: this
 }
 
-abstract class ResolvableCondition(target: PersonAPI, startDate: Long, override val duration: Duration.Time) :
-    LastingCondition(target, startDate, duration) {
+abstract class ResolvableCondition(
+    target: PersonAPI,
+    startDate: Long,
+    override val duration: Duration.Time,
+    rootConditions: List<Condition>
+) :
+    LastingCondition(target, startDate, duration, rootConditions) {
     open fun tryResolve(): Boolean =
         expired || (clock().getElapsedDaysSince(startDate) >= duration.duration).then { expired = true }
 
@@ -100,7 +114,7 @@ abstract class ResolvableCondition(target: PersonAPI, startDate: Long, override 
     }
 }
 
-class NullCondition(target: PersonAPI, startDate: Long) : Condition(target, startDate) {
+class NullCondition(target: PersonAPI, startDate: Long) : Condition(target, startDate, emptyList()) {
     override fun precondition(): Outcome = Outcome.NOOP
 
     @NonPublic

@@ -31,7 +31,7 @@ class InjureOfficer : BaseCommand {
                         null
                     }
                 }
-                val res = Injury(officer, clock().timestamp).tryInflictAppend()
+                val res = Injury(officer, clock().timestamp, emptyList()).tryInflictAppend()
                 Console.showMessage("Injuring officer: $res")
             } catch (e: Exception) {
                 Console.showException("Error: ", e)
@@ -49,7 +49,7 @@ class GravelyInjureOfficer : BaseCommand {
         val officer = playerOfficers().findByName(officer_name)
         if (officer != null) {
             try {
-                GraveInjury(officer, ConditionManager.now).tryInflictAppend()
+                GraveInjury(officer, ConditionManager.now, emptyList()).tryInflictAppend()
             } catch (e: Exception) {
                 Console.showException("Error: ", e)
             }
@@ -93,7 +93,7 @@ class FatigueOfficer : BaseCommand {
 
         if (officer != null) {
             try {
-                Fatigue(officer, clock().timestamp).tryInflictAppend()
+                Fatigue(officer, clock().timestamp, emptyList()).tryInflictAppend()
                 Console.showMessage("Succeeded fatiguing officer")
             } catch (e: Exception) {
                 Console.showException("Error: ", e)
@@ -136,7 +136,7 @@ class KillOfficer : BaseCommand {
 
         if (officer != null) {
             try {
-                val res = object : Condition(officer, clock().timestamp) {
+                val res = object : Condition(officer, clock().timestamp, emptyList()) {
                     override fun precondition(): Outcome = Outcome.Terminal(this)
 
                     @NonPublic

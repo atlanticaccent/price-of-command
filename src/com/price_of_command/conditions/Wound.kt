@@ -1,7 +1,10 @@
 package com.price_of_command.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
-import com.price_of_command.*
+import com.price_of_command.ConditionManager
+import com.price_of_command.OfficerExpansionPlugin
+import com.price_of_command.conditions
+import com.price_of_command.then
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 
@@ -30,8 +33,8 @@ private val IGNORE_LIST = arrayOf(
 )
 
 abstract class Wound(
-    officer: PersonAPI, startDate: Long
-) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate))) {
+    officer: PersonAPI, startDate: Long, rootConditions: List<Condition>
+) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate)), rootConditions) {
     companion object {
         fun generateDuration(seed: Long): Float = INJURY_MIN + Random(seed).nextFloat() * INJURY_RANGE
 
@@ -52,8 +55,12 @@ abstract class Wound(
 }
 
 open class Injury private constructor(
-    officer: PersonAPI, startDate: Long, val injurySkillSuffix: Int, private var testOverride: Boolean = false
-) : Wound(officer, startDate) {
+    officer: PersonAPI,
+    startDate: Long,
+    val injurySkillSuffix: Int,
+    rootConditions: List<Condition>,
+    private var testOverride: Boolean = false
+) : Wound(officer, startDate, rootConditions) {
     private var _skill: String? = null
     val skill: String
         get() = _skill ?: throw IllegalStateException("Injury Skill ID Not Set")
@@ -71,9 +78,18 @@ open class Injury private constructor(
         }
     }
 
-    constructor(officer: PersonAPI, startDate: Long) : this(officer, startDate, pickInjurySuffix(officer))
+    constructor(officer: PersonAPI, startDate: Long, rootConditions: List<Condition>) : this(
+        officer,
+        startDate,
+        pickInjurySuffix(officer),
+        rootConditions
+    )
 
-    constructor(officer: PersonAPI, skill: String, level: Int, startDate: Long) : this(officer, startDate) {
+    constructor(officer: PersonAPI, skill: String, level: Int, startDate: Long, rootConditions: List<Condition>) : this(
+        officer,
+        startDate,
+        rootConditions
+    ) {
         _skill = skill
         _level = level
     }
@@ -83,10 +99,16 @@ open class Injury private constructor(
         target.stats.decreaseSkill("pc_injury_$injurySkillSuffix")
     }
 
+    private fun getEligibleSkills() =
+        target.stats.skillsCopy.filter {
+            !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && !it.skill.tags.contains(
+                "pc_ignore"
+            )
+        }
+
     override fun precondition(): Outcome {
         val conditions = target.conditions()
-        val skills =
-            target.stats.skillsCopy.filter { !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent }
+        val skills = getEligibleSkills()
         if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
             if (skills.isNotEmpty()) {
                 if (ConditionManager.rand.nextFloat() <= INJURY_RATE || testOverride) {
@@ -101,9 +123,8 @@ open class Injury private constructor(
     }
 
     @NonPublic
-    override fun inflict() : Outcome.Applied<Injury> {
-        val skills =
-            target.stats.skillsCopy.filter { !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent }
+    override fun inflict(): Outcome.Applied<Injury> {
+        val skills = getEligibleSkills()
         val removed = skills.random()
 
         _skill = removed.skill.id
@@ -121,17 +142,20 @@ open class Injury private constructor(
         return Outcome.Applied(this)
     }
 
-    override fun failed(): Condition = ExtendWounds(target, startDate)
+    override fun failed(): Condition = ExtendWounds(target, startDate, extendRootConditions())
 }
 
-class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate) {
+class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
+    Wound(target, startDate, rootConditions) {
     override fun tryResolve(): Boolean = super.tryResolve().then {
         // TODO inflict a scar when resolved
         target.stats.setSkillLevel("pc_grave_injury", 0f)
     }
 
     override fun precondition(): Outcome {
-        if (target.conditions().any { it is GraveInjury } && ConditionManager.rand.nextFloat() <= DEATH_RATE) {
+        if (target.conditions()
+                .any { it is GraveInjury } && rootCondition !is Fatigue && ConditionManager.rand.nextFloat() <= DEATH_RATE
+        ) {
             return Outcome.Terminal(this)
         }
         return Outcome.Applied(this)
@@ -150,14 +174,15 @@ class GraveInjury(target: PersonAPI, startDate: Long) : Wound(target, startDate)
     }
 }
 
-class ExtendWounds(target: PersonAPI, startDate: Long) : Condition(target, startDate) {
+class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
+    Condition(target, startDate, rootConditions) {
     override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() >= EXTEND_RATE) {
         Outcome.Applied(this)
     } else {
         Outcome.Failed
     }
 
-    override fun failed(): Condition = GraveInjury(target, startDate)
+    override fun failed(): Condition = GraveInjury(target, startDate, extendRootConditions())
 
     @NonPublic
     override fun inflict(): Outcome = Wound.tryExtendWounds(target).applied { Outcome.NOOP }
