@@ -3,10 +3,14 @@ package com.price_of_command
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.CampaignClockAPI
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
+import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.campaign.rules.HasMemory
 import com.fs.starfarer.api.campaign.rules.MemoryAPI
 import com.fs.starfarer.api.characters.OfficerDataAPI
+import com.fs.starfarer.api.ui.UIComponentAPI
+import com.fs.starfarer.api.ui.UIPanelAPI
 import com.price_of_command.memory.EscapedMemory
+import com.price_of_command.relfection.ReflectionUtils
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 
@@ -49,7 +53,7 @@ fun Boolean.then(block: () -> Unit): Boolean {
     return this
 }
 
-fun <T> Boolean.andThenOrNull(block: () -> T?) : T? {
+fun <T> Boolean.andThenOrNull(block: () -> T?): T? {
     return if (this) {
         block()
     } else {
@@ -58,3 +62,11 @@ fun <T> Boolean.andThenOrNull(block: () -> T?) : T? {
 }
 
 fun clock(): CampaignClockAPI = Global.getSector().clock
+
+fun IntelInfoPlugin.addToManager(notify: Boolean = false) {
+    Global.getSector().intelManager.addIntel(this, !notify)
+}
+
+fun UIComponentAPI.getParent(): UIPanelAPI {
+    return ReflectionUtils.invoke("getParent", this) as UIPanelAPI
+}
