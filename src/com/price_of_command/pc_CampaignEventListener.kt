@@ -30,7 +30,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             result.loserResult
         }.deployed.map { it.captain }.filter { it.faction.isPlayerFaction && !it.isPlayer }
 
-        restoreFleetAssignments()
+        tryRestoreFleetAssignments()
 
         for (officer in deployedPlayerOfficers) {
             if (!officer.isAICore) {
@@ -54,7 +54,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         }
     }
 
-    fun restoreFleetAssignments() {
+    fun tryRestoreFleetAssignments() {
         val fleetAssignment = fleetAssignment
         if (restoreFleetAssignments && fleetAssignment != null) {
             playerFleet().fleetData.membersInPriorityOrder.forEach {
