@@ -10,4 +10,10 @@
 
   "officerSalaryBase" : 350,
   "officerSalaryPerLevel" : 200,
+
+  "graphics" : {
+    "pc_intel" : {
+      "memorial" : "graphics/icons/memorial.png"
+    }
+  }
 }
