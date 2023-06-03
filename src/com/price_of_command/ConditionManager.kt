@@ -4,7 +4,11 @@ import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
-import com.price_of_command.conditions.*
+import com.price_of_command.conditions.Condition
+import com.price_of_command.conditions.ConditionGate
+import com.price_of_command.conditions.ConditionMutator
+import com.price_of_command.conditions.ResolvableCondition
+import com.price_of_command.memorial.MemorialWall
 import kotlin.random.Random
 
 object ConditionManager : OverrideManager {
@@ -51,9 +55,17 @@ object ConditionManager : OverrideManager {
         return conditions
     }
 
-    fun killOfficer(officer: PersonAPI) {
+    fun killOfficer(officer: PersonAPI, condition: Condition) {
+        val ship = playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }
+
         playerFleet().fleetData.removeOfficer(officer)
         playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }?.captain = null
+        conditionMap = conditionMap.minus(officer)
+
+        val deathLocation = playerFleet().containingLocation.addCustomEntity(null, "", "base_intel_icon", "neutral")
+        deathLocation.setFixedLocation(playerFleet().location.x, playerFleet().location.y)
+
+        MemorialWall.getMemorial().addDeath(officer, clock(), ship, deathLocation, condition)
     }
 }
 

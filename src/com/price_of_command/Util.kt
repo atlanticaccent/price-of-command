@@ -1,16 +1,23 @@
+@file:Suppress("unused")
+
 package com.price_of_command
 
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.campaign.BaseCustomUIPanelPlugin
 import com.fs.starfarer.api.campaign.CampaignClockAPI
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
+import com.fs.starfarer.api.campaign.CustomUIPanelPlugin
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.campaign.rules.HasMemory
 import com.fs.starfarer.api.campaign.rules.MemoryAPI
 import com.fs.starfarer.api.characters.OfficerDataAPI
+import com.fs.starfarer.api.ui.CustomPanelAPI
+import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.price_of_command.memory.EscapedMemory
 import com.price_of_command.relfection.ReflectionUtils
+import lunalib.lunaUI.elements.LunaSpriteElement
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 
@@ -69,4 +76,31 @@ fun IntelInfoPlugin.addToManager(notify: Boolean = false) {
 
 fun UIComponentAPI.getParent(): UIPanelAPI {
     return ReflectionUtils.invoke("getParent", this) as UIPanelAPI
+}
+
+fun LunaSpriteElement.constrainWithRatio(constraint: Float): LunaSpriteElement {
+    return this.constrainWithRatio(constraint, constraint)
+}
+
+fun LunaSpriteElement.constrainWithRatio(constrainX: Float, constrainY: Float): LunaSpriteElement {
+    val sprite = getSprite()
+    if (sprite.width > constrainX || sprite.height > constrainY) {
+        if (sprite.width > sprite.height) {
+            sprite.height = (sprite.height / sprite.width) * constrainX
+            sprite.width = constrainX
+        } else {
+            sprite.width = (sprite.width / sprite.height) * constrainY
+            sprite.height = constrainY
+        }
+    }
+    return this
+}
+
+fun createCustom(width: Float, height: Float, plugin: CustomUIPanelPlugin): CustomPanelAPI =
+    Global.getSettings().createCustom(width, height, plugin)
+
+fun createCustom(width: Float, height: Float) = createCustom(width, height, BaseCustomUIPanelPlugin())
+
+fun TooltipMakerAPI.setOpacity(value: Float) {
+    ReflectionUtils.invoke("setOpacity", this, value)
 }

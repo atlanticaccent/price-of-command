@@ -9,10 +9,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.util.Misc
-import com.price_of_command.logger
-import com.price_of_command.pc_CampaignEventListener
-import com.price_of_command.playerFleet
-import com.price_of_command.playerOfficers
+import com.price_of_command.*
 import lunalib.lunaExtensions.addLunaElement
 import lunalib.lunaExtensions.addLunaSpriteElement
 import lunalib.lunaUI.elements.LunaSpriteElement
@@ -137,22 +134,4 @@ class pc_ReassignOfficerCustomPanel private constructor(private val originalOffi
             pc_CampaignEventListener.fleetAssignment = originalOfficerAssignments
         }
     }
-}
-
-fun LunaSpriteElement.constrainWithRatio(constraint: Float): LunaSpriteElement {
-    return this.constrainWithRatio(constraint, constraint)
-}
-
-fun LunaSpriteElement.constrainWithRatio(constrainX: Float, constrainY: Float): LunaSpriteElement {
-    val sprite = getSprite()
-    if (sprite.width > constrainX || sprite.height > constrainY) {
-        if (sprite.width > sprite.height) {
-            sprite.height = (sprite.height / sprite.width) * constrainX
-            sprite.width = constrainX
-        } else {
-            sprite.width = (sprite.width / sprite.height) * constrainY
-            sprite.height = constrainY
-        }
-    }
-    return this
 }

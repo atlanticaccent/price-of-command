@@ -58,7 +58,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
                 else inflict()
             }
         (outcome as? Outcome.Applied<*>)?.let { ConditionManager.appendCondition(this.target, this) }
-        (outcome as? Outcome.Terminal<*>).let { ConditionManager.killOfficer(this.target) }
+        (outcome as? Outcome.Terminal<*>).let { ConditionManager.killOfficer(this.target, this) }
         return outcome
     }
 
