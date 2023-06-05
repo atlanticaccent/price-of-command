@@ -4,16 +4,18 @@ import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.loading.SkillSpec
-import com.price_of_command.conditions.LastingCondition
 import com.price_of_command.conditions.ConditionGate
 import com.price_of_command.conditions.ConditionMutator
+import com.price_of_command.conditions.LastingCondition
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
 import com.price_of_command.relfection.ReflectionUtils
 import com.thoughtworks.xstream.XStream
 
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
-        const val modID = "officer_expansion"
+        const val modID = "price_of_command"
+        const val PoC_IGNORE_TAG = "pc_ignore"
+        const val PoC_OFFICER_DEAD = "pc_dead"
     }
 
     override fun onApplicationLoad() {

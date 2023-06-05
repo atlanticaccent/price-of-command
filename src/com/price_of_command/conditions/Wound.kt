@@ -33,8 +33,8 @@ private val IGNORE_LIST = arrayOf(
 )
 
 abstract class Wound(
-    officer: PersonAPI, startDate: Long, rootConditions: List<Condition>
-) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate)), rootConditions) {
+    officer: PersonAPI, startDate: Long, rootConditions: List<Condition>, expireOnDeath: Boolean = false
+) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate)), expireOnDeath, rootConditions) {
     companion object {
         fun generateDuration(seed: Long): Float = INJURY_MIN + Random(seed).nextFloat() * INJURY_RANGE
 
@@ -59,7 +59,6 @@ open class Injury private constructor(
     startDate: Long,
     val injurySkillSuffix: Int,
     rootConditions: List<Condition>,
-    private var testOverride: Boolean = false
 ) : Wound(officer, startDate, rootConditions) {
     private var _skill: String? = null
     val skill: String
@@ -102,7 +101,7 @@ open class Injury private constructor(
     private fun getEligibleSkills() =
         target.stats.skillsCopy.filter {
             !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && !it.skill.tags.contains(
-                "pc_ignore"
+                OfficerExpansionPlugin.PoC_IGNORE_TAG
             )
         }
 
@@ -111,7 +110,7 @@ open class Injury private constructor(
         val skills = getEligibleSkills()
         if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
             if (skills.isNotEmpty()) {
-                if (ConditionManager.rand.nextFloat() <= INJURY_RATE || testOverride) {
+                if (ConditionManager.rand.nextFloat() <= INJURY_RATE) {
                     return Outcome.Applied(this)
                 }
             } else {
@@ -154,7 +153,7 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
 
     override fun precondition(): Outcome {
         if (target.conditions()
-                .any { it is GraveInjury } && rootCondition !is Fatigue && ConditionManager.rand.nextFloat() <= DEATH_RATE
+                .any { it is GraveInjury } && rootCondition !is Fatigue && ConditionManager.rand.nextFloat() <= (1 - DEATH_RATE)
         ) {
             return Outcome.Terminal(this)
         }
@@ -176,7 +175,7 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
 
 class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
     Condition(target, startDate, rootConditions) {
-    override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() >= EXTEND_RATE) {
+    override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() <= EXTEND_RATE) {
         Outcome.Applied(this)
     } else {
         Outcome.Failed
@@ -191,4 +190,3 @@ class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Cond
 
     override fun pastTense(): String = ""
 }
-

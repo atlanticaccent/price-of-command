@@ -54,11 +54,15 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
             .failed { return@tryInflictAppend failed()?.tryInflictAppend() ?: Outcome.NOOP }
             .applied {
                 val mutation = mutationOverrides() ?: mutation()
+                val res = inflict()
                 if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend()
-                else inflict()
+                else res
             }
-        (outcome as? Outcome.Applied<*>)?.let { ConditionManager.appendCondition(this.target, this) }
-        (outcome as? Outcome.Terminal<*>).let { ConditionManager.killOfficer(this.target, this) }
+        when (outcome) {
+            is Outcome.Applied<*> -> ConditionManager.appendCondition(this.target, this)
+            is Outcome.Terminal<*> -> ConditionManager.killOfficer(this.target, this)
+            else -> {}
+        }
         return outcome
     }
 
@@ -101,6 +105,7 @@ abstract class ResolvableCondition(
     target: PersonAPI,
     startDate: Long,
     override val duration: Duration.Time,
+    val expireOnDeath: Boolean = true,
     rootConditions: List<Condition>
 ) :
     LastingCondition(target, startDate, duration, rootConditions) {

@@ -16,6 +16,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         set(value) {
             Global.getSector().memoryWithoutUpdate.escape()[RESTORE_FLEET_ASSIGNMENTS] = value
         }
+
     @Suppress("UNCHECKED_CAST")
     var fleetAssignment: Map<FleetMemberAPI, PersonAPI>?
         get() = Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] as? Map<FleetMemberAPI, PersonAPI>
@@ -23,33 +24,51 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] = value
         }
 
-    override fun reportPlayerEngagement(result: EngagementResultAPI) {
-        val deployedPlayerOfficers = if (result.didPlayerWin()) {
-            result.winnerResult
+    override fun reportPlayerEngagement(resultAPI: EngagementResultAPI) {
+        val result = if (resultAPI.didPlayerWin()) {
+            resultAPI.winnerResult
         } else {
-            result.loserResult
-        }.deployed.map { it.captain }.filter { it.faction.isPlayerFaction && !it.isPlayer }
+            resultAPI.loserResult
+        }
+        val deployedPlayerOfficers =
+            result.allEverDeployedCopy.filter {
+                it.member.captain.run {
+                    playerOfficers().containsPerson(this) && !isPlayer && !isAICore
+                }
+            }
 
         tryRestoreFleetAssignments()
 
-        for (officer in deployedPlayerOfficers) {
-            if (!officer.isAICore) {
-                val fatigue = Fatigue(officer, ConditionManager.now)
-                val outcome = fatigue.tryInflictAppend()
-
-                if (outcome is Outcome.Applied<*>) {
-                    when (outcome.condition) {
-                        is Fatigue -> logger().debug("Fatigued officer ${officer.nameString}")
-                        is Injury -> logger().debug("Failed to fatigue officer ${officer.nameString}, injured them instead")
-                        is GraveInjury -> logger().debug("Failed to fatigue or injure officer ${officer.nameString}, gravely injuring them instead")
-                        is Wound -> logger().debug("Did not fatigue ${officer.nameString}, applied some kind of wound instead ${outcome.condition}")
-                        else -> {
-                            logger().debug("${officer.nameString} was not fatigued or injured when trying to fatigue. This is probably a bug")
-                            logger().debug(outcome.condition)
-                        }
+        for (deployed in deployedPlayerOfficers) {
+            val officer = deployed.member.captain
+            val significantDamage = result.destroyed.contains(deployed.member) ||
+                    result.disabled.contains(deployed.member) ||
+                    deployed.member.status.hullFraction <= 0.2
+            val condition = if (significantDamage) {
+                ConditionManager.addPreconditionOverride(true) {
+                    (it is Injury && it.target == officer).andThenOrNull {
+                        it.precondition().noop { Outcome.Applied(it) }
                     }
                 }
-                // TODO: outcome can be terminal
+                Injury(officer, ConditionManager.now, emptyList())
+            } else {
+                Fatigue(officer, ConditionManager.now)
+            }
+            val outcome = condition.tryInflictAppend()
+
+            if (outcome is Outcome.Applied<*>) {
+                when (outcome.condition) {
+                    is Fatigue -> logger().debug("Fatigued officer ${officer.nameString}")
+                    is Injury -> logger().debug("Failed to fatigue officer ${officer.nameString}, injured them instead")
+                    is GraveInjury -> logger().debug("Failed to fatigue or injure officer ${officer.nameString}, gravely injuring them instead")
+                    is Wound -> logger().debug("Did not fatigue ${officer.nameString}, applied some kind of wound instead ${outcome.condition}")
+                    else -> {
+                        logger().debug("${officer.nameString} was not fatigued or injured when trying to fatigue. This is probably a bug")
+                        logger().debug(outcome.condition)
+                    }
+                }
+            } else if (outcome is Outcome.Terminal<*>) {
+                logger().debug(outcome)
             }
         }
     }
@@ -58,9 +77,14 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         val fleetAssignment = fleetAssignment
         if (restoreFleetAssignments && fleetAssignment != null) {
             playerFleet().fleetData.membersInPriorityOrder.forEach {
-                it.captain = fleetAssignment[it]
-                if (it.captain.isPlayer) {
-                    it.isFlagship = true
+                val officer = fleetAssignment[it]
+                if (officer != null && !officer.hasTag(OfficerExpansionPlugin.PoC_OFFICER_DEAD)) {
+                    it.captain = officer
+                    if (it.captain.isPlayer) {
+                        it.isFlagship = true
+                    }
+                } else {
+                    it.captain = null
                 }
             }
         }

@@ -20,9 +20,9 @@ val FATIGUE_CHANCE
 private val FATIGUE_EXTEND_RATE
     get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "fatigue_extension_rate")?.div(100) ?: 0.1f
 
-class Fatigue(
-    officer: PersonAPI, startDate: Long, rootConditions: List<Condition>
-) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate)), rootConditions) {
+open class Fatigue(
+    officer: PersonAPI, startDate: Long, rootConditions: List<Condition>, expireOnDeath: Boolean = false,
+) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate)), expireOnDeath, rootConditions) {
     companion object {
         fun generateDuration(seed: Long): Float = FATIGUE_MIN + Random(seed).nextFloat() * FATIGUE_RANGE
 

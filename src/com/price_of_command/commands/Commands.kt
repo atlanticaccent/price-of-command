@@ -26,7 +26,9 @@ class InjureOfficer : BaseCommand {
             try {
                 ConditionManager.addPreconditionOverride(true) { condition ->
                     if (condition.target.nameString == officer.nameString && condition is Injury) {
-                        Outcome.Applied(condition)
+                        condition.precondition().noop {
+                            Outcome.Applied(condition)
+                        }
                     } else {
                         null
                     }

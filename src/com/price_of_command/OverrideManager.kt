@@ -22,7 +22,7 @@ interface OverrideManager {
         return gate
     }
 
-    fun addPreconditionOverride(oneOff: Boolean = false, gate: (Condition) -> Outcome?, priority: Int): ConditionGate {
+    fun addPreconditionOverride(oneOff: Boolean = false, priority: Int, gate: (Condition) -> Outcome?): ConditionGate {
         val gate = object : ConditionGate(oneOff) {
             override fun priority(): Int = priority
 
@@ -48,7 +48,11 @@ interface OverrideManager {
         return mutator
     }
 
-    fun addMutationOverride(oneOff: Boolean = false, mutation: (Condition) -> Condition?, priority: Int): ConditionMutator {
+    fun addMutationOverride(
+        oneOff: Boolean = false,
+        priority: Int,
+        mutation: (Condition) -> Condition?
+    ): ConditionMutator {
         val mutator = object : ConditionMutator(oneOff) {
             override fun priority(): Int = priority
 

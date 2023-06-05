@@ -11,6 +11,7 @@ import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.campaign.rules.HasMemory
 import com.fs.starfarer.api.campaign.rules.MemoryAPI
 import com.fs.starfarer.api.characters.OfficerDataAPI
+import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
@@ -60,7 +61,7 @@ fun Boolean.then(block: () -> Unit): Boolean {
     return this
 }
 
-fun <T> Boolean.andThenOrNull(block: () -> T?): T? {
+inline fun <T> Boolean.andThenOrNull(block: () -> T?): T? {
     return if (this) {
         block()
     } else {
@@ -104,3 +105,5 @@ fun createCustom(width: Float, height: Float) = createCustom(width, height, Base
 fun TooltipMakerAPI.setOpacity(value: Float) {
     ReflectionUtils.invoke("setOpacity", this, value)
 }
+
+fun List<OfficerDataAPI>.containsPerson(person: PersonAPI): Boolean = this.find { it.person == person } != null
