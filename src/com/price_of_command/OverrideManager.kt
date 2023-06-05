@@ -1,9 +1,6 @@
 package com.price_of_command
 
-import com.price_of_command.conditions.Condition
-import com.price_of_command.conditions.ConditionGate
-import com.price_of_command.conditions.ConditionMutator
-import com.price_of_command.conditions.Outcome
+import com.price_of_command.conditions.*
 
 @Suppress("unused", "NAME_SHADOWING")
 interface OverrideManager {
@@ -14,16 +11,20 @@ interface OverrideManager {
         preconditions = preconditions.plus(gate)
     }
 
-    fun addPreconditionOverride(oneOff: Boolean = false, gate: (Condition) -> Outcome?): ConditionGate {
-        val gate = object : ConditionGate(oneOff) {
+    fun addPreconditionOverride(completeImmediately: Boolean, gate: (Condition) -> Outcome?): ConditionGate {
+        val gate = object : ConditionGate(completeImmediately) {
             override fun precondition(condition: Condition): Outcome? = gate(condition)
         }
         preconditions = preconditions.plus(gate)
         return gate
     }
 
-    fun addPreconditionOverride(oneOff: Boolean = false, priority: Int, gate: (Condition) -> Outcome?): ConditionGate {
-        val gate = object : ConditionGate(oneOff) {
+    fun addPreconditionOverride(
+        completeImmediately: Boolean = false,
+        priority: Int,
+        gate: (Condition) -> Outcome?
+    ): ConditionGate {
+        val gate = object : ConditionGate(completeImmediately) {
             override fun priority(): Int = priority
 
             override fun precondition(condition: Condition): Outcome? = gate(condition)
@@ -40,20 +41,21 @@ interface OverrideManager {
         mutators = mutators.plus(mutation)
     }
 
-    fun addMutationOverride(oneOff: Boolean = false, mutation: (Condition) -> Condition?): ConditionMutator {
-        val mutator = object : ConditionMutator(oneOff) {
-            override fun mutate(condition: Condition): Condition? = mutation(condition)
-        }
+    fun addMutationOverride(
+        completeImmediately: Boolean = false,
+        mutation: (Condition) -> Condition?
+    ): ConditionMutator {
+        val mutator = BaseMutator(complete = completeImmediately) { mutation(it) }
         mutators = mutators.plus(mutator)
         return mutator
     }
 
     fun addMutationOverride(
-        oneOff: Boolean = false,
+        completeImmediately: Boolean = false,
         priority: Int,
         mutation: (Condition) -> Condition?
     ): ConditionMutator {
-        val mutator = object : ConditionMutator(oneOff) {
+        val mutator = object : ConditionMutator(completeImmediately) {
             override fun priority(): Int = priority
 
             override fun mutate(condition: Condition): Condition? = mutation(condition)

@@ -33,8 +33,19 @@ private val IGNORE_LIST = arrayOf(
 )
 
 abstract class Wound(
-    officer: PersonAPI, startDate: Long, rootConditions: List<Condition>, expireOnDeath: Boolean = false
-) : ResolvableCondition(officer, startDate, Duration.Time(generateDuration(startDate)), expireOnDeath, rootConditions) {
+    officer: PersonAPI,
+    startDate: Long,
+    rootConditions: List<Condition>,
+    resolveOnDeath: Boolean = true,
+    resolveOnMutation: Boolean = true
+) : ResolvableCondition(
+    officer,
+    startDate,
+    Duration.Time(generateDuration(startDate)),
+    rootConditions,
+    resolveOnDeath,
+    resolveOnMutation
+) {
     companion object {
         fun generateDuration(seed: Long): Float = INJURY_MIN + Random(seed).nextFloat() * INJURY_RANGE
 
@@ -186,7 +197,7 @@ class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Cond
     @NonPublic
     override fun inflict(): Outcome = Wound.tryExtendWounds(target).applied { Outcome.NOOP }
 
-    override fun mutation(): Condition = NullCondition(target, startDate)
+    override fun mutation(): ConditionMutator = BaseMutator { NullCondition(target, startDate) }
 
     override fun pastTense(): String = ""
 }

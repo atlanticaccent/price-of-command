@@ -31,16 +31,37 @@ object ConditionManager : OverrideManager {
 
     object pc_ConditionManagerEveryFrame : EveryFrameScript {
         override fun advance(p0: Float) {
+            val mutations = mutableListOf<Condition>()
             conditionMap = conditionMap.mapValues { (target, extantConditions) ->
                 val (removed, conditions) = extantConditions.partition { condition ->
+                    condition.mutation()?.apply {
+                        if (continuous) {
+                            val mutation = mutate(condition)
+                            if (condition is ResolvableCondition && condition.resolveOnMutation) {
+                                condition.tryResolve()
+                            }
+                            if (mutation != null) {
+                                mutations.add(mutation)
+                            }
+                            return@partition true
+                        }
+                    }
+
                     (condition is ResolvableCondition && condition.tryResolve()) || condition.expired
                 }
 
                 if (removed.isNotEmpty()) {
-                    Global.getSector().campaignUI.addMessage(pc_RecoveryIntel(target.nameString, removed))
+                    val notifyRemoved = removed.filter { (it !is ResolvableCondition || !it.silenceResolveOnMutation) }
+                    if (notifyRemoved.isNotEmpty()) {
+                        Global.getSector().campaignUI.addMessage(pc_RecoveryIntel(target.nameString, notifyRemoved))
+                    }
                 }
 
                 conditions
+            }
+
+            for (mutation in mutations) {
+                mutation.tryInflictAppend()
             }
         }
 
@@ -60,12 +81,18 @@ object ConditionManager : OverrideManager {
 
         playerFleet().fleetData.removeOfficer(officer)
         playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }?.captain = null
+        officer.conditions().filterIsInstance<ResolvableCondition>().filter { it.resolveOnDeath }.forEach {
+            it.expired = true
+            it.tryResolve()
+        }
         conditionMap = conditionMap.minus(officer)
+        officer.addTag(OfficerExpansionPlugin.PoC_OFFICER_DEAD)
 
         val deathLocation = playerFleet().containingLocation.addCustomEntity(null, "", "base_intel_icon", "neutral")
         deathLocation.setFixedLocation(playerFleet().location.x, playerFleet().location.y)
 
         MemorialWall.getMemorial().addDeath(officer, clock(), ship, deathLocation, condition)
+        // TODO ADD INTEL NOTIFICATION (MAYBE POPUP?)
     }
 }
 

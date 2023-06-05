@@ -25,7 +25,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
                 }
             }
         }
-        ConditionManager.preconditions = ConditionManager.preconditions.filter { !it.oneOff }
+        ConditionManager.preconditions = ConditionManager.preconditions.filter { !it.complete }
 
         return result ?: Outcome.NOOP
     }
@@ -37,11 +37,11 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
 
     private fun mutationOverrides(): Condition? {
         val result = ConditionManager.mutators.mapNotNull { it.mutateWithPriority(this) }.maxByOrNull { it.second }?.first
-        ConditionManager.mutators = ConditionManager.mutators.filter { !it.oneOff }
+        ConditionManager.mutators = ConditionManager.mutators.filter { !it.complete }
         return result
     }
 
-    open fun mutation(): Condition? = null
+    open fun mutation(): ConditionMutator? = null
 
     open fun failed(): Condition? = null
 
@@ -53,7 +53,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
             .noop { precondition() }
             .failed { return@tryInflictAppend failed()?.tryInflictAppend() ?: Outcome.NOOP }
             .applied {
-                val mutation = mutationOverrides() ?: mutation()
+                val mutation = mutationOverrides() ?: mutation()?.mutate(this@Condition)
                 val res = inflict()
                 if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend()
                 else res
@@ -105,8 +105,10 @@ abstract class ResolvableCondition(
     target: PersonAPI,
     startDate: Long,
     override val duration: Duration.Time,
-    val expireOnDeath: Boolean = true,
-    rootConditions: List<Condition>
+    rootConditions: List<Condition>,
+    var resolveOnDeath: Boolean = true,
+    var resolveOnMutation: Boolean = true,
+    var silenceResolveOnMutation: Boolean = false,
 ) :
     LastingCondition(target, startDate, duration, rootConditions) {
     open fun tryResolve(): Boolean =
