@@ -7,3 +7,13 @@ abstract class ConditionGate(var complete: Boolean = false) {
 
     abstract fun precondition(condition: Condition): Outcome?
 }
+
+class BasePrecondition(
+    completeImmediately: Boolean = false,
+    private val priority: Int = 0,
+    val block: (Condition) -> Outcome?
+) : ConditionGate(completeImmediately) {
+    override fun precondition(condition: Condition): Outcome? = block(condition)
+
+    override fun priority(): Int = priority
+}

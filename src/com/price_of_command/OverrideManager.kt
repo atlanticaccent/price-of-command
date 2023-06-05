@@ -11,10 +11,8 @@ interface OverrideManager {
         preconditions = preconditions.plus(gate)
     }
 
-    fun addPreconditionOverride(completeImmediately: Boolean, gate: (Condition) -> Outcome?): ConditionGate {
-        val gate = object : ConditionGate(completeImmediately) {
-            override fun precondition(condition: Condition): Outcome? = gate(condition)
-        }
+    fun addPreconditionOverride(completeImmediately: Boolean = false, gate: (Condition) -> Outcome?): ConditionGate {
+        val gate = BasePrecondition(completeImmediately, block = gate)
         preconditions = preconditions.plus(gate)
         return gate
     }
@@ -24,11 +22,7 @@ interface OverrideManager {
         priority: Int,
         gate: (Condition) -> Outcome?
     ): ConditionGate {
-        val gate = object : ConditionGate(completeImmediately) {
-            override fun priority(): Int = priority
-
-            override fun precondition(condition: Condition): Outcome? = gate(condition)
-        }
+        val gate = BasePrecondition(completeImmediately, priority, block = gate)
         preconditions = preconditions.plus(gate)
         return gate
     }
@@ -45,7 +39,7 @@ interface OverrideManager {
         completeImmediately: Boolean = false,
         mutation: (Condition) -> Condition?
     ): ConditionMutator {
-        val mutator = BaseMutator(complete = completeImmediately) { mutation(it) }
+        val mutator = BaseMutator(completeImmediately, block = mutation)
         mutators = mutators.plus(mutator)
         return mutator
     }
@@ -55,11 +49,7 @@ interface OverrideManager {
         priority: Int,
         mutation: (Condition) -> Condition?
     ): ConditionMutator {
-        val mutator = object : ConditionMutator(completeImmediately) {
-            override fun priority(): Int = priority
-
-            override fun mutate(condition: Condition): Condition? = mutation(condition)
-        }
+        val mutator = BaseMutator(completeImmediately, priority, block = mutation)
         mutators = mutators.plus(mutator)
         return mutator
     }

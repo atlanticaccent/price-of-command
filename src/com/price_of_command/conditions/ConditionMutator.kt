@@ -9,11 +9,11 @@ abstract class ConditionMutator(var complete: Boolean = false, val continuous: B
 }
 
 class BaseMutator(
-    complete: Boolean = false,
-    continuous: Boolean = false,
+    completeImmediately: Boolean = false,
     private val priority: Int = 0,
+    continuous: Boolean = false,
     val block: (Condition) -> Condition?
-) : ConditionMutator(complete, continuous) {
+) : ConditionMutator(completeImmediately, continuous) {
     override fun mutate(condition: Condition): Condition? = block(condition)
 
     override fun priority(): Int = priority
