@@ -20,7 +20,7 @@ private val INJURY_MIN = INJURY_BASE - INJURY_VARIANCE
 private val EXTEND_RATE
     get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_extension_rate")?.div(100) ?: 0.5f
 private val DEATH_RATE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_death_rate")?.div(100) ?: 0.1f
+    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "death_rate")?.div(100) ?: 0.1f
 
 private val IGNORE_LIST = arrayOf(
     "aptitude_combat",
