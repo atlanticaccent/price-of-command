@@ -10,12 +10,17 @@ import com.price_of_command.conditions.LastingCondition
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
 import com.price_of_command.relfection.ReflectionUtils
 import com.thoughtworks.xstream.XStream
+import org.json.JSONObject
+import org.magiclib.kotlin.map
 
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
         const val modID = "price_of_command"
-        const val PoC_IGNORE_TAG = "pc_ignore"
+        const val PoC_SKILL_WHITELIST_TAG = "pc_skill_opt_in"
         const val PoC_OFFICER_DEAD = "pc_dead"
+
+        var vanillaSkills = emptyList<String>()
+        var modSkillWhitelist = emptyList<String>()
     }
 
     override fun onApplicationLoad() {
@@ -23,6 +28,14 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         settings.skillIds.map { settings.getSkillSpec(it) }
             .filter { it.tags.any { tag -> setOf("pc_quirk", "pc_condition").contains(tag) } }.forEach {
                 ReflectionUtils.set("Ó00000", it as SkillSpec, "pc_condition")
+            }
+
+        vanillaSkills = settings.loadCSV("data/characters/skills/skill_data.csv", false).map { it: JSONObject ->
+            it.getString("id")
+        }
+        modSkillWhitelist =
+            settings.loadCSV("data/characters/skills/poc_skill_whitelist.csv", true).map { it: JSONObject ->
+                it.getString("id")
             }
     }
 
@@ -48,7 +61,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         val memory = Global.getSector().memoryWithoutUpdate.escape()
         memory[ConditionManager.CONDITION_MAP] = ConditionManager.conditionMap
         memory[ConditionManager.PRECONDITIONS] = ConditionManager.preconditions
-        memory[ConditionManager.MUTATORS] = ConditionManager.MUTATORS
+        memory[ConditionManager.MUTATORS] = ConditionManager.mutators
     }
 
     /**

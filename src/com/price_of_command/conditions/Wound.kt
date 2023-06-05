@@ -111,9 +111,11 @@ open class Injury private constructor(
 
     private fun getEligibleSkills() =
         target.stats.skillsCopy.filter {
-            !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && !it.skill.tags.contains(
-                OfficerExpansionPlugin.PoC_IGNORE_TAG
-            )
+            !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && (OfficerExpansionPlugin.vanillaSkills.contains(
+                it.skill.id
+            ) || OfficerExpansionPlugin.modSkillWhitelist.contains(it.skill.id) || it.skill.tags.contains(
+                OfficerExpansionPlugin.PoC_SKILL_WHITELIST_TAG
+            ))
         }
 
     override fun precondition(): Outcome {
