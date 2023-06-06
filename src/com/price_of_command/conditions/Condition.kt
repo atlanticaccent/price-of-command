@@ -49,7 +49,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
     abstract fun pastTense(): String
 
     @OptIn(NonPublic::class)
-    fun tryInflictAppend(): Outcome {
+    fun tryInflictAppend(causeIfDeath: String? = null): Outcome {
         val outcome = preconditionOverrides()
             .noop { precondition() }
             .failed { return@tryInflictAppend failed()?.tryInflictAppend() ?: Outcome.NOOP }
@@ -61,7 +61,11 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
             }
         when (outcome) {
             is Outcome.Applied<*> -> ConditionManager.appendCondition(this.target, this)
-            is Outcome.Terminal<*> -> ConditionManager.killOfficer(this.target, this)
+            is Outcome.Terminal -> {
+                outcome.condition.cause = causeIfDeath
+                ConditionManager.killOfficer(this.target, outcome.condition)
+            }
+
             else -> {}
         }
         return outcome
@@ -91,7 +95,7 @@ sealed class Outcome {
     object NOOP : Outcome()
     class Applied<T : Condition>(val condition: T) : Outcome()
     object Failed : Outcome()
-    class Terminal<T : Condition>(val condition: T) : Outcome()
+    class Terminal(val condition: Death) : Outcome()
 
     inline fun noop(block: Outcome.() -> Outcome): Outcome = (this as? NOOP)?.block() ?: this
 
@@ -99,7 +103,7 @@ sealed class Outcome {
 
     inline fun failed(block: Outcome.() -> Outcome): Outcome = (this as? Failed)?.block() ?: this
 
-    inline fun terminal(block: Outcome.() -> Outcome): Outcome = (this as? Terminal<*>)?.block() ?: this
+    inline fun terminal(block: Outcome.() -> Outcome): Outcome = (this as? Terminal)?.block() ?: this
 }
 
 abstract class ResolvableCondition(

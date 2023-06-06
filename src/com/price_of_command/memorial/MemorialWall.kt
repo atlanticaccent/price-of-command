@@ -55,7 +55,7 @@ class MemorialWall : BaseIntelPlugin() {
         deathLocation: SectorEntityToken?,
         causeOfDeath: Condition
     ) {
-        addDeath(DeathData(person, deathDate, ship, deathLocation, causeOfDeath))
+        addDeath(DeathData(person, deathDate, ship, deathLocation, causeOfDeath.pastTense()))
     }
 
     override fun getIntelTags(map: SectorMapAPI): Set<String> = super.getIntelTags(map).plus(MEMORIAL_INTEL_TAG)

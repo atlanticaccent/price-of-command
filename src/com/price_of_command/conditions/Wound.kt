@@ -171,7 +171,7 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
         if (target.conditions()
                 .any { it is GraveInjury } && rootCondition !is Fatigue && ConditionManager.rand.nextFloat() <= (1 - DEATH_RATE)
         ) {
-            return Outcome.Terminal(this)
+            return Outcome.Failed
         }
         return Outcome.Applied(this)
     }
@@ -187,6 +187,8 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
 
         return Outcome.Applied(this)
     }
+
+    override fun failed(): Condition = Death(target, startDate, rootConditions)
 }
 
 class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :

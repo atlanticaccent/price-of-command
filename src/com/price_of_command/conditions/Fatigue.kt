@@ -56,9 +56,7 @@ open class Fatigue(
         } else if (ConditionManager.rand.nextFloat() <= FATIGUE_CHANCE) {
             conditions.filterIsInstance<Fatigue>().firstOrNull()?.let {
                 if (ConditionManager.rand.nextFloat() <= FATIGUE_EXTEND_RATE) {
-                    it.duration.duration += this.duration.duration
-
-                    Outcome.NOOP
+                    Outcome.Applied(this)
                 } else {
                     Outcome.Failed
                 }
@@ -76,6 +74,9 @@ open class Fatigue(
 
     @NonPublic
     override fun inflict(): Outcome.Applied<Fatigue> {
+        target.conditions().filterIsInstance<Fatigue>().firstOrNull()?.let {
+            it.duration.duration += this.duration.duration
+        }
         target.stats.setSkillLevel("pc_fatigue", 1f)
         return Outcome.Applied(this)
     }

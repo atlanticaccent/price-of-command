@@ -25,10 +25,10 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         }
 
     override fun reportPlayerEngagement(resultAPI: EngagementResultAPI) {
-        val result = if (resultAPI.didPlayerWin()) {
-            resultAPI.winnerResult
+        val (result, opposition) = if (resultAPI.didPlayerWin()) {
+            resultAPI.winnerResult to resultAPI.loserResult.fleet.nameWithFactionKeepCase
         } else {
-            resultAPI.loserResult
+            resultAPI.loserResult to resultAPI.winnerResult.fleet.nameWithFactionKeepCase
         }
         val deployedPlayerOfficers =
             result.allEverDeployedCopy.filter {
@@ -52,7 +52,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             } else {
                 Fatigue(officer, ConditionManager.now)
             }
-            val outcome = condition.tryInflictAppend()
+            val outcome = condition.tryInflictAppend("Combat with $opposition")
 
             if (outcome is Outcome.Applied<*>) {
                 when (outcome.condition) {
@@ -65,7 +65,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
                         logger().debug(outcome.condition)
                     }
                 }
-            } else if (outcome is Outcome.Terminal<*>) {
+            } else if (outcome is Outcome.Terminal) {
                 logger().debug(outcome)
             }
         }

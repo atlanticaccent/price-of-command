@@ -5,6 +5,7 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.conditions.Condition
+import com.price_of_command.conditions.Death
 import com.price_of_command.conditions.ResolvableCondition
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
@@ -76,11 +77,11 @@ object ConditionManager : OverrideManager {
         return conditions
     }
 
-    fun killOfficer(officer: PersonAPI, condition: Condition) {
+    fun killOfficer(officer: PersonAPI, condition: Death) {
         val ship = playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }
 
         playerFleet().fleetData.removeOfficer(officer)
-        playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }?.captain = null
+        ship?.captain = null
         officer.conditions().filterIsInstance<ResolvableCondition>().filter { it.resolveOnDeath }.forEach {
             it.expired = true
             it.tryResolve()
@@ -91,7 +92,7 @@ object ConditionManager : OverrideManager {
         val deathLocation = playerFleet().containingLocation.addCustomEntity(null, "", "base_intel_icon", "neutral")
         deathLocation.setFixedLocation(playerFleet().location.x, playerFleet().location.y)
 
-        MemorialWall.getMemorial().addDeath(officer, clock(), ship, deathLocation, condition)
+        MemorialWall.getMemorial().addDeath(condition.toDeathData(ship, deathLocation))
         // TODO ADD INTEL NOTIFICATION (MAYBE POPUP?)
     }
 }
