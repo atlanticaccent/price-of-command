@@ -6,6 +6,7 @@ import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.ConditionManager
 import com.price_of_command.andThenOrNull
 import com.price_of_command.clock
+import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.then
 
 abstract class Condition(val target: PersonAPI, val startDate: Long, var rootConditions: List<Condition>) {

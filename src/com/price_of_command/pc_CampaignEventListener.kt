@@ -33,11 +33,9 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         val deployedPlayerOfficers =
             result.allEverDeployedCopy.filter {
                 it.member.captain.run {
-                    playerOfficers().containsPerson(this) && !isPlayer && !isAICore
+                    playerOfficers().containsPerson(this) && !isPlayer
                 }
             }
-
-        tryRestoreFleetAssignments()
 
         for (deployed in deployedPlayerOfficers) {
             val officer = deployed.member.captain
@@ -71,6 +69,8 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
                 logger().debug(outcome)
             }
         }
+
+        tryRestoreFleetAssignments()
     }
 
     fun tryRestoreFleetAssignments() {

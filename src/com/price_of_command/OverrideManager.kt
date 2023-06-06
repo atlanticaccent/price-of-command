@@ -1,6 +1,11 @@
 package com.price_of_command
 
-import com.price_of_command.conditions.*
+import com.price_of_command.conditions.Condition
+import com.price_of_command.conditions.Outcome
+import com.price_of_command.conditions.overrides.BaseMutator
+import com.price_of_command.conditions.overrides.BasePrecondition
+import com.price_of_command.conditions.overrides.ConditionGate
+import com.price_of_command.conditions.overrides.ConditionMutator
 
 @Suppress("unused", "NAME_SHADOWING")
 interface OverrideManager {

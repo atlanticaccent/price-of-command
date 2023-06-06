@@ -4,6 +4,8 @@ import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.ConditionManager
 import com.price_of_command.OfficerExpansionPlugin
 import com.price_of_command.conditions
+import com.price_of_command.conditions.overrides.BaseMutator
+import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.then
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
@@ -119,6 +121,7 @@ open class Injury private constructor(
         }
 
     override fun precondition(): Outcome {
+        if (target.isAICore) return Outcome.NOOP
         val conditions = target.conditions()
         val skills = getEligibleSkills()
         if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {

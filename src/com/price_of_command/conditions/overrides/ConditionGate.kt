@@ -1,4 +1,7 @@
-package com.price_of_command.conditions
+package com.price_of_command.conditions.overrides
+
+import com.price_of_command.conditions.Condition
+import com.price_of_command.conditions.Outcome
 
 abstract class ConditionGate(var complete: Boolean = false) {
     fun preconditionWithPriority(condition: Condition) = precondition(condition)?.let { it to priority() }

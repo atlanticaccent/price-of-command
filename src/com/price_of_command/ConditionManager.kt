@@ -5,9 +5,9 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.conditions.Condition
-import com.price_of_command.conditions.ConditionGate
-import com.price_of_command.conditions.ConditionMutator
 import com.price_of_command.conditions.ResolvableCondition
+import com.price_of_command.conditions.overrides.ConditionGate
+import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.memorial.MemorialWall
 import kotlin.random.Random
 

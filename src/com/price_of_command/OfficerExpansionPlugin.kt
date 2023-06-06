@@ -4,9 +4,9 @@ import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.loading.SkillSpec
-import com.price_of_command.conditions.ConditionGate
-import com.price_of_command.conditions.ConditionMutator
 import com.price_of_command.conditions.LastingCondition
+import com.price_of_command.conditions.overrides.ConditionGate
+import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
 import com.price_of_command.relfection.ReflectionUtils
 import com.thoughtworks.xstream.XStream

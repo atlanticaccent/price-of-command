@@ -1,4 +1,6 @@
-package com.price_of_command.conditions
+package com.price_of_command.conditions.overrides
+
+import com.price_of_command.conditions.Condition
 
 abstract class ConditionMutator(var complete: Boolean = false, val continuous: Boolean = false) {
     fun mutateWithPriority(condition: Condition) = mutate(condition)?.let { it to priority() }

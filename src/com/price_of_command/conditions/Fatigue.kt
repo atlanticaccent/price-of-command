@@ -49,6 +49,7 @@ open class Fatigue(
     }
 
     override fun precondition(): Outcome {
+        if (target.isAICore) return Outcome.NOOP
         val conditions = target.conditions()
         return if (!fatigueEnabled()) {
             Outcome.Failed
