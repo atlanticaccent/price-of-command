@@ -36,7 +36,7 @@ val gameVersion = "0.96a-RC8"
 val jars = arrayOf("jars/$jarFileName")
 val modPlugin = "com.price_of_command.OfficerExpansionPlugin"
 val isUtilityMod = false
-val masterVersionFile = "https://raw.githubusercontent.com/githubname/githubrepo/master/$modId.version"
+val masterVersionFile = "https://raw.githubusercontent.com/atlanticaccent/officer-expansion/master/$modId.version"
 val modThreadId = "00000"
 //////////////////////
 
