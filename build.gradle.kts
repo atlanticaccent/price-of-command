@@ -27,11 +27,11 @@ val shouldAutomaticallyCreateMetadataFiles = true
 /**
  * Modify these if you wish to have mod_info.json and the Version Checker files updated for you automatically.
  */
-val modVersion = "0.0.2"
+val modVersion = "0.0.3"
 val jarFileName = "${modName}.jar"
 val modId = "price_of_command"
 val modAuthor = "AtlanticAccent"
-val modDescription = "Mod description. "
+val modDescription = "Price of Command. Adds Fatigue, Injuries, Grave Injuries and Death to Officers."
 val gameVersion = "0.96a-RC8"
 val jars = arrayOf("jars/$jarFileName")
 val modPlugin = "com.price_of_command.OfficerExpansionPlugin"
