@@ -137,22 +137,11 @@ class KillOfficer : BaseCommand {
         val officer = playerOfficers().findByName(args)
 
         if (officer != null) {
-            try {
-                val res = object : Condition(officer, clock().timestamp, emptyList()) {
-                    override fun precondition(): Outcome = Outcome.Terminal(this)
-
-                    @NonPublic
-                    override fun inflict(): Outcome = Outcome.NOOP
-
-                    override fun pastTense(): String = "died"
-                }.tryInflictAppend()
-                if (res is Outcome.Terminal<*>) {
-                    Console.showMessage("Succeeded in killing officer")
-                } else {
-                    Console.showMessage("Failed to kill officer")
-                }
-            } catch (e: Exception) {
-                Console.showException("Error: ", e)
+            val res = Death(officer, clock().timestamp, emptyList()).tryInflictAppend()
+            if (res is Outcome.Terminal) {
+                Console.showMessage("Succeeded in killing officer")
+            } else {
+                Console.showMessage("Failed to kill officer")
             }
             return CommandResult.SUCCESS
         }
