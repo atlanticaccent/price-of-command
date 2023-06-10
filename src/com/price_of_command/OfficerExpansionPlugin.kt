@@ -15,10 +15,6 @@ import org.magiclib.kotlin.map
 
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
-        const val modID = "price_of_command"
-        const val PoC_SKILL_WHITELIST_TAG = "pc_skill_opt_in"
-        const val PoC_OFFICER_DEAD = "pc_dead"
-
         var vanillaSkills = emptyList<String>()
         var modSkillWhitelist = emptyList<String>()
     }

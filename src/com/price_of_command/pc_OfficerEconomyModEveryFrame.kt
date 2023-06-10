@@ -7,7 +7,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Stats
 import org.magiclib.kotlin.getMarketsInLocation
 
 object pc_OfficerEconomyModEveryFrame : EveryFrameScript {
-    var markets: List<MarketAPI> = emptyList()
+    private var markets: List<MarketAPI> = emptyList()
 
     override fun advance(amount: Float) {
         val currentMarkets = Global.getSector().economy.starSystemsWithMarkets.flatMap { it.getMarketsInLocation() }
@@ -15,7 +15,7 @@ object pc_OfficerEconomyModEveryFrame : EveryFrameScript {
             currentMarkets.forEach {
                 it.stats.dynamic.getMod(
                     Stats.OFFICER_PROB_MOD
-                ).modifyFlat("pc_increase_officer_prob_mult", 0.4f)
+                ).modifyFlat(PoC_INCREASE_OFFICER_PROB_MULT, 0.4f)
             }
             markets = currentMarkets
         }

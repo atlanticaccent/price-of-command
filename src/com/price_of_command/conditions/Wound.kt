@@ -1,28 +1,25 @@
 package com.price_of_command.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
-import com.price_of_command.ConditionManager
-import com.price_of_command.OfficerExpansionPlugin
-import com.price_of_command.conditions
+import com.price_of_command.*
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.ConditionMutator
-import com.price_of_command.then
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 
 private val INJURY_RATE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_rate")?.div(100) ?: 0.5f
+    get() = LunaSettings.getFloat(modID, "injury_rate")?.div(100) ?: 0.5f
 private val INJURY_BASE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_duration") ?: 10f
+    get() = LunaSettings.getFloat(modID, "injury_duration") ?: 10f
 private val INJURY_VARIANCE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_variance") ?: 4f
+    get() = LunaSettings.getFloat(modID, "injury_variance") ?: 4f
 private val INJURY_RANGE = INJURY_VARIANCE * 2
 private val INJURY_MIN = INJURY_BASE - INJURY_VARIANCE
 
 private val EXTEND_RATE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "injury_extension_rate")?.div(100) ?: 0.5f
+    get() = LunaSettings.getFloat(modID, "injury_extension_rate")?.div(100) ?: 0.5f
 private val DEATH_RATE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "death_rate")?.div(100) ?: 0.1f
+    get() = LunaSettings.getFloat(modID, "death_rate")?.div(100) ?: 0.1f
 
 private val IGNORE_LIST = arrayOf(
     "aptitude_combat",
@@ -41,12 +38,7 @@ abstract class Wound(
     resolveOnDeath: Boolean = true,
     resolveOnMutation: Boolean = true
 ) : ResolvableCondition(
-    officer,
-    startDate,
-    Duration.Time(generateDuration(startDate)),
-    rootConditions,
-    resolveOnDeath,
-    resolveOnMutation
+    officer, startDate, Duration.Time(generateDuration(startDate)), rootConditions, resolveOnDeath, resolveOnMutation
 ) {
     companion object {
         fun generateDuration(seed: Long): Float = INJURY_MIN + Random(seed).nextFloat() * INJURY_RANGE
@@ -91,16 +83,11 @@ open class Injury private constructor(
     }
 
     constructor(officer: PersonAPI, startDate: Long, rootConditions: List<Condition>) : this(
-        officer,
-        startDate,
-        pickInjurySuffix(officer),
-        rootConditions
+        officer, startDate, pickInjurySuffix(officer), rootConditions
     )
 
     constructor(officer: PersonAPI, skill: String, level: Int, startDate: Long, rootConditions: List<Condition>) : this(
-        officer,
-        startDate,
-        rootConditions
+        officer, startDate, rootConditions
     ) {
         _skill = skill
         _level = level
@@ -111,14 +98,13 @@ open class Injury private constructor(
         target.stats.decreaseSkill("pc_injury_$injurySkillSuffix")
     }
 
-    private fun getEligibleSkills() =
-        target.stats.skillsCopy.filter {
-            !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && (OfficerExpansionPlugin.vanillaSkills.contains(
-                it.skill.id
-            ) || OfficerExpansionPlugin.modSkillWhitelist.contains(it.skill.id) || it.skill.tags.contains(
-                OfficerExpansionPlugin.PoC_SKILL_WHITELIST_TAG
-            ))
-        }
+    private fun getEligibleSkills() = target.stats.skillsCopy.filter {
+        !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && (OfficerExpansionPlugin.vanillaSkills.contains(
+            it.skill.id
+        ) || OfficerExpansionPlugin.modSkillWhitelist.contains(it.skill.id) || it.skill.tags.contains(
+            PoC_SKILL_WHITELIST_TAG
+        ))
+    }
 
     override fun precondition(): Outcome {
         if (target.isAICore) return Outcome.NOOP
@@ -147,8 +133,8 @@ open class Injury private constructor(
 
         target.stats.setSkillLevel("pc_fatigue", 0f)
 
-        val injuries = target.conditions().filterIsInstance<Injury>()
-            .filter { it.injurySkillSuffix == injurySkillSuffix }.size + 1
+        val injuries =
+            target.conditions().filterIsInstance<Injury>().filter { it.injurySkillSuffix == injurySkillSuffix }.size + 1
 
         target.stats.setSkillLevel("pc_injury_$injurySkillSuffix", injuries.toFloat())
 
@@ -180,8 +166,7 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
     override fun inflict(): Outcome.Applied<GraveInjury> {
         target.conditions().filterIsInstance<GraveInjury>().firstOrNull()?.extendRandomly(this.startDate) ?: run {
             target.stats.setSkillLevel(
-                "pc_grave_injury",
-                1f
+                "pc_grave_injury", 1f
             )
         }
 

@@ -65,7 +65,6 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
                 outcome.condition.cause = causeIfDeath
                 ConditionManager.killOfficer(this.target, outcome.condition)
             }
-
             else -> {}
         }
         return outcome

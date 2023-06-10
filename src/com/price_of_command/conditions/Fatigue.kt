@@ -2,23 +2,23 @@ package com.price_of_command.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.ConditionManager
-import com.price_of_command.OfficerExpansionPlugin
 import com.price_of_command.conditions
+import com.price_of_command.modID
 import com.price_of_command.then
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 
 private val FATIGUE_BASE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "fatigue_duration") ?: 5f
+    get() = LunaSettings.getFloat(modID, "fatigue_duration") ?: 5f
 private val FATIGUE_VARIANCE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "fatigue_variance") ?: 2f
+    get() = LunaSettings.getFloat(modID, "fatigue_variance") ?: 2f
 private val FATIGUE_RANGE = FATIGUE_VARIANCE * 2
 private val FATIGUE_MIN = FATIGUE_BASE - FATIGUE_VARIANCE
 val FATIGUE_CHANCE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "fatigue_rate")?.div(100) ?: 1f
+    get() = LunaSettings.getFloat(modID, "fatigue_rate")?.div(100) ?: 1f
 
 private val FATIGUE_EXTEND_RATE
-    get() = LunaSettings.getFloat(OfficerExpansionPlugin.modID, "fatigue_extension_rate")?.div(100) ?: 0.1f
+    get() = LunaSettings.getFloat(modID, "fatigue_extension_rate")?.div(100) ?: 0.1f
 
 open class Fatigue(
     officer: PersonAPI,
@@ -37,7 +37,7 @@ open class Fatigue(
     companion object {
         fun generateDuration(seed: Long): Float = FATIGUE_MIN + Random(seed).nextFloat() * FATIGUE_RANGE
 
-        fun fatigueEnabled() = LunaSettings.getBoolean(OfficerExpansionPlugin.modID, "fatigue_toggle") ?: true
+        fun fatigueEnabled() = LunaSettings.getBoolean(modID, "fatigue_toggle") ?: true
     }
 
     constructor(officer: PersonAPI, startDate: Long) : this(officer, startDate, emptyList())

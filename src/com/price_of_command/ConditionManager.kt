@@ -87,7 +87,7 @@ object ConditionManager : OverrideManager {
             it.tryResolve()
         }
         conditionMap = conditionMap.minus(officer)
-        officer.addTag(OfficerExpansionPlugin.PoC_OFFICER_DEAD)
+        officer.addTag(PoC_OFFICER_DEAD)
 
         val deathLocation = playerFleet().containingLocation.addCustomEntity(null, "", "base_intel_icon", "neutral")
         deathLocation.setFixedLocation(playerFleet().location.x, playerFleet().location.y)
