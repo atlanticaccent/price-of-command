@@ -5,6 +5,7 @@ import com.fs.starfarer.api.campaign.BaseCampaignEventListener
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
+import com.fs.starfarer.api.impl.campaign.BattleAutoresolverPluginImpl
 import com.price_of_command.conditions.*
 
 object pc_CampaignEventListener : BaseCampaignEventListener(false) {
@@ -30,18 +31,21 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         } else {
             resultAPI.loserResult to resultAPI.winnerResult.fleet.nameWithFactionKeepCase
         }
-        val deployedPlayerOfficers =
-            result.allEverDeployedCopy.filter {
-                it.member.captain.run {
-                    playerOfficers().containsPerson(this) && !isPlayer
-                }
+        val captainedShips = if (result is BattleAutoresolverPluginImpl.EngagementResultForFleetImpl) {
+            result.deployed
+        } else {
+            result.allEverDeployedCopy.map { it.member }
+        }.filter {
+            it.captain.run {
+                playerOfficers().containsPerson(this) && !isPlayer
             }
+        }
 
-        for (deployed in deployedPlayerOfficers) {
-            val officer = deployed.member.captain
-            val significantDamage = result.destroyed.contains(deployed.member) ||
-                    result.disabled.contains(deployed.member) ||
-                    deployed.member.status.hullFraction <= 0.2
+        for (deployed in captainedShips) {
+            val officer = deployed.captain
+            val significantDamage = result.destroyed.contains(deployed) ||
+                    result.disabled.contains(deployed) ||
+                    deployed.status.hullFraction <= 0.2
             val condition = if (significantDamage) {
                 ConditionManager.addPreconditionOverride(true) {
                     (it is Injury && it.target == officer).andThenOrNull {
@@ -78,7 +82,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         if (restoreFleetAssignments && fleetAssignment != null) {
             playerFleet().fleetData.membersInPriorityOrder.forEach {
                 val officer = fleetAssignment[it]
-                if (officer != null && !officer.hasTag(OfficerExpansionPlugin.PoC_OFFICER_DEAD)) {
+                if (officer != null && !officer.hasTag(PoC_OFFICER_DEAD)) {
                     it.captain = officer
                     if (it.captain.isPlayer) {
                         it.isFlagship = true
