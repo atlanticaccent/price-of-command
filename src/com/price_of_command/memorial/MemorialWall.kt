@@ -29,6 +29,7 @@ class MemorialWall : BaseIntelPlugin() {
         const val portraitHeight = 96f
         const val rowHeight = 144f
         const val topOffset = -8f
+        private const val MEMORIAL_ENTITY_ID = "pc_memorial_entity"
 
         fun getMemorial(): MemorialWall {
             val manager = Global.getSector().intelManager
@@ -40,9 +41,19 @@ class MemorialWall : BaseIntelPlugin() {
                 memorial
             }
         }
+
+        fun getMemorialEntity(): SectorEntityToken {
+            return Global.getSector().hyperspace.getEntityById(MEMORIAL_ENTITY_ID)
+                ?: Global.getSector().hyperspace.addCustomEntity(
+                    MEMORIAL_ENTITY_ID,
+                    "",
+                    "pc_memorial_interaction_entity",
+                    "neutral"
+                )
+        }
     }
 
-    var theFallen: Map<DeathData, DisplayData> = emptyMap()
+    private var theFallen: Map<DeathData, DisplayData> = emptyMap()
 
     fun addDeath(death: DeathData) {
         theFallen = theFallen.plus(death to DisplayData.DETAILS)

@@ -41,6 +41,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             }
         }
 
+        var appliedConditions = emptyList<Condition>()
         for (deployed in captainedShips) {
             val officer = deployed.captain
             val significantDamage = result.destroyed.contains(deployed) ||
@@ -72,9 +73,15 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             } else if (outcome is Outcome.Terminal) {
                 logger().debug(outcome)
             }
+
+            if (outcome is Outcome.Applied<*> || outcome is Outcome.Terminal) {
+                appliedConditions = appliedConditions.plus(condition)
+            }
         }
 
         tryRestoreFleetAssignments()
+
+
     }
 
     fun tryRestoreFleetAssignments() {

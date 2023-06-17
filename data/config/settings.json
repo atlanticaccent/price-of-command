@@ -12,8 +12,11 @@
   "officerSalaryPerLevel" : 200,
 
   "graphics" : {
-    "pc_intel" : {
-      "memorial" : "graphics/icons/memorial.png"
+    "pc_intel": {
+      "memorial": "graphics/icons/memorial.png"
+    },
+    "pc_elite": {
+      "elite": "graphics/icons/skills/elite_generic.png"
     }
   }
 }

@@ -1,0 +1,9 @@
+{
+  "pc_memorial_interaction_entity": {
+    "defaultName": "",
+    "showInCampaign": false,
+    "showIconOnMap": false,
+    "showNameOnMap": false,
+    "scaleNameWithZoom": false
+  }
+}

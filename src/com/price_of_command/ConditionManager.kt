@@ -2,6 +2,7 @@ package com.price_of_command
 
 import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.campaign.CoreUITabId
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.conditions.Condition
@@ -9,7 +10,10 @@ import com.price_of_command.conditions.Death
 import com.price_of_command.conditions.ResolvableCondition
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
+import com.price_of_command.memorial.DeathMessage
 import com.price_of_command.memorial.MemorialWall
+import com.price_of_command.util.BaseInteractionDialogPlugin
+import lunalib.lunaExtensions.showInteractionDialog
 import kotlin.random.Random
 
 object ConditionManager : OverrideManager {
@@ -24,6 +28,8 @@ object ConditionManager : OverrideManager {
     internal var conditionMap: Map<PersonAPI, List<Condition>> = emptyMap()
     override var preconditions: List<ConditionGate> = listOf()
     override var mutators: List<ConditionMutator> = listOf()
+
+    private var showMemorialWall: Boolean = false
 
     fun findByStats(stats: MutableCharacterStatsAPI): Pair<PersonAPI, List<Condition>>? =
         conditionMap.entries.find { (person, _) ->
@@ -64,6 +70,11 @@ object ConditionManager : OverrideManager {
             for (mutation in mutations) {
                 mutation.tryInflictAppend()
             }
+
+            if (showMemorialWall) {
+                Global.getSector().campaignUI.showCoreUITab(CoreUITabId.INTEL, MemorialWall.getMemorial())
+                showMemorialWall = false
+            }
         }
 
         override fun isDone(): Boolean = false
@@ -92,8 +103,27 @@ object ConditionManager : OverrideManager {
         val deathLocation = playerFleet().containingLocation.addCustomEntity(null, "", "base_intel_icon", "neutral")
         deathLocation.setFixedLocation(playerFleet().location.x, playerFleet().location.y)
 
-        MemorialWall.getMemorial().addDeath(condition.toDeathData(ship, deathLocation))
+        val deathData = condition.toDeathData(ship, deathLocation)
+        MemorialWall.getMemorial().addDeath(deathData)
+
+        MemorialWall.getMemorialEntity().showInteractionDialog(BaseInteractionDialogPlugin { dialog ->
+//            dialog.textPanel.addPara("")
+            dialog.promptText = ""
+            dialog.showCustomVisualDialog(
+                CUSTOM_PANEL_WIDTH,
+                CUSTOM_PANEL_HEIGHT,
+                DeathMessage(deathData, dialog)
+            )
+        }.withOptionSelected { _, _ ->
+//            this.dialog?.let {
+//                it.
+//            }
+        })
         // TODO ADD INTEL NOTIFICATION (MAYBE POPUP?)
+    }
+
+    fun showMemorialWallNextFrame() {
+        showMemorialWall = true
     }
 }
 

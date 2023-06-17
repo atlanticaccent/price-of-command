@@ -13,7 +13,6 @@ import com.fs.starfarer.api.campaign.rules.MemoryAPI
 import com.fs.starfarer.api.characters.OfficerDataAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
-import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.price_of_command.memory.EscapedMemory
@@ -102,7 +101,7 @@ fun createCustom(width: Float, height: Float, plugin: CustomUIPanelPlugin): Cust
 
 fun createCustom(width: Float, height: Float) = createCustom(width, height, BaseCustomUIPanelPlugin())
 
-fun TooltipMakerAPI.setOpacity(value: Float) {
+fun UIComponentAPI.setOpacity(value: Float) {
     ReflectionUtils.invoke("setOpacity", this, value)
 }
 
