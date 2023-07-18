@@ -1,6 +1,8 @@
 {
   "bonusXP" : {
-    "reassignOfficers" : 0
+    "reassignOfficers": 0,
+    "saveOfficer": 1,
+    "avoidConsequence": 0.75
   },
   "officerBaseProb" : 0.35,
   "officerProbPerColonySize" : 0.07,

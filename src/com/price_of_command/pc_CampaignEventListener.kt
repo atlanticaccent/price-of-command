@@ -7,6 +7,7 @@ import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.impl.campaign.BattleAutoresolverPluginImpl
 import com.price_of_command.conditions.*
+import com.price_of_command.fleet_interaction.AfterActionReport
 
 object pc_CampaignEventListener : BaseCampaignEventListener(false) {
     private const val RESTORE_FLEET_ASSIGNMENTS = "pc_restore_fleet_assignments"
@@ -41,12 +42,11 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             }
         }
 
-        var appliedConditions = emptyList<Condition>()
+        var appliedConditions = emptyList<Outcome.WithCondition<*>>()
         for (deployed in captainedShips) {
             val officer = deployed.captain
-            val significantDamage = result.destroyed.contains(deployed) ||
-                    result.disabled.contains(deployed) ||
-                    deployed.status.hullFraction <= 0.2
+            val significantDamage =
+                result.destroyed.contains(deployed) || result.disabled.contains(deployed) || deployed.status.hullFraction <= 0.2
             val condition = if (significantDamage) {
                 ConditionManager.addPreconditionOverride(true) {
                     (it is Injury && it.target == officer).andThenOrNull {
@@ -57,7 +57,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             } else {
                 Fatigue(officer, ConditionManager.now)
             }
-            val outcome = condition.tryInflictAppend("Combat with $opposition")
+            val outcome = condition.tryInflictAppend("Combat with $opposition", true)
 
             if (outcome is Outcome.Applied<*>) {
                 when (outcome.condition) {
@@ -74,14 +74,32 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
                 logger().debug(outcome)
             }
 
-            if (outcome is Outcome.Applied<*> || outcome is Outcome.Terminal) {
-                appliedConditions = appliedConditions.plus(condition)
+            if (outcome is Outcome.WithCondition<*> && (outcome is Outcome.Applied<*> || outcome is Outcome.Terminal)) {
+                appliedConditions = appliedConditions.plus(outcome)
             }
         }
 
+        appliedConditions.mapNotNull { outcome ->
+            val condition = outcome.condition
+            if (condition is AfterActionReportable) {
+                val ship = captainedShips.first { ship ->
+                    ship.captain == condition.target
+                }
+                AfterActionReport.ReportData(
+                    condition,
+                    outcome,
+                    ship.status,
+                    result.destroyed.contains(ship),
+                    result.disabled.contains(ship)
+                )
+            } else {
+                null
+            }
+        }.ifEmpty { null }?.run {
+            ConditionManager.afterActionReport = AfterActionReport(this)
+        }
+
         tryRestoreFleetAssignments()
-
-
     }
 
     fun tryRestoreFleetAssignments() {
@@ -93,9 +111,14 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
                     it.captain = officer
                     if (it.captain.isPlayer) {
                         it.isFlagship = true
+                    } else if (it.isFlagship) {
+                        it.isFlagship = false
                     }
                 } else {
                     it.captain = null
+                    if (it.isFlagship) {
+                        it.isFlagship = false
+                    }
                 }
             }
         }

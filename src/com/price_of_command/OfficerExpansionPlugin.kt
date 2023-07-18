@@ -45,10 +45,13 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         ConditionManager.preconditions = memory[ConditionManager.PRECONDITIONS] as? List<ConditionGate> ?: listOf()
         ConditionManager.mutators = memory[ConditionManager.MUTATORS] as? List<ConditionMutator> ?: listOf()
 
-        Global.getSector().addTransientListener(pc_CampaignEventListener)
-        Global.getSector().addTransientScript(ConditionManager.pc_ConditionManagerEveryFrame)
-        Global.getSector().addTransientScript(pc_FleetInteractionEveryFrame)
-        Global.getSector().addTransientScript(pc_OfficerEconomyModEveryFrame)
+        Global.getSector().run {
+            addTransientListener(pc_CampaignEventListener)
+            addTransientScript(ConditionManager.pc_ConditionManagerEveryFrame)
+            addTransientScript(pc_FleetInteractionEveryFrame)
+            addTransientScript(pc_OfficerEconomyModEveryFrame)
+            addTransientScript(ForceOpenNextFrame)
+        }
     }
 
     override fun beforeGameSave() {

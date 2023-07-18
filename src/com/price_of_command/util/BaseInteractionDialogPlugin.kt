@@ -27,7 +27,7 @@ class BaseInteractionDialogPlugin(private val init: (InteractionDialogAPI) -> Un
 
     override fun getMemoryMap() = null
 
-    fun withOptionSelected(block: BaseInteractionDialogPlugin.(String, Any?) -> Unit): BaseInteractionDialogPlugin {
+    fun withOnOptionSelected(block: BaseInteractionDialogPlugin.(String, Any?) -> Unit): BaseInteractionDialogPlugin {
         onOptionSelected = block
         return this
     }

@@ -4,21 +4,51 @@ import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.InteractionDialogPlugin
 import com.fs.starfarer.api.campaign.OptionPanelAPI
 import com.fs.starfarer.api.campaign.TextPanelAPI
-import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.fleet.FleetMemberStatusAPI
-import com.price_of_command.ConditionManager
+import com.price_of_command.andThenOrNull
+import com.price_of_command.conditions.AfterActionReportable
 import com.price_of_command.conditions.Condition
 import com.price_of_command.conditions.Outcome
 
-class AfterActionReport(private val appliedConditions: Map<PersonAPI, ReportData>) : InteractionDialogPlugin {
-    data class ReportData(val condition: Condition, val outcome: Outcome, val shipStatus: FleetMemberStatusAPI)
+class AfterActionReport<T>(reportData: List<ReportData<T>>) :
+    InteractionDialogPlugin where T : Condition, T : AfterActionReportable {
+    private val dataHashes = reportData.map { it.hashCode() }
 
-    private var dialog: InteractionDialogAPI? = null
-    private var popMap: Map<PersonAPI, () -> Unit> = emptyMap()
+    data class ReportData<T>(
+        val condition: T,
+        val outcome: Outcome,
+        val shipStatus: FleetMemberStatusAPI,
+        val disabled: Boolean,
+        val destroyed: Boolean
+    ) where T : Condition, T : AfterActionReportable {
+        fun generateReport(dialog: InteractionDialogAPI, textPanel: TextPanelAPI, optionPanel: OptionPanelAPI) =
+            condition.generateReport(dialog, textPanel, optionPanel, outcome, shipStatus, disabled, destroyed)
+    }
+
+    private lateinit var dialog: InteractionDialogAPI
+    private var popMap: Map<ReportData<T>, () -> Unit> = reportData.associateWith { reportData ->
+        {
+            val textPanel = dialog.textPanel
+            val optionPanel = dialog.optionPanel
+            textPanel.clear()
+            optionPanel.clearOptions()
+
+            val reconsider = reportData.generateReport(dialog, textPanel, optionPanel)
+            if (reconsider) {
+                optionPanel.addOption(
+                    "Consider the rest of the report before drawing any permanent conclusions.",
+                    GOTO_MAIN
+                )
+            }
+        }
+    }
+    private var currentEntry: ReportData<T>? = null
 
     companion object {
-        private const val GOTO_MAIN = "go_to_main"
+        const val GOTO_MAIN = "aa_report_go_to_main"
+        const val REMOVE_SELF = "aa_report_remove_self"
+        const val FINISH_AND_CLOSE = "aa_report_finish"
     }
 
     override fun init(dialog: InteractionDialogAPI) {
@@ -28,57 +58,44 @@ class AfterActionReport(private val appliedConditions: Map<PersonAPI, ReportData
         val optionPanel = dialog.optionPanel
         initTextPanel(textPanel)
         initOptionPanel(optionPanel)
-        popMap = appliedConditions.map { (person, reportData) ->
-            val (condition, outcome, shipStatus) = reportData
-
-            val possessiveSuffix = if (person.nameString.last() != 's') {
-                "'"
-            } else {
-                "'s"
-            }
-            val (contextString, sufferString) = when (shipStatus.hullFraction * 100f) {
-                0f -> "suffered critical damage and required the crew to abandon ship" to "was seen manning the conn to the last moment."
-                in 0f..10f -> "took massive damage and was nearly disabled" to "was at one point engulfed by a massive explosion that penetrated to the bridge"
-                in 10f..25f -> "took significant damage" to "was hit by shrapnel from an internal compartment failure"
-                in 25f..50f -> "was heavily damaged" to ""
-                in 50f..75f -> "" to ""
-                in 75f..99f -> "took an unlikely glancing blow that penetrated to the bridge" to ""
-                else -> if (ConditionManager.rand.nextFloat() < 0.5) {
-                    "suffered a freak high velocity micrometeorite impact" to ""
-                } else {
-                    "experienced a freak localized power surge to the captain's console" to ""
-                }
-            }
-            val func = if (outcome is Outcome.Terminal) {
-                {
-                    textPanel.addPara("During the course of the battle, Officer ${person.nameString}$possessiveSuffix ship $contextString.")
-                    textPanel.addPara("${person.nameString} $sufferString.")
-                }
-            } else {
-                {
-
-                }
-            }
-            condition.target to {
-                textPanel.clear()
-                optionPanel.clearOptions()
-
-                func()
-
-                optionPanel.addOption("Return to the rest of the report.", GOTO_MAIN)
-            }
-        }.toMap()
     }
 
-    override fun optionSelected(optionText: String, optionData: Any?) {
+    override fun optionSelected(optionText: String, optionData: Any) {
+        dialog.promptText = "The report continues..."
+        when (optionData) {
+            FINISH_AND_CLOSE -> dialog.dismiss()
+            GOTO_MAIN -> resetDialog()
+            REMOVE_SELF -> currentEntry?.let { entry ->
+                popMap = popMap.filterKeys { it != entry }
+                currentEntry = null
+                resetDialog()
+            }
 
+            in dataHashes -> {
+                popMap.firstNotNullOfOrNull { (it.key.hashCode() == optionData).andThenOrNull { it } }
+                    ?.let { (entry, generateReport) ->
+                        currentEntry = entry
+                        generateReport()
+                    }
+            }
+
+            else -> currentEntry?.condition?.optionSelected(dialog, optionText, optionData)
+        }
     }
 
-    override fun optionMousedOver(optionText: String, optionData: Any?) = Unit
+    private fun resetDialog() {
+        initTextPanel(dialog.textPanel)
+        initOptionPanel(dialog.optionPanel)
+    }
 
-    override fun advance(amount: Float) = Unit
+    override fun optionMousedOver(optionText: String?, optionData: Any?) {
+    }
 
-    override fun backFromEngagement(battleResult: EngagementResultAPI) = Unit
+    override fun advance(amount: Float) {
+    }
+
+    override fun backFromEngagement(battleResult: EngagementResultAPI) {
+    }
 
     override fun getContext() = null
 
@@ -87,18 +104,21 @@ class AfterActionReport(private val appliedConditions: Map<PersonAPI, ReportData
     private fun initTextPanel(textPanel: TextPanelAPI) {
         textPanel.clear()
         textPanel.addPara("You review the after action report your second-in-command has prepared following your last deployment.")
-        textPanel.addPara("")
     }
 
     private fun initOptionPanel(optionPanel: OptionPanelAPI) {
         optionPanel.clearOptions()
-        for (target in appliedConditions.keys) {
+        if (popMap.isNotEmpty()) {
+            for (data in popMap.keys) {
+                optionPanel.addOption(
+                    "You open the section on Officer ${data.condition.target.nameString}", data.hashCode()
+                )
+            }
+        } else {
             optionPanel.addOption(
-                "You open the section on Officer ${target.nameString}",
-                target.id + "open"
+                "You finish reviewing the report and return to the rest of your duties.",
+                FINISH_AND_CLOSE
             )
         }
     }
-
-    private fun initSection() {}
 }

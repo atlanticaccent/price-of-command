@@ -14,6 +14,19 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
     val rootCondition
         get() = rootConditions.firstOrNull()
 
+    companion object {
+        fun mutationOverrides(condition: Condition, checkImmediately: Boolean? = null): Condition? {
+            val mutators = if (checkImmediately != null) {
+                ConditionManager.mutators.filter { it.checkImmediately == checkImmediately }
+            } else {
+                ConditionManager.mutators
+            }
+            val result = mutators.mapNotNull { it.mutateWithPriority(condition) }.maxByOrNull { it.second }?.first
+            ConditionManager.mutators = ConditionManager.mutators.filter { !it.complete }
+            return result
+        }
+    }
+
     private fun preconditionOverrides(): Outcome {
         val result = run result@{
             val preconditions = ConditionManager.preconditions.mapNotNull { it.preconditionWithPriority(this) }
@@ -36,11 +49,9 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
     @NonPublic
     abstract fun inflict(): Outcome
 
-    private fun mutationOverrides(): Condition? {
-        val result = ConditionManager.mutators.mapNotNull { it.mutateWithPriority(this) }.maxByOrNull { it.second }?.first
-        ConditionManager.mutators = ConditionManager.mutators.filter { !it.complete }
-        return result
-    }
+    @Suppress("SameParameterValue")
+    private fun mutationOverrides(checkImmediately: Boolean? = null): Condition? =
+        Companion.mutationOverrides(this, checkImmediately)
 
     open fun mutation(): ConditionMutator? = null
 
@@ -49,12 +60,13 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
     abstract fun pastTense(): String
 
     @OptIn(NonPublic::class)
-    fun tryInflictAppend(causeIfDeath: String? = null): Outcome {
+    fun tryInflictAppend(causeIfDeath: String? = null, deferDeathResolve: Boolean = false): Outcome {
         val outcome = preconditionOverrides()
             .noop { precondition() }
             .failed { return@tryInflictAppend failed()?.tryInflictAppend() ?: Outcome.NOOP }
             .applied {
-                val mutation = mutationOverrides() ?: mutation()?.mutate(this@Condition)
+                val mutation =
+                    mutationOverrides(true) ?: mutation()?.takeIf { it.checkImmediately }?.mutate(this@Condition)
                 val res = inflict()
                 if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend()
                 else res
@@ -63,7 +75,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
             is Outcome.Applied<*> -> ConditionManager.appendCondition(this.target, this)
             is Outcome.Terminal -> {
                 outcome.condition.cause = causeIfDeath
-                ConditionManager.killOfficer(this.target, outcome.condition)
+                ConditionManager.killOfficer(this.target, outcome.condition, deferDeathResolve)
             }
             else -> {}
         }
@@ -91,10 +103,12 @@ abstract class LastingCondition(
 }
 
 sealed class Outcome {
+    abstract class WithCondition<T : Condition>(val condition: T) : Outcome()
+
     object NOOP : Outcome()
-    class Applied<T : Condition>(val condition: T) : Outcome()
+    class Applied<T : Condition>(condition: T) : WithCondition<T>(condition)
     object Failed : Outcome()
-    class Terminal(val condition: Death) : Outcome()
+    class Terminal(condition: Death) : WithCondition<Death>(condition)
 
     inline fun noop(block: Outcome.() -> Outcome): Outcome = (this as? NOOP)?.block() ?: this
 
@@ -112,7 +126,8 @@ abstract class ResolvableCondition(
     rootConditions: List<Condition>,
     var resolveOnDeath: Boolean = true,
     var resolveOnMutation: Boolean = true,
-    var silenceResolveOnMutation: Boolean = false,
+    var resolveSilently: Boolean = false,
+    var resolveSilentlyOnMutation: Boolean = false,
 ) :
     LastingCondition(target, startDate, duration, rootConditions) {
     open fun tryResolve(): Boolean =

@@ -1,10 +1,20 @@
 package com.price_of_command.conditions
 
+import com.fs.starfarer.api.campaign.InteractionDialogAPI
+import com.fs.starfarer.api.campaign.OptionPanelAPI
+import com.fs.starfarer.api.campaign.TextPanelAPI
 import com.fs.starfarer.api.characters.PersonAPI
+import com.fs.starfarer.api.characters.SkillSpecAPI
+import com.fs.starfarer.api.fleet.FleetMemberStatusAPI
+import com.fs.starfarer.api.impl.campaign.ids.Sounds
+import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption
+import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.StoryOptionParams
 import com.price_of_command.*
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.ConditionMutator
+import com.price_of_command.fleet_interaction.AfterActionReport
 import lunalib.lunaSettings.LunaSettings
+import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
 import kotlin.random.Random
 
 private val INJURY_RATE
@@ -42,35 +52,35 @@ abstract class Wound(
 ) {
     companion object {
         fun generateDuration(seed: Long): Float = INJURY_MIN + Random(seed).nextFloat() * INJURY_RANGE
-
-        fun tryExtendWounds(target: PersonAPI): Outcome {
-            val wounds = target.conditions().filterIsInstance<Wound>()
-
-            return if (wounds.isNotEmpty()) {
-                val extended = wounds.random()
-                extended.extendRandomly(ConditionManager.now)
-                Outcome.Applied(extended)
-            } else {
-                Outcome.Failed
-            }
-        }
     }
 
     override fun pastTense(): String = "injured"
 }
+
+val sufferStrings = listOf(
+    "was engulfed by an explosion on the bridge",
+    "was hit by shrapnel from an internal compartment failure",
+    "was burned by a fire that broke out on the bridge",
+    "was thrown headfirst into a bank of monitors",
+    "was electrocuted by a power surge to their console",
+    "was shredded by spalling from an armor penetrating shot",
+    "was disturbed by a major phase-space fluctuation",
+    "suffered acute decompression due to a temporary loss of atmosphere"
+)
 
 open class Injury private constructor(
     officer: PersonAPI,
     startDate: Long,
     val injurySkillSuffix: Int,
     rootConditions: List<Condition>,
-) : Wound(officer, startDate, rootConditions) {
+) : Wound(officer, startDate, rootConditions), AfterActionReportable {
     private var _skill: String? = null
     val skill: String
         get() = _skill ?: throw IllegalStateException("Injury Skill ID Not Set")
     private var _level: Int? = null
     val level: Int
         get() = _level ?: throw IllegalStateException("Injury Skill Level Not Set")
+    private val skillSpec: SkillSpecAPI by lazy { settings().getSkillSpec(skill) }
 
     companion object {
         private val suffixRange = (1..7)
@@ -144,10 +154,83 @@ open class Injury private constructor(
     }
 
     override fun failed(): Condition = ExtendWounds(target, startDate, extendRootConditions())
+
+    override fun generateReport(
+        dialog: InteractionDialogAPI,
+        textPanel: TextPanelAPI,
+        optionPanel: OptionPanelAPI,
+        outcome: Outcome,
+        shipStatus: FleetMemberStatusAPI,
+        disabled: Boolean,
+        destroyed: Boolean,
+        delegate: SPDelegateFactory
+    ): Boolean {
+        val name = this.target.nameString
+
+        val (contextString, sufferString) = if (disabled || destroyed) "suffered critical damage and required the crew to abandon ship" to "was seen manning the conn to the last moment."
+        else when (shipStatus.hullFraction * 100f) {
+            in 0f..10f -> "took massive damage and was nearly disabled"
+            in 10f..25f -> "took significant damage"
+            in 25f..50f -> "was heavily damaged"
+            in 50f..75f -> "was moderately damaged"
+            in 75f..99f -> "was lightly damaged"
+            else -> "took practically no damage"
+        } to sufferStrings.random()
+
+        textPanel.addPara("During the course of the battle, Officer ${target.possessive()} ship $contextString.")
+        textPanel.addPara("$name $sufferString.")
+
+        if (outcome is Outcome.Terminal) {
+            optionPanel.addOption(
+                "Unfortunately, Officer $name succumbed to their wounds.", AfterActionReport.REMOVE_SELF
+            )
+
+            Death.setAvoidDeathStoryOption(outcome.condition, optionPanel, name, dialog, delegate, textPanel)
+        } else {
+            optionPanel.addOption(
+                "Officer $name suffered an injury requiring an estimated ${this.duration.duration.getRoundedValueMaxOneAfterDecimal()} days to recover.",
+                AfterActionReport.REMOVE_SELF
+            )
+            optionPanel.setTooltip(
+                AfterActionReport.REMOVE_SELF,
+                "This injury will render them unable to use their skill in ${skillSpec.name}"
+            )
+            optionPanel.setTooltipHighlights(
+                AfterActionReport.REMOVE_SELF, skillSpec.name
+            )
+
+            optionPanel.addOption(
+                "By some miracle, Officer $name managed to avoid being injured...",
+                AfterActionReportable.AVOID_CONSEQUENCE
+            )
+            val storyOptionParams = StoryOptionParams(
+                AfterActionReportable.AVOID_CONSEQUENCE,
+                1,
+                "avoidConsequence",
+                Sounds.STORY_POINT_SPEND,
+                "Saved Officer $name from injury"
+            )
+            SetStoryOption.set(dialog, storyOptionParams, delegate(storyOptionParams) {
+                val token = if (target.conditions().filterIsInstance<Wound>().isNotEmpty()) {
+                    "any further injuries"
+                } else {
+                    "being injured at all"
+                }
+                textPanel.addPara("It appears that despite the odds, Officer $name managed to avoid $token.")
+
+                optionPanel.addOption(
+                    "You hope their miraculous survival doesn't go to their head.", AfterActionReport.REMOVE_SELF
+                )
+                optionPanel.setTooltip(AfterActionReport.REMOVE_SELF, "Return to the rest of the report")
+            })
+        }
+
+        return true
+    }
 }
 
 class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
-    Wound(target, startDate, rootConditions) {
+    Wound(target, startDate, rootConditions), AfterActionReportable {
     override fun tryResolve(): Boolean = super.tryResolve().then {
         // TODO inflict a scar when resolved
         target.stats.setSkillLevel("pc_grave_injury", 0f)
@@ -174,10 +257,74 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
     }
 
     override fun failed(): Condition = Death(target, startDate, rootConditions)
+
+    override fun generateReport(
+        dialog: InteractionDialogAPI,
+        textPanel: TextPanelAPI,
+        optionPanel: OptionPanelAPI,
+        outcome: Outcome,
+        shipStatus: FleetMemberStatusAPI,
+        disabled: Boolean,
+        destroyed: Boolean,
+        delegate: SPDelegateFactory
+    ): Boolean {
+        val name = target.nameString
+
+        val (contextString, sufferString) = if (disabled || destroyed) "suffered critical damage and required the crew to abandon ship" to "was seen manning the conn to the last moment."
+        else when (shipStatus.hullFraction * 100f) {
+            in 0f..10f -> "took massive damage and was nearly disabled"
+            in 10f..25f -> "took significant damage"
+            in 25f..50f -> "was heavily damaged"
+            in 50f..75f -> "was moderately damaged"
+            in 75f..99f -> "was lightly damaged"
+            else -> "took practically no damage"
+        } to sufferStrings.random()
+
+        textPanel.addPara("During the course of the battle, Officer ${target.possessive()} ship $contextString.")
+        textPanel.addPara("$name $sufferString.")
+
+        optionPanel.addOption(
+            "Officer $name suffered a grave injury requiring an estimated ${this.duration.duration.getRoundedValueMaxOneAfterDecimal()} days to recover.",
+            AfterActionReport.REMOVE_SELF
+        )
+        optionPanel.setTooltip(
+            AfterActionReport.REMOVE_SELF, "This Grave Injury has a chance of leaving a lasting Scar."
+        )
+
+        optionPanel.addOption(
+            "By some miracle, Officer $name managed to avoid being injured...", AfterActionReportable.AVOID_CONSEQUENCE
+        )
+        val storyOptionParams = StoryOptionParams(
+            AfterActionReportable.AVOID_CONSEQUENCE,
+            1,
+            "avoidConsequence",
+            Sounds.STORY_POINT_SPEND,
+            "Saved Officer $name from injury"
+        )
+        SetStoryOption.set(dialog, storyOptionParams, delegate(storyOptionParams) {
+            val token = if (target.conditions().filterIsInstance<Wound>().isNotEmpty()) {
+                "any further injuries"
+            } else {
+                "being injured at all"
+            }
+            textPanel.addPara("It appears that despite the odds, Officer $name managed to avoid $token.")
+
+            optionPanel.addOption(
+                "You hope their miraculous survival doesn't go to their head.", AfterActionReport.REMOVE_SELF
+            )
+            optionPanel.setTooltip(AfterActionReport.REMOVE_SELF, "Return to the rest of the report")
+        })
+
+        return true
+    }
 }
 
 class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
-    Condition(target, startDate, rootConditions) {
+    ResolvableCondition(target, startDate, Duration.Time(0f), rootConditions, resolveSilently = true),
+    BaseAfterActionReportable {
+    private var previousDuration = 0f
+    private lateinit var extended: Wound
+
     override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() <= EXTEND_RATE) {
         Outcome.Applied(this)
     } else {
@@ -186,10 +333,45 @@ class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Cond
 
     override fun failed(): Condition = GraveInjury(target, startDate, extendRootConditions())
 
-    @NonPublic
-    override fun inflict(): Outcome = Wound.tryExtendWounds(target).applied { Outcome.NOOP }
+    private fun tryExtendWounds(target: PersonAPI): Outcome {
+        val wounds = target.conditions().filterIsInstance<Wound>()
 
-    override fun mutation(): ConditionMutator = BaseMutator { NullCondition(target, startDate) }
+        return if (wounds.isNotEmpty()) {
+            val extended = wounds.random()
+            previousDuration = extended.remaining().duration
+            extended.extendRandomly(ConditionManager.now)
+            this.extended = extended
+            Outcome.Applied(this)
+        } else {
+            Outcome.Failed
+        }
+    }
+
+    @NonPublic
+    override fun inflict(): Outcome = tryExtendWounds(target)
+
+    override fun mutation(): ConditionMutator =
+        BaseMutator(continuous = true, checkImmediately = false) { NullCondition(target, startDate) }
 
     override fun pastTense(): String = ""
+
+    override fun generateReport(
+        dialog: InteractionDialogAPI,
+        textPanel: TextPanelAPI,
+        optionPanel: OptionPanelAPI,
+        outcome: Outcome,
+        shipStatus: FleetMemberStatusAPI,
+        disabled: Boolean,
+        destroyed: Boolean,
+    ): Boolean {
+        val name = target.nameString
+        val remaining = extended.remaining().duration.getRoundedValueMaxOneAfterDecimal()
+
+        textPanel.addPara("It appears that during the last encounter one of Officer $name's injuries was notably exacerbated.")
+        textPanel.addPara("As such, their injury that would have taken ${previousDuration.getRoundedValueMaxOneAfterDecimal()} days to heal will now take $remaining days to heal.")
+
+        optionPanel.addOption("Return to the rest of the report.", AfterActionReport.REMOVE_SELF)
+
+        return false
+    }
 }

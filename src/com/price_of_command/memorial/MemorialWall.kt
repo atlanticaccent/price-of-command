@@ -41,16 +41,6 @@ class MemorialWall : BaseIntelPlugin() {
                 memorial
             }
         }
-
-        fun getMemorialEntity(): SectorEntityToken {
-            return Global.getSector().hyperspace.getEntityById(MEMORIAL_ENTITY_ID)
-                ?: Global.getSector().hyperspace.addCustomEntity(
-                    MEMORIAL_ENTITY_ID,
-                    "",
-                    "pc_memorial_interaction_entity",
-                    "neutral"
-                )
-        }
     }
 
     private var theFallen: Map<DeathData, DisplayData> = emptyMap()
@@ -64,9 +54,20 @@ class MemorialWall : BaseIntelPlugin() {
         deathDate: CampaignClockAPI,
         ship: FleetMemberAPI?,
         deathLocation: SectorEntityToken?,
-        causeOfDeath: Condition
+        causeOfDeath: Condition,
+        conditionsOnDeath: List<Condition>,
     ) {
-        addDeath(DeathData(person, deathDate, ship, deathLocation, causeOfDeath.pastTense()))
+        addDeath(DeathData(person, deathDate, ship, deathLocation, causeOfDeath.pastTense(), conditionsOnDeath))
+    }
+
+    fun removeDeath(person: PersonAPI): DeathData? {
+        val deathData = theFallen.keys.firstOrNull { it.person == person }
+        return if (deathData != null) {
+            theFallen = theFallen.minus(deathData)
+            deathData
+        } else {
+            null
+        }
     }
 
     override fun getIntelTags(map: SectorMapAPI): Set<String> = super.getIntelTags(map).plus(MEMORIAL_INTEL_TAG)
@@ -102,11 +103,7 @@ class MemorialWall : BaseIntelPlugin() {
             val detailsCheckWidth = info.computeStringWidth("Details") + 18f
             val detailsCheckboxTooltip = mid.beginSubTooltip(detailsCheckWidth)
             val detailsAreaCheckbox = AreaCheckbox(
-                detailsCheckboxTooltip,
-                detailsCheckWidth,
-                20f,
-                "Details",
-                displayData == DisplayData.DETAILS
+                detailsCheckboxTooltip, detailsCheckWidth, 20f, "Details", displayData == DisplayData.DETAILS
             )
             mid.endSubTooltip()
             mid.addCustomDoNotSetPosition(detailsCheckboxTooltip).position.rightOfTop(titleAnchor, maxTitleWidth)
@@ -122,10 +119,7 @@ class MemorialWall : BaseIntelPlugin() {
                         deathData.person.getPersonalityName()
                     )
                     detailsTooltip.addPara(
-                        "Died: ${deathData.date.shortDate}",
-                        0f,
-                        Misc.getHighlightColor(),
-                        deathData.date.shortDate
+                        "Died: ${deathData.date.shortDate}", 0f, Misc.getHighlightColor(), deathData.date.shortDate
                     )
                     detailsTooltip.addPara(
                         "Cause of Death: ${deathData.causeOfDeath()}",
@@ -144,6 +138,7 @@ class MemorialWall : BaseIntelPlugin() {
 
                     detailsTooltip
                 }
+
                 DisplayData.SKILLS -> {
                     val skillTooltip = mid.beginSubTooltip(width - portrait.width)
                     skillTooltip.addSkillPanel(deathData.person, 0f)
@@ -152,6 +147,7 @@ class MemorialWall : BaseIntelPlugin() {
 
                     skillTooltip
                 }
+
                 DisplayData.SHIP -> {
                     val shipTooltip = mid.beginSubTooltip(width - portrait.width)
                     shipTooltip.addShipList(1, 1, rowHeight, Misc.getBasePlayerColor(), listOf(deathData.ship), 0f)
@@ -165,11 +161,7 @@ class MemorialWall : BaseIntelPlugin() {
             val skillCheckWidth = info.computeStringWidth("Skills") + 12f
             val skillCheckboxTooltip = mid.beginSubTooltip(skillCheckWidth)
             val skillAreaCheckbox = AreaCheckbox(
-                skillCheckboxTooltip,
-                skillCheckWidth,
-                20f,
-                "Skills",
-                displayData == DisplayData.SKILLS
+                skillCheckboxTooltip, skillCheckWidth, 20f, "Skills", displayData == DisplayData.SKILLS
             )
             mid.endSubTooltip()
             mid.addCustomDoNotSetPosition(skillCheckboxTooltip).position.rightOfMid(detailsCheckboxTooltip, 4f)
@@ -179,11 +171,7 @@ class MemorialWall : BaseIntelPlugin() {
                 val shipCheckWidth = info.computeStringWidth("Final Ship") + 12f
                 val shipCheckboxTooltip = mid.beginSubTooltip(shipCheckWidth)
                 shipAreaCheckbox = AreaCheckbox(
-                    shipCheckboxTooltip,
-                    shipCheckWidth,
-                    20f,
-                    "Final Ship",
-                    displayData == DisplayData.SHIP
+                    shipCheckboxTooltip, shipCheckWidth, 20f, "Final Ship", displayData == DisplayData.SHIP
                 )
                 mid.endSubTooltip()
                 mid.addCustomDoNotSetPosition(shipCheckboxTooltip).position.rightOfMid(skillCheckboxTooltip, 4f)
@@ -235,12 +223,8 @@ class MemorialWall : BaseIntelPlugin() {
 }
 
 class AreaCheckbox private constructor(
-    tooltipMakerAPI: TooltipMakerAPI,
-    width: Float,
-    height: Float,
-    var value: Boolean
-) :
-    LunaElement(tooltipMakerAPI, width, height) {
+    tooltipMakerAPI: TooltipMakerAPI, width: Float, height: Float, var value: Boolean
+) : LunaElement(tooltipMakerAPI, width, height) {
     constructor(tooltipMakerAPI: TooltipMakerAPI, width: Float, height: Float, text: String, default: Boolean) : this(
         tooltipMakerAPI,
         width,
@@ -285,7 +269,5 @@ class AreaCheckbox private constructor(
 }
 
 enum class DisplayData {
-    DETAILS,
-    SKILLS,
-    SHIP
+    DETAILS, SKILLS, SHIP
 }

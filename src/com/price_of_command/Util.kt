@@ -3,6 +3,7 @@
 package com.price_of_command
 
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.SettingsAPI
 import com.fs.starfarer.api.campaign.BaseCustomUIPanelPlugin
 import com.fs.starfarer.api.campaign.CampaignClockAPI
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
@@ -106,3 +107,13 @@ fun UIComponentAPI.setOpacity(value: Float) {
 }
 
 fun List<OfficerDataAPI>.containsPerson(person: PersonAPI): Boolean = this.find { it.person == person } != null
+
+fun settings(): SettingsAPI = Global.getSettings()
+
+fun PersonAPI.getPossessiveSuffix() = if (nameString.endsWith('s')) {
+    "'"
+} else {
+    "'s"
+}
+
+fun PersonAPI.possessive() = nameString + getPossessiveSuffix()
