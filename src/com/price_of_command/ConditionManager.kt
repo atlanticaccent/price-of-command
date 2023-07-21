@@ -8,6 +8,7 @@ import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.conditions.Condition
 import com.price_of_command.conditions.Death
+import com.price_of_command.conditions.Outcome
 import com.price_of_command.conditions.ResolvableCondition
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
@@ -137,6 +138,16 @@ object ConditionManager : OverrideManager {
 
     fun showMemorialWallNextFrame() {
         showMemorialWall = true
+    }
+
+    inline fun <reified T : Condition> addConditionAppliedListener(crossinline listener: (T) -> Outcome?) {
+        addPreconditionOverride {
+            if (it is T && it.precondition() is Outcome.Applied<*>) {
+                listener(it)
+            } else {
+                null
+            }
+        }
     }
 }
 
