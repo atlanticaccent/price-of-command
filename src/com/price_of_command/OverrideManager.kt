@@ -66,7 +66,7 @@ interface OverrideManager {
 
     fun addDeathListener(listener: (Death) -> Outcome?) {
         addPreconditionOverride {
-            if (it is Death) {
+            if (it is Death && it.precondition() is Outcome.Applied<*>) {
                 listener(it)
             } else {
                 null
