@@ -1,7 +1,7 @@
 {
   "bonusXP" : {
     "reassignOfficers": 0,
-    "saveOfficer": 1,
+    "saveOfficer": 1.5,
     "avoidConsequence": 0.75
   },
   "officerBaseProb" : 0.35,
