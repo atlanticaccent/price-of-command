@@ -3,11 +3,8 @@
 package com.price_of_command.conditions
 
 import com.fs.starfarer.api.characters.PersonAPI
-import com.price_of_command.ConditionManager
-import com.price_of_command.andThenOrNull
-import com.price_of_command.clock
+import com.price_of_command.*
 import com.price_of_command.conditions.overrides.ConditionMutator
-import com.price_of_command.then
 
 abstract class Condition(val target: PersonAPI, val startDate: Long, var rootConditions: List<Condition>) {
     var expired = false
@@ -63,12 +60,14 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
     fun tryInflictAppend(causeIfDeath: String? = null, deferDeathResolve: Boolean = false): Outcome {
         val outcome = preconditionOverrides()
             .noop { precondition() }
-            .failed { return@tryInflictAppend failed()?.tryInflictAppend() ?: Outcome.NOOP }
+            .failed {
+                return@tryInflictAppend failed()?.tryInflictAppend(causeIfDeath, deferDeathResolve) ?: Outcome.NOOP
+            }
             .applied {
                 val mutation =
                     mutationOverrides(true) ?: mutation()?.takeIf { it.checkImmediately }?.mutate(this@Condition)
                 val res = inflict()
-                if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend()
+                if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend(causeIfDeath, deferDeathResolve)
                 else res
             }
         when (outcome) {
@@ -153,3 +152,5 @@ class NullCondition(target: PersonAPI, startDate: Long) : Condition(target, star
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 annotation class NonPublic
+
+fun PersonAPI.ship() = playerFleet().fleetData.membersListCopy.firstOrNull { it.captain == this }

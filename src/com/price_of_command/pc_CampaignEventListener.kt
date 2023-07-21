@@ -47,13 +47,14 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             val officer = deployed.captain
             val significantDamage =
                 result.destroyed.contains(deployed) || result.disabled.contains(deployed) || deployed.status.hullFraction <= 0.2
-            val condition = if (significantDamage) {
+            val condition = if (significantDamage && officer.canBeInjured()) {
+                val injury = Injury(officer, ConditionManager.now, emptyList())
                 ConditionManager.addPreconditionOverride(true) {
-                    (it is Injury && it.target == officer).andThenOrNull {
+                    (it == injury && injury.validTarget()).andThenOrNull {
                         it.precondition().noop { Outcome.Applied(it) }
                     }
                 }
-                Injury(officer, ConditionManager.now, emptyList())
+                injury
             } else {
                 Fatigue(officer, ConditionManager.now)
             }
@@ -82,21 +83,21 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         appliedConditions.mapNotNull { outcome ->
             val condition = outcome.condition
             if (condition is AfterActionReportable) {
-                val ship = captainedShips.first { ship ->
+                val ship = (condition as? Death)?.ship ?: captainedShips.first { ship ->
                     ship.captain == condition.target
                 }
                 AfterActionReport.ReportData(
-                    condition,
-                    outcome,
-                    ship.status,
-                    result.destroyed.contains(ship),
-                    result.disabled.contains(ship)
+                    condition, outcome, ship.status, result.destroyed.contains(ship), result.disabled.contains(ship)
                 )
             } else {
                 null
             }
         }.ifEmpty { null }?.run {
-            ConditionManager.afterActionReport = AfterActionReport(this)
+            ConditionManager.afterActionReport?.let {
+                ConditionManager.afterActionReport = AfterActionReport(it.mergeUndecided(this))
+            } ?: run {
+                ConditionManager.afterActionReport = AfterActionReport(this)
+            }
         }
 
         tryRestoreFleetAssignments()
@@ -124,5 +125,3 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         }
     }
 }
-
-

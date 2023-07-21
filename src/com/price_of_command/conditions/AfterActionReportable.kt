@@ -8,6 +8,7 @@ import com.fs.starfarer.api.fleet.FleetMemberStatusAPI
 import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.BaseOptionStoryPointActionDelegate
 import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.StoryOptionParams
 import com.price_of_command.ConditionManager
+import java.util.*
 
 interface AfterActionReportable {
     /**
@@ -59,6 +60,13 @@ interface AfterActionReportable {
             }
         }
     }
+
+    /**
+     * By default, if implementor is a Condition will return the past tense capitalised, or "Unknown"
+     * @return A string indicating the "status" of an officer afflicted with this condition. IE: "Injured" or "KIA"
+     */
+    fun statusInReport(): String = (this as? Condition)?.pastTense()
+        ?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } ?: "Unknown"
 }
 
 interface BaseAfterActionReportable : AfterActionReportable {

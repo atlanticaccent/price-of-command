@@ -15,6 +15,7 @@ import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.fleet_interaction.AfterActionReport
 import lunalib.lunaSettings.LunaSettings
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
+import org.magiclib.kotlin.isUnremovable
 import kotlin.random.Random
 
 private val INJURY_RATE
@@ -116,8 +117,12 @@ open class Injury private constructor(
         ))
     }
 
+    private fun invalidTarget(): Boolean = !validTarget()
+
+    fun validTarget(): Boolean = target.canBeInjured()
+
     override fun precondition(): Outcome {
-        if (target.isAICore) return Outcome.NOOP
+        if (invalidTarget()) return Outcome.NOOP
         val conditions = target.conditions()
         val skills = getEligibleSkills()
         if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
@@ -238,7 +243,7 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
 
     override fun precondition(): Outcome {
         if (target.conditions()
-                .any { it is GraveInjury } && rootCondition !is Fatigue && ConditionManager.rand.nextFloat() <= (1 - DEATH_RATE)
+                .any { it is GraveInjury } && rootCondition !is Fatigue && ConditionManager.rand.nextFloat() >= (1 - DEATH_RATE)
         ) {
             return Outcome.Failed
         }
@@ -317,6 +322,8 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
 
         return true
     }
+
+    override fun statusInReport(): String = "Gravely Injured"
 }
 
 class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
@@ -374,4 +381,10 @@ class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Cond
 
         return false
     }
+
+    override fun statusInReport(): String = "Injury Deteriorated"
 }
+
+fun PersonAPI.canBeInjured(): Boolean = !immuneToInjury()
+
+fun PersonAPI.immuneToInjury(): Boolean = isAICore || isUnremovable() || isPlayer || tags.contains(PoC_OFFICER_IMMORTAL)

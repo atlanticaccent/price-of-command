@@ -19,15 +19,17 @@ import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
 class Death(target: PersonAPI, startDate: Long, rootConditions: List<Condition>, var cause: String? = null) :
     Condition(target, startDate, rootConditions), AfterActionReportable {
     val conditionsOnDeath = target.conditions()
+    val ship = target.ship()
 
     companion object {
-        fun resurrect(target: PersonAPI) {
-            target.escapedMemory().unset(PoC_OFFICER_DEAD)
+        fun resurrect(target: PersonAPI, ship: FleetMemberAPI?) {
+            target.removeTag(PoC_OFFICER_DEAD)
             playerFleet().fleetData.addOfficer(target)
             val deathData = MemorialWall.getMemorial().removeDeath(target)
             deathData?.conditionsOnDeath?.run {
                 ConditionManager.appendCondition(target, this)
             }
+            ship?.captain = target
         }
 
         fun setAvoidDeathStoryOption(
@@ -48,14 +50,15 @@ class Death(target: PersonAPI, startDate: Long, rootConditions: List<Condition>,
                 "Saved Officer $name from death"
             )
             SetStoryOption.set(dialog, storyOptionParams, delegate(storyOptionParams) {
-                target.resurrect()
+                target.resurrect(condition.ship)
 
                 textPanel.addPara("It appears that, despite sustaining life threatening injuries, Officer $name managed to survive long enough for recovery teams to reach them.")
                 val existingGraveInjury = target.conditions().filterIsInstance<GraveInjury>().firstOrNull()
                 val graveInjury = GraveInjury(target, clock().timestamp, condition.extendRootConditions())
                 if (existingGraveInjury != null) {
                     existingGraveInjury.expired = true
-                    existingGraveInjury.tryResolve()
+                    existingGraveInjury.resolveSilently = true
+                    ConditionManager.tryResolve(existingGraveInjury)
 
                     textPanel.addPara("Your Chief Medical Officer reports that they have sustained a further Grave Injury from which they are expected to recover in ${graveInjury.duration.duration.getRoundedValueMaxOneAfterDecimal()} days.")
                 } else {
@@ -119,6 +122,12 @@ class Death(target: PersonAPI, startDate: Long, rootConditions: List<Condition>,
 
         return true
     }
+
+    override fun statusInReport(): String = if (ConditionManager.rand.nextFloat() > 0.5) {
+        "KIA"
+    } else {
+        "MIA"
+    }
 }
 
-fun PersonAPI.resurrect() = Death.resurrect(this)
+fun PersonAPI.resurrect(ship: FleetMemberAPI? = null) = Death.resurrect(this, ship)

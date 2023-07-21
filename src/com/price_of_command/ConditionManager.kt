@@ -104,6 +104,14 @@ object ConditionManager : OverrideManager {
         conditions
     } ?: emptyList()
 
+    fun tryResolve(condition: ResolvableCondition): Boolean = condition.tryResolve().then {
+        removeCondition(condition)
+        if (!condition.resolveSilently) {
+            logger().debug("Resolving $condition")
+            Global.getSector().campaignUI.addMessage(pc_RecoveryIntel(condition.target.nameString, listOf(condition)))
+        }
+    }
+
     fun killOfficer(officer: PersonAPI, condition: Death, deferResolve: Boolean = false) {
         val ship = playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }
         var conditions = officer.conditions()
