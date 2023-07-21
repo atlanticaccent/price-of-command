@@ -73,4 +73,13 @@ interface OverrideManager {
             }
         }
     }
+
+    fun postDeathListener(listener: (Death) -> Unit) {
+        addMutationOverride {
+            if (it is Death) {
+                listener(it)
+            }
+            null
+        }
+    }
 }
