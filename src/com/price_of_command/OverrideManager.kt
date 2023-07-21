@@ -64,7 +64,7 @@ interface OverrideManager {
         mutators = mutators.minus(mutation)
     }
 
-    fun addDeathListener(listener: (Death) -> Outcome) {
+    fun addDeathListener(listener: (Death) -> Outcome?) {
         addPreconditionOverride {
             if (it is Death) {
                 listener(it)
