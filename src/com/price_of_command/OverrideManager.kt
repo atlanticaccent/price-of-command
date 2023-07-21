@@ -1,6 +1,7 @@
 package com.price_of_command
 
 import com.price_of_command.conditions.Condition
+import com.price_of_command.conditions.Death
 import com.price_of_command.conditions.Outcome
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.BasePrecondition
@@ -61,5 +62,15 @@ interface OverrideManager {
 
     fun removeMutationOverride(mutation: ConditionMutator) {
         mutators = mutators.minus(mutation)
+    }
+
+    fun addDeathListener(listener: (Death) -> Outcome) {
+        addPreconditionOverride {
+            if (it is Death) {
+                listener(it)
+            } else {
+                null
+            }
+        }
     }
 }
