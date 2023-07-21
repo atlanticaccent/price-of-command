@@ -1,5 +1,6 @@
 package com.price_of_command.fleet_interaction
 
+import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.InteractionDialogPlugin
 import com.fs.starfarer.api.campaign.OptionPanelAPI
@@ -144,6 +145,18 @@ class AfterActionReport<T>(private var undecided: List<ReportData<T>>) :
             for (data in undecided) {
                 optionPanel.addOption(
                     "You open the section on Officer ${data.condition.target.nameString}", data.hashCode()
+                )
+            }
+            optionPanel.addOption(
+                "Accept the results listed in the report without complaint and return to your duties.",
+                FINISH_AND_CLOSE
+            )
+            if (Global.getSector().playerStats.storyPoints > 0) {
+                optionPanel.addOptionConfirmation(
+                    FINISH_AND_CLOSE,
+                    "Are you sure you want to close the report?\nYou will not be able to undo this.",
+                    "Yes",
+                    "No"
                 )
             }
         } else {
