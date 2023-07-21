@@ -51,6 +51,7 @@ class AfterActionReport<T>(private var undecided: List<ReportData<T>>) :
 
     override fun optionSelected(optionText: String, optionData: Any) {
         dialog.promptText = "The report continues..."
+        dialog.hideVisualPanel()
         when (optionData) {
             FINISH_AND_CLOSE -> dialog.dismiss()
             GOTO_MAIN -> resetDialog()
@@ -70,6 +71,8 @@ class AfterActionReport<T>(private var undecided: List<ReportData<T>>) :
                         val optionPanel = dialog.optionPanel
                         textPanel.clear()
                         optionPanel.clearOptions()
+                        dialog.showVisualPanel()
+                        dialog.visualPanel.showPersonInfo(entry.condition.target, true, true)
 
                         val reconsider = entry.generateReport(dialog, textPanel, optionPanel)
                         if (reconsider) {
