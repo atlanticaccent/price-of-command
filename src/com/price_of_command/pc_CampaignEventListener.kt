@@ -38,7 +38,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             result.allEverDeployedCopy.map { it.member }
         }.filter {
             it.captain.run {
-                playerOfficers().containsPerson(this) && !isPlayer
+                playerOfficers().containsPerson(this) && !isPlayer && !isAICore
             }
         }
 
@@ -78,6 +78,23 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
             if (outcome is Outcome.WithCondition<*> && (outcome is Outcome.Applied<*> || outcome is Outcome.Terminal)) {
                 appliedConditions = appliedConditions.plus(outcome)
             }
+        }
+
+        for (officer in playerOfficers()) {
+            val target = officer.person
+            val ship = target.ship()
+            val status = when (ship) {
+                in result.disabled -> DeploymentStatus.Disabled
+                in result.destroyed -> DeploymentStatus.Destroyed
+                in captainedShips -> DeploymentStatus.Deployed
+                else -> DeploymentStatus.Reserved
+            }
+            val conditions = ConditionManager.postBattleListeners.mapNotNull {
+                it.postBattleCondition(
+                    target, resultAPI, resultAPI.didPlayerWin(), status, ship?.status
+                )?.tryInflictAppend("Combat with $opposition", true)
+            }.filterIsInstance<Outcome.WithCondition<*>>()
+            appliedConditions = appliedConditions.plus(conditions)
         }
 
         appliedConditions.mapNotNull { outcome ->

@@ -106,6 +106,16 @@ fun UIComponentAPI.setOpacity(value: Float) {
     ReflectionUtils.invoke("setOpacity", this, value)
 }
 
+@Suppress("UNCHECKED_CAST")
+fun UIComponentAPI.getChildrenCopy(): List<UIComponentAPI> {
+    return ReflectionUtils.invoke("getChildrenCopy", this) as List<UIComponentAPI>
+}
+
+@Suppress("UNCHECKED_CAST")
+fun UIComponentAPI.getChildrenNonCopy(): List<UIComponentAPI> {
+    return ReflectionUtils.invoke("getChildrenNonCopy", this) as List<UIComponentAPI>
+}
+
 fun List<OfficerDataAPI>.containsPerson(person: PersonAPI): Boolean = this.find { it.person == person } != null
 
 fun settings(): SettingsAPI = Global.getSettings()

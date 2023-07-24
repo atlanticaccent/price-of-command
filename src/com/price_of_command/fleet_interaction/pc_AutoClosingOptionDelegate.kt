@@ -3,10 +3,14 @@ package com.price_of_command.fleet_interaction
 import com.fs.starfarer.api.campaign.BaseStoryPointActionDelegate
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
+import com.fs.starfarer.campaign.CampaignEngine
+import com.price_of_command.playerFleet
+import org.magiclib.kotlin.isAutomated
 import java.awt.Robot
 import java.awt.event.KeyEvent
 
-open class pc_AutoClosingOptionDelegate(private val accept: Boolean = false, val block: () -> Unit) : BaseStoryPointActionDelegate() {
+open class pc_AutoClosingOptionDelegate(private val accept: Boolean = false, val block: () -> Unit) :
+    BaseStoryPointActionDelegate() {
     companion object {
         const val OPTION_ID = "pc_fleet_interaction_dialog_sp_option"
     }
@@ -33,5 +37,10 @@ open class pc_AutoClosingOptionDelegate(private val accept: Boolean = false, val
 }
 
 class pc_ReassignOfficerOptionDelegate(private val dialog: InteractionDialogAPI) : pc_AutoClosingOptionDelegate(false, {
-    dialog.showCustomDialog(800f, 500f, pc_ReassignOfficerCustomPanel())
+    val fleet = CampaignEngine.getInstance().playerFleet
+    val validShips = playerFleet().fleetData.membersInPriorityOrder.filter {
+        !it.isAutomated() && it.canBeDeployedForCombat() && !it.isFighterWing
+    }
+    pc_ReassignOfficerCustomPanel(dialog, fleet, validShips).showPicker()
 })
+

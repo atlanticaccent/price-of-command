@@ -5,6 +5,7 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.loading.SkillSpec
 import com.price_of_command.conditions.LastingCondition
+import com.price_of_command.conditions.PostBattleListener
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
@@ -44,6 +45,8 @@ class OfficerExpansionPlugin : BaseModPlugin() {
             memory[ConditionManager.CONDITION_MAP] as? Map<PersonAPI, List<LastingCondition>> ?: mapOf()
         ConditionManager.preconditions = memory[ConditionManager.PRECONDITIONS] as? List<ConditionGate> ?: listOf()
         ConditionManager.mutators = memory[ConditionManager.MUTATORS] as? List<ConditionMutator> ?: listOf()
+        ConditionManager.postBattleListeners =
+            memory[ConditionManager.POST_BATTLE_LISTENERS] as? List<PostBattleListener> ?: listOf()
 
         Global.getSector().run {
             addTransientListener(pc_CampaignEventListener)
@@ -61,6 +64,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         memory[ConditionManager.CONDITION_MAP] = ConditionManager.conditionMap
         memory[ConditionManager.PRECONDITIONS] = ConditionManager.preconditions
         memory[ConditionManager.MUTATORS] = ConditionManager.mutators
+        memory[ConditionManager.POST_BATTLE_LISTENERS] = ConditionManager.postBattleListeners
     }
 
     /**

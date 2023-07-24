@@ -18,8 +18,10 @@ object ReflectionUtils {
         .findVirtual(fieldClass, "setAccessible", MethodType.methodType(Void.TYPE, Boolean::class.javaPrimitiveType))
 
     private val methodClass = Class.forName("java.lang.reflect.Method", false, Class::class.java.classLoader)
-    private val getMethodNameHandle =
+    val getMethodNameHandle =
         MethodHandles.lookup().findVirtual(methodClass, "getName", MethodType.methodType(String::class.java))
+    val getMethodReturnHandle =
+        MethodHandles.lookup().findVirtual(methodClass, "getReturnType", MethodType.methodType(Class::class.java))
     private val invokeMethodHandle = MethodHandles.lookup().findVirtual(
         methodClass, "invoke", MethodType.methodType(Any::class.java, Any::class.java, Array<Any>::class.java)
     )
@@ -64,8 +66,14 @@ object ReflectionUtils {
         }
     }
 
-    fun hasVariableOfName(name: String, instance: Any): Boolean {
+    inline fun <reified T> getMethodOfReturnType(instance: Any): String? {
+        val instancesOfMethods: Array<out Any> = instance.javaClass.getDeclaredMethods()
 
+        return instancesOfMethods.firstOrNull { getMethodReturnHandle.invoke(it) == T::class.java }
+            ?.let { getMethodNameHandle.invoke(it) as String }
+    }
+
+    fun hasVariableOfName(name: String, instance: Any): Boolean {
         val instancesOfFields: Array<out Any> = instance.javaClass.getDeclaredFields()
         return instancesOfFields.any { getFieldNameHandle.invoke(it) == name }
     }
