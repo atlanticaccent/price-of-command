@@ -188,6 +188,7 @@ tasks {
                 from(projectDir)
                 into(dest)
                 exclude(".git", ".github", ".gradle", ".idea", ".run", "gradle")
+                exclude(".gitignore", "build.gradle.kts", "*gradle*", "README.md")
             }
         }
     }
