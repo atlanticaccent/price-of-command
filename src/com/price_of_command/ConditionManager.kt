@@ -8,7 +8,7 @@ import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.conditions.Condition
 import com.price_of_command.conditions.Death
-import com.price_of_command.conditions.Outcome
+import com.price_of_command.conditions.PostBattleListener
 import com.price_of_command.conditions.ResolvableCondition
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
@@ -20,6 +20,7 @@ object ConditionManager : OverrideManager {
     const val CONDITION_MAP = "pc_persistent_condition_map"
     const val PRECONDITIONS = "pc_persistent_preconditions"
     const val MUTATORS = "pc_persistent_mutators"
+    const val POST_BATTLE_LISTENERS = "pc_post_battle_listeners"
 
     val now: Long
         get() = Global.getSector().clock.timestamp
@@ -28,6 +29,7 @@ object ConditionManager : OverrideManager {
     internal var conditionMap: Map<PersonAPI, List<Condition>> = emptyMap()
     override var preconditions: List<ConditionGate> = listOf()
     override var mutators: List<ConditionMutator> = listOf()
+    override var postBattleListeners: List<PostBattleListener> = listOf()
 
     private var showMemorialWall: Boolean = false
     var afterActionReport: AfterActionReport<*>? = null
@@ -138,16 +140,6 @@ object ConditionManager : OverrideManager {
 
     fun showMemorialWallNextFrame() {
         showMemorialWall = true
-    }
-
-    inline fun <reified T : Condition> addConditionAppliedListener(crossinline listener: (T) -> Outcome?) {
-        addPreconditionOverride {
-            if (it is T && it.precondition() is Outcome.Applied<*>) {
-                listener(it)
-            } else {
-                null
-            }
-        }
     }
 }
 

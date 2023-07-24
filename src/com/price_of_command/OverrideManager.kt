@@ -1,8 +1,6 @@
 package com.price_of_command
 
-import com.price_of_command.conditions.Condition
-import com.price_of_command.conditions.Death
-import com.price_of_command.conditions.Outcome
+import com.price_of_command.conditions.*
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.BasePrecondition
 import com.price_of_command.conditions.overrides.ConditionGate
@@ -12,6 +10,7 @@ import com.price_of_command.conditions.overrides.ConditionMutator
 interface OverrideManager {
     var preconditions: List<ConditionGate>
     var mutators: List<ConditionMutator>
+    var postBattleListeners: List<PostBattleListener>
 
     fun addPreconditionOverride(gate: ConditionGate) {
         preconditions = preconditions.plus(gate)
@@ -24,9 +23,7 @@ interface OverrideManager {
     }
 
     fun addPreconditionOverride(
-        completeImmediately: Boolean = false,
-        priority: Int,
-        gate: (Condition) -> Outcome?
+        completeImmediately: Boolean = false, priority: Int, gate: (Condition) -> Outcome?
     ): ConditionGate {
         val gate = BasePrecondition(completeImmediately, priority, block = gate)
         preconditions = preconditions.plus(gate)
@@ -42,8 +39,7 @@ interface OverrideManager {
     }
 
     fun addMutationOverride(
-        completeImmediately: Boolean = false,
-        mutation: (Condition) -> Condition?
+        completeImmediately: Boolean = false, mutation: (Condition) -> Condition?
     ): ConditionMutator {
         val mutator = BaseMutator(completeImmediately, block = mutation)
         mutators = mutators.plus(mutator)
@@ -51,9 +47,7 @@ interface OverrideManager {
     }
 
     fun addMutationOverride(
-        completeImmediately: Boolean = false,
-        priority: Int,
-        mutation: (Condition) -> Condition?
+        completeImmediately: Boolean = false, priority: Int, mutation: (Condition) -> Condition?
     ): ConditionMutator {
         val mutator = BaseMutator(completeImmediately, priority, block = mutation)
         mutators = mutators.plus(mutator)
@@ -81,5 +75,13 @@ interface OverrideManager {
             }
             null
         }
+    }
+
+    fun addPostBattleListener(listener: PostBattleListener) {
+        postBattleListeners = postBattleListeners.plus(listener)
+    }
+
+    fun addPostBattleListener(listener: PBLLambda) {
+        addPostBattleListener(BasePostBattleListener(listener))
     }
 }
