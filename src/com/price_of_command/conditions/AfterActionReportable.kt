@@ -69,7 +69,7 @@ interface AfterActionReportable {
         ?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } ?: "Unknown"
 }
 
-interface BaseAfterActionReportable : AfterActionReportable {
+abstract class BaseAfterActionReportable : AfterActionReportable {
     override fun generateReport(
         dialog: InteractionDialogAPI,
         textPanel: TextPanelAPI,
@@ -81,7 +81,7 @@ interface BaseAfterActionReportable : AfterActionReportable {
         delegate: (StoryOptionParams, () -> Unit) -> StoryPointActionDelegate
     ): Boolean = generateReport(dialog, textPanel, optionPanel, outcome, shipStatus, disabled, destroyed)
 
-    fun generateReport(
+    abstract fun generateReport(
         dialog: InteractionDialogAPI,
         textPanel: TextPanelAPI,
         optionPanel: OptionPanelAPI,

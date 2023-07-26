@@ -35,8 +35,10 @@ open class Fatigue(
     resolveOnMutation
 ) {
     companion object {
+        @JvmStatic
         fun generateDuration(seed: Long): Float = FATIGUE_MIN + Random(seed).nextFloat() * FATIGUE_RANGE
 
+        @JvmStatic
         fun fatigueEnabled() = LunaSettings.getBoolean(modID, "fatigue_toggle") ?: true
     }
 

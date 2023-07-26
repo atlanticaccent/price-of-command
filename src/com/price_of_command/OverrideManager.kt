@@ -7,7 +7,7 @@ import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
 
 @Suppress("unused", "NAME_SHADOWING")
-interface OverrideManager {
+internal interface OverrideManager {
     var preconditions: List<ConditionGate>
     var mutators: List<ConditionMutator>
     var postBattleListeners: List<PostBattleListener>

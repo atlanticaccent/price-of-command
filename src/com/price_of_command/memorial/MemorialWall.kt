@@ -23,7 +23,7 @@ import lunalib.lunaUI.elements.LunaSpriteElement
 import org.magiclib.kotlin.getPersonalityName
 import kotlin.math.absoluteValue
 
-class MemorialWall : BaseIntelPlugin() {
+class MemorialWall private constructor() : BaseIntelPlugin() {
     companion object {
         const val MEMORIAL_INTEL_TAG = "Memorial Wall"
         const val portraitHeight = 96f
@@ -31,6 +31,7 @@ class MemorialWall : BaseIntelPlugin() {
         const val topOffset = -8f
         private const val MEMORIAL_ENTITY_ID = "pc_memorial_entity"
 
+        @JvmStatic
         fun getMemorial(): MemorialWall {
             val manager = Global.getSector().intelManager
             return if (manager.hasIntelOfClass(MemorialWall::class.java)) {

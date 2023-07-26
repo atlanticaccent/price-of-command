@@ -52,6 +52,7 @@ abstract class Wound(
     officer, startDate, Duration.Time(generateDuration(startDate)), rootConditions, resolveOnDeath, resolveOnMutation
 ) {
     companion object {
+        @JvmStatic
         fun generateDuration(seed: Long): Float = INJURY_MIN + Random(seed).nextFloat() * INJURY_RANGE
     }
 
@@ -326,11 +327,45 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
     override fun statusInReport(): String = "Gravely Injured"
 }
 
-class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
-    ResolvableCondition(target, startDate, Duration.Time(0f), rootConditions, resolveSilently = true),
-    BaseAfterActionReportable {
+class ExtendWounds private constructor(
+    target: PersonAPI,
+    startDate: Long,
+    rootConditions: List<Condition>,
+    private var reporter: BaseAfterActionReportable? = null
+) : ResolvableCondition(target, startDate, Duration.Time(0f), rootConditions, resolveSilently = true),
+    AfterActionReportable by reporter!! {
     private var previousDuration = 0f
     private lateinit var extended: Wound
+
+    constructor(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) : this(
+        target, startDate, rootConditions, null
+    )
+
+    init {
+        reporter = object : BaseAfterActionReportable() {
+            override fun generateReport(
+                dialog: InteractionDialogAPI,
+                textPanel: TextPanelAPI,
+                optionPanel: OptionPanelAPI,
+                outcome: Outcome,
+                shipStatus: FleetMemberStatusAPI,
+                disabled: Boolean,
+                destroyed: Boolean,
+            ): Boolean {
+                val name = target.nameString
+                val remaining = this@ExtendWounds.extended.remaining().duration.getRoundedValueMaxOneAfterDecimal()
+
+                textPanel.addPara("It appears that during the last encounter one of Officer $name's injuries was notably exacerbated.")
+                textPanel.addPara("As such, their injury that would have taken ${this@ExtendWounds.previousDuration.getRoundedValueMaxOneAfterDecimal()} days to heal will now take $remaining days to heal.")
+
+                optionPanel.addOption("Return to the rest of the report.", AfterActionReport.REMOVE_SELF)
+
+                return false
+            }
+
+            override fun statusInReport(): String = "Injury Deteriorated"
+        }
+    }
 
     override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() <= EXTEND_RATE) {
         Outcome.Applied(this)
@@ -361,28 +396,6 @@ class ExtendWounds(target: PersonAPI, startDate: Long, rootConditions: List<Cond
         BaseMutator(continuous = true, checkImmediately = false) { NullCondition(target, startDate) }
 
     override fun pastTense(): String = ""
-
-    override fun generateReport(
-        dialog: InteractionDialogAPI,
-        textPanel: TextPanelAPI,
-        optionPanel: OptionPanelAPI,
-        outcome: Outcome,
-        shipStatus: FleetMemberStatusAPI,
-        disabled: Boolean,
-        destroyed: Boolean,
-    ): Boolean {
-        val name = target.nameString
-        val remaining = extended.remaining().duration.getRoundedValueMaxOneAfterDecimal()
-
-        textPanel.addPara("It appears that during the last encounter one of Officer $name's injuries was notably exacerbated.")
-        textPanel.addPara("As such, their injury that would have taken ${previousDuration.getRoundedValueMaxOneAfterDecimal()} days to heal will now take $remaining days to heal.")
-
-        optionPanel.addOption("Return to the rest of the report.", AfterActionReport.REMOVE_SELF)
-
-        return false
-    }
-
-    override fun statusInReport(): String = "Injury Deteriorated"
 }
 
 fun PersonAPI.canBeInjured(): Boolean = !immuneToInjury()

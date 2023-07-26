@@ -12,7 +12,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
         get() = rootConditions.firstOrNull()
 
     companion object {
-        fun mutationOverrides(condition: Condition, checkImmediately: Boolean? = null): Condition? {
+        internal fun mutationOverrides(condition: Condition, checkImmediately: Boolean? = null): Condition? {
             val mutators = if (checkImmediately != null) {
                 ConditionManager.mutators.filter { it.checkImmediately == checkImmediately }
             } else {

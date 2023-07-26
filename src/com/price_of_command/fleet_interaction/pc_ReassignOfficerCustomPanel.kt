@@ -13,7 +13,6 @@ import com.fs.starfarer.coreui.CaptainPickerDialog
 import com.fs.starfarer.ui.interfacenew
 import com.price_of_command.*
 import com.price_of_command.relfection.ReflectionUtils
-import java.awt.Robot
 
 private const val pad = 2f
 private const val opad = 10f
@@ -28,6 +27,7 @@ class pc_ReassignOfficerCustomPanel private constructor(
     private val originalOfficerAssignments: Map<FleetMemberAPI, PersonAPI>
 ) {
     companion object {
+        @JvmStatic
         fun fleetAssignments(): Map<FleetMemberAPI, PersonAPI> {
             return playerFleet().fleetData.membersListCopy.mapNotNull { it.captain?.run { it to this } }.toMap()
         }
@@ -40,7 +40,6 @@ class pc_ReassignOfficerCustomPanel private constructor(
     )
 
     internal fun showPicker() {
-        val robot = Robot()
         dialog.showFleetMemberPickerDialog(null,
             "Ok",
             "Cancel",

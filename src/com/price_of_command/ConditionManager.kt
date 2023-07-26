@@ -32,14 +32,15 @@ object ConditionManager : OverrideManager {
     override var postBattleListeners: List<PostBattleListener> = listOf()
 
     private var showMemorialWall: Boolean = false
-    var afterActionReport: AfterActionReport<*>? = null
+    internal var afterActionReport: AfterActionReport<*>? = null
 
+    @JvmStatic
     fun findByStats(stats: MutableCharacterStatsAPI): Pair<PersonAPI, List<Condition>>? =
         conditionMap.entries.find { (person, _) ->
             person.stats.equals(stats)
         }?.toPair()
 
-    object pc_ConditionManagerEveryFrame : EveryFrameScript {
+    internal object pc_ConditionManagerEveryFrame : EveryFrameScript {
         override fun advance(p0: Float) {
             if (afterActionReport != null) {
                 return
@@ -92,21 +93,25 @@ object ConditionManager : OverrideManager {
         override fun runWhilePaused(): Boolean = false
     }
 
+    @JvmStatic
     fun appendCondition(officer: PersonAPI, condition: Condition): List<Condition> =
         appendCondition(officer, listOf(condition))
 
+    @JvmStatic
     fun appendCondition(officer: PersonAPI, conditions: List<Condition>): List<Condition> {
         val conditions = conditionMap[officer]?.plus(conditions) ?: conditions
         conditionMap = conditionMap.plus(officer to conditions)
         return conditions
     }
 
+    @JvmStatic
     fun removeCondition(condition: Condition): List<Condition> = conditionMap[condition.target]?.let {
         val conditions = it.minus(condition)
         conditionMap = conditionMap.plus(condition.target to conditions)
         conditions
     } ?: emptyList()
 
+    @JvmStatic
     fun tryResolve(condition: ResolvableCondition): Boolean = condition.tryResolve().then {
         removeCondition(condition)
         if (!condition.resolveSilently) {
@@ -115,6 +120,7 @@ object ConditionManager : OverrideManager {
         }
     }
 
+    @JvmStatic
     fun killOfficer(officer: PersonAPI, condition: Death, deferResolve: Boolean = false) {
         val ship = playerFleet().fleetData.membersInPriorityOrder.find { it.captain == officer }
         var conditions = officer.conditions()
@@ -138,6 +144,7 @@ object ConditionManager : OverrideManager {
         MemorialWall.getMemorial().addDeath(deathData)
     }
 
+    @JvmStatic
     fun showMemorialWallNextFrame() {
         showMemorialWall = true
     }

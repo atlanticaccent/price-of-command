@@ -16,8 +16,8 @@ import org.magiclib.kotlin.map
 
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
-        var vanillaSkills = emptyList<String>()
-        var modSkillWhitelist = emptyList<String>()
+        internal var vanillaSkills = emptyList<String>()
+        internal var modSkillWhitelist = emptyList<String>()
     }
 
     override fun onApplicationLoad() {

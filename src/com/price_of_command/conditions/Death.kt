@@ -22,6 +22,7 @@ class Death(target: PersonAPI, startDate: Long, rootConditions: List<Condition>,
     val ship = target.ship()
 
     companion object {
+        @JvmStatic
         fun resurrect(target: PersonAPI, ship: FleetMemberAPI?) {
             target.removeTag(PoC_OFFICER_DEAD)
             playerFleet().fleetData.addOfficer(target)
@@ -32,6 +33,7 @@ class Death(target: PersonAPI, startDate: Long, rootConditions: List<Condition>,
             ship?.captain = target
         }
 
+        @JvmStatic
         fun setAvoidDeathStoryOption(
             condition: Death,
             optionPanel: OptionPanelAPI,

@@ -7,7 +7,7 @@ import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl
 import com.price_of_command.pc_CampaignEventListener
 
 object pc_FleetInteractionEveryFrame : EveryFrameScript {
-    var fleetInteractionWasOpen = false
+    private var fleetInteractionWasOpen = false
 
     private val vanillaIDs = listOf(
         FIDPIoption.LEAVE,

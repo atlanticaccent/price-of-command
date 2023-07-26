@@ -5,8 +5,7 @@ package com.price_of_command.relfection
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 
-object ReflectionUtils {
-
+internal object ReflectionUtils {
     private val fieldClass = Class.forName("java.lang.reflect.Field", false, Class::class.java.classLoader)
     private val setFieldHandle = MethodHandles.lookup()
         .findVirtual(fieldClass, "set", MethodType.methodType(Void.TYPE, Any::class.java, Any::class.java))
@@ -18,9 +17,9 @@ object ReflectionUtils {
         .findVirtual(fieldClass, "setAccessible", MethodType.methodType(Void.TYPE, Boolean::class.javaPrimitiveType))
 
     private val methodClass = Class.forName("java.lang.reflect.Method", false, Class::class.java.classLoader)
-    val getMethodNameHandle =
+    internal val getMethodNameHandle =
         MethodHandles.lookup().findVirtual(methodClass, "getName", MethodType.methodType(String::class.java))
-    val getMethodReturnHandle =
+    internal val getMethodReturnHandle =
         MethodHandles.lookup().findVirtual(methodClass, "getReturnType", MethodType.methodType(Class::class.java))
     private val invokeMethodHandle = MethodHandles.lookup().findVirtual(
         methodClass, "invoke", MethodType.methodType(Any::class.java, Any::class.java, Array<Any>::class.java)
