@@ -93,6 +93,12 @@ abstract class LastingCondition(
     sealed class Duration {
         object Indefinite : Duration()
         class Time(var duration: Float) : Duration()
+
+        companion object {
+            @Suppress("unused")
+            @JvmStatic
+            fun indefinite() = Indefinite
+        }
     }
 
     open fun remaining(): Duration = when (val duration = duration) {
