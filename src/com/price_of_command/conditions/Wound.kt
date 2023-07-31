@@ -77,11 +77,11 @@ open class Injury private constructor(
     rootConditions: List<Condition>,
 ) : Wound(officer, startDate, rootConditions), AfterActionReportable {
     private var _skill: String? = null
-    val skill: String
-        get() = _skill ?: throw IllegalStateException("Injury Skill ID Not Set")
+    var skill: String? = null
+        get() = field ?: _skill ?: "helmsmanship"
     private var _level: Int? = null
-    val level: Int
-        get() = _level ?: throw IllegalStateException("Injury Skill Level Not Set")
+    var level: Int? = null
+        get() = field ?: _level ?: 1
     private val skillSpec: SkillSpecAPI by lazy { settings().getSkillSpec(skill) }
 
     companion object {
@@ -101,12 +101,12 @@ open class Injury private constructor(
     constructor(officer: PersonAPI, skill: String, level: Int, startDate: Long, rootConditions: List<Condition>) : this(
         officer, startDate, rootConditions
     ) {
-        _skill = skill
-        _level = level
+        this.skill = skill
+        this.level = level
     }
 
     override fun tryResolve(): Boolean = super.tryResolve().then {
-        target.stats.setSkillLevel(skill, level.toFloat())
+        target.stats.setSkillLevel(skill, level?.toFloat() ?: 1f)
         target.stats.decreaseSkill("pc_injury_$injurySkillSuffix")
     }
 
@@ -144,8 +144,8 @@ open class Injury private constructor(
         val skills = getEligibleSkills()
         val removed = skills.random()
 
-        _skill = removed.skill.id
-        _level = removed.level.toInt()
+        skill = removed.skill.id
+        level = removed.level.toInt()
 
         target.stats.setSkillLevel("pc_fatigue", 0f)
 
@@ -199,10 +199,10 @@ open class Injury private constructor(
             )
             optionPanel.setTooltip(
                 AfterActionReport.REMOVE_SELF,
-                "This injury will render them unable to use their skill in ${skillSpec.name}"
+                "This injury will render them unable to use their skill in ${skillSpec?.name}"
             )
             optionPanel.setTooltipHighlights(
-                AfterActionReport.REMOVE_SELF, skillSpec.name
+                AfterActionReport.REMOVE_SELF, skillSpec?.name
             )
 
             optionPanel.addOption(
