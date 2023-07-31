@@ -2,6 +2,7 @@ package com.price_of_command
 
 import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.SettingsAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.loading.SkillSpec
 import com.price_of_command.conditions.LastingCondition
@@ -11,6 +12,7 @@ import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
 import com.price_of_command.relfection.ReflectionUtils
 import com.thoughtworks.xstream.XStream
+import org.codehaus.janino.SimpleCompiler
 import org.json.JSONObject
 import org.magiclib.kotlin.map
 
@@ -18,22 +20,16 @@ class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
         internal var vanillaSkills = emptyList<String>()
         internal var modSkillWhitelist = emptyList<String>()
+        internal lateinit var shipPickerListenerClazz: Class<*>
+        internal var aptitudeFieldName: String? = null
     }
 
     override fun onApplicationLoad() {
         val settings = Global.getSettings()
-        settings.skillIds.map { settings.getSkillSpec(it) }
-            .filter { it.tags.any { tag -> setOf("pc_quirk", "pc_condition").contains(tag) } }.forEach {
-                ReflectionUtils.set("Ó00000", it as SkillSpec, "pc_condition")
-            }
+        overrideAptitudes(settings)
+        loadCSVs(settings)
 
-        vanillaSkills = settings.loadCSV("data/characters/skills/skill_data.csv", false).map { it: JSONObject ->
-            it.getString("id")
-        }
-        modSkillWhitelist =
-            settings.loadCSV("data/characters/skills/poc_skill_whitelist.csv", true).map { it: JSONObject ->
-                it.getString("id")
-            }
+        compileWorkarounds()
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -72,5 +68,40 @@ class OfficerExpansionPlugin : BaseModPlugin() {
      */
     override fun configureXStream(x: XStream) {
         super.configureXStream(x)
+    }
+
+    override fun onDevModeF8Reload() {
+        this.onApplicationLoad()
+    }
+
+    private fun overrideAptitudes(settings: SettingsAPI) {
+        settings.skillIds.map { settings.getSkillSpec(it) }
+            .filter { it.tags.any { tag -> tag in setOf(PoC_TRAIT_TAG, PoC_CONDITION_TAG) } }.forEach {
+                if (aptitudeFieldName == null) {
+                    val fields = ReflectionUtils.getFieldsOfType<String>(it as SkillSpec)
+                    aptitudeFieldName =
+                        fields.firstOrNull { fieldName -> ReflectionUtils.get(fieldName, it) == it.governingAptitudeId }
+                }
+                aptitudeFieldName?.run { ReflectionUtils.set(this, it, "pc_condition") }
+            }
+    }
+
+    private fun loadCSVs(settings: SettingsAPI) {
+        vanillaSkills = settings.loadCSV("data/characters/skills/skill_data.csv", false).map { it: JSONObject ->
+            it.getString("id")
+        }
+        modSkillWhitelist =
+            settings.loadCSV("data/characters/skills/poc_skill_whitelist.csv", true).map { it: JSONObject ->
+                it.getString("id")
+            }
+    }
+
+    private fun compileWorkarounds() {
+        val sourceCode = settings().loadText("data/scripts/ship_picker_listener/windows/Listener.java")
+
+        val loader = SimpleCompiler()
+        loader.setParentClassLoader(this::class.java.classLoader)
+        loader.cook(sourceCode)
+        shipPickerListenerClazz = loader.classLoader.loadClass("data.scripts.ship_picker_listener.windows.Listener")
     }
 }

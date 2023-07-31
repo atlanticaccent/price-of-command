@@ -41,6 +41,6 @@ class pc_ReassignOfficerOptionDelegate(private val dialog: InteractionDialogAPI)
     val validShips = playerFleet().fleetData.membersInPriorityOrder.filter {
         !it.isAutomated() && it.canBeDeployedForCombat() && !it.isFighterWing
     }
-    pc_ReassignOfficerCustomPanel(dialog, fleet, validShips).showPicker()
+    ReassignOfficerReflector(dialog, fleet, validShips).showPicker()
 })
 

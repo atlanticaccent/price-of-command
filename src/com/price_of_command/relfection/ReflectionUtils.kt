@@ -2,6 +2,7 @@
 
 package com.price_of_command.relfection
 
+import com.price_of_command.logger
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 
@@ -11,6 +12,8 @@ internal object ReflectionUtils {
         .findVirtual(fieldClass, "set", MethodType.methodType(Void.TYPE, Any::class.java, Any::class.java))
     private val getFieldHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "get", MethodType.methodType(Any::class.java, Any::class.java))
+    private val getFieldTypeHandle =
+        MethodHandles.lookup().findVirtual(fieldClass, "getType", MethodType.methodType(Class::class.java))
     private val getFieldNameHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "getName", MethodType.methodType(String::class.java))
     private val setFieldAccessibleHandle = MethodHandles.lookup()
@@ -30,7 +33,7 @@ internal object ReflectionUtils {
 
         try {
             field = instanceToModify.javaClass.getField(fieldName)
-        } catch (_: NoSuchFieldError) {
+        } catch (_: Exception) {
         }
         if (field == null) {
             field = instanceToModify.javaClass.getDeclaredField(fieldName)
@@ -45,7 +48,8 @@ internal object ReflectionUtils {
 
         try {
             field = instanceToGetFrom.javaClass.getField(fieldName)
-        } catch (_: NoSuchFieldError) {
+        } catch (e: Exception) {
+            logger().debug(e)
         }
         if (field == null) {
             field = instanceToGetFrom.javaClass.getDeclaredField(fieldName)
@@ -75,6 +79,13 @@ internal object ReflectionUtils {
     fun hasVariableOfName(name: String, instance: Any): Boolean {
         val instancesOfFields: Array<out Any> = instance.javaClass.getDeclaredFields()
         return instancesOfFields.any { getFieldNameHandle.invoke(it) == name }
+    }
+
+    inline fun <reified T> getFieldsOfType(instance: Any): List<String> {
+        val instancesOfMethods: Array<out Any> = instance.javaClass.getDeclaredFields()
+
+        return instancesOfMethods.filter { getFieldTypeHandle.invoke(it) == T::class.java }
+            .map { getFieldNameHandle.invoke(it) as String }
     }
 
     fun instantiate(clazz: Class<*>, vararg arguments: Any?): Any? {

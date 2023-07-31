@@ -12,15 +12,12 @@ import com.fs.starfarer.campaign.fleet.FleetMember
 import com.fs.starfarer.coreui.CaptainPickerDialog
 import com.fs.starfarer.ui.interfacenew
 import com.price_of_command.*
+import com.price_of_command.janino.interfaces.ShipPickerListenerInterface
 import com.price_of_command.relfection.ReflectionUtils
 
-private const val pad = 2f
 private const val opad = 10f
 
-private const val rowHeight = 96f
-private const val width = 780f
-
-class pc_ReassignOfficerCustomPanel private constructor(
+class ReassignOfficerReflector private constructor(
     private val dialog: InteractionDialogAPI,
     private val campaignFleet: CampaignFleet,
     private val validShips: List<FleetMemberAPI>,
@@ -104,9 +101,9 @@ class pc_ReassignOfficerCustomPanel private constructor(
                         val oldListener = ReflectionUtils.invoke("getListener", it)!!
 
                         val script =
-                            settings().scriptClassLoader.loadClass("data.scripts.ship_picker_listener.windows.Listener")
-                        val listener = ReflectionUtils.instantiate(script, oldListener)!!
-                        ReflectionUtils.invoke("attach", listener, it)
+                            OfficerExpansionPlugin.shipPickerListenerClazz.newInstance() as ShipPickerListenerInterface
+                        script.setListener(oldListener)
+                        script.attach(it)
                     }
                 }
             }
