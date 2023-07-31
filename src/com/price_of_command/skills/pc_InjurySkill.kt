@@ -96,7 +96,7 @@ class pc_InjurySkill {
 
 fun PersonAPI.overwriteSkills(injuries: List<Injury>): PersonAPI {
     for (injury in injuries) {
-        this.stats.setSkillLevel(injury.skill, injury.level.toFloat())
+        this.stats.setSkillLevel(injury.skill, injury.level?.toFloat() ?: 1f)
     }
 
     return this
