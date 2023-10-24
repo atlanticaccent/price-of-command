@@ -8,12 +8,10 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.campaign.fleet.CampaignFleet
-import com.fs.starfarer.campaign.fleet.FleetMember
-import com.fs.starfarer.coreui.CaptainPickerDialog
-import com.fs.starfarer.ui.interfacenew
 import com.price_of_command.*
-import com.price_of_command.janino.interfaces.ShipPickerListenerInterface
-import com.price_of_command.relfection.ReflectionUtils
+import com.price_of_command.platform.reassign
+import com.price_of_command.platform.shared.ReflectionUtils
+import com.price_of_command.platform.shared.ShipPickerWrapper
 
 private const val opad = 10f
 
@@ -47,23 +45,7 @@ class ReassignOfficerReflector private constructor(
             false,
             validShips,
             object : FleetMemberPickerListener {
-                override fun pickedFleetMembers(members: List<FleetMemberAPI>) {
-                    if (members.isNotEmpty()) {
-                        val picked = members.first() as FleetMember
-                        val picker = object : CaptainPickerDialog(campaignFleet, picked, dialog as interfacenew, null) {
-                            override fun actionPerformed(p0: Any?, p1: Any?) {
-                                super.actionPerformed(p0, p1)
-                                if (this.isBeingDismissed) {
-                                    showPicker()
-                                }
-                            }
-                        }
-                        picker.show(0f, 0f)
-                        logger().debug("Picked ${picked.shipName}")
-                    } else {
-                        setFleetAssignmentRestore()
-                    }
-                }
+                override fun pickedFleetMembers(members: List<FleetMemberAPI>) = Unit
 
                 override fun cancelledFleetMemberPicking() {
                     logger().debug("Pick cancelled")
@@ -82,7 +64,7 @@ class ReassignOfficerReflector private constructor(
             val pickPanel = ReflectionUtils.invoke("getCurr", pickRoot) as UIPanelAPI
             val checkPanel = settings().createCustom(100f, 30f, BaseCustomUIPanelPlugin())
             val checkTooltip = checkPanel.createUIElement(100f, 30f, false)
-            val checkboxString = "Restore fleet assignments after battle or closing dialog"
+            val checkboxString = "Restore fleet assignments after battle or leaving peacefully"
             val checkboxWidth = checkTooltip.computeStringWidth(checkboxString)
             checkbox = checkTooltip.addCheckbox(
                 checkboxWidth, 16f, checkboxString, "pc_restore_fleet_assignments", ButtonAPI.UICheckboxSize.SMALL, opad
@@ -92,20 +74,20 @@ class ReassignOfficerReflector private constructor(
             checkPanel.addUIElement(checkTooltip)
             pickPanel.addComponent(checkPanel).inBL(8f, 10f)
 
-            val system = System.getProperty("os.name")
-            when {
-                system.contains("windows", ignoreCase = true) -> {
-                    val ships =
-                        pickPanel.getChildrenCopy()[4].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()
-                    ships.forEach {
-                        val oldListener = ReflectionUtils.invoke("getListener", it)!!
+            val button = pickPanel.getChildrenCopy().filterIsInstance<ButtonAPI>().first()
+            val inner_listener = ReflectionUtils.invoke("getListener", button)!!
 
-                        val script =
-                            OfficerExpansionPlugin.shipPickerListenerClazz.newInstance() as ShipPickerListenerInterface
-                        script.setListener(oldListener)
-                        script.attach(it)
-                    }
-                }
+            val ships =
+                pickPanel.getChildrenCopy()[4].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()
+            val target_listener = ReflectionUtils.invoke("getListener", ships.first())!!
+
+            ShipPickerWrapper.reassign(
+                target_listener,
+                inner_listener,
+                dialog,
+                campaignFleet
+            ) { _, _ ->
+                showPicker()
             }
         } catch (e: Exception) {
             logger().debug(e)

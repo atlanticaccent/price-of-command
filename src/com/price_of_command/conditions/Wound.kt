@@ -199,10 +199,10 @@ open class Injury private constructor(
             )
             optionPanel.setTooltip(
                 AfterActionReport.REMOVE_SELF,
-                "This injury will render them unable to use their skill in ${skillSpec?.name}"
+                "This injury will render them unable to use their skill in ${skillSpec.name}"
             )
             optionPanel.setTooltipHighlights(
-                AfterActionReport.REMOVE_SELF, skillSpec?.name
+                AfterActionReport.REMOVE_SELF, skillSpec.name
             )
 
             optionPanel.addOption(

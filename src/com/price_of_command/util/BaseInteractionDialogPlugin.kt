@@ -6,7 +6,7 @@ import com.fs.starfarer.api.combat.EngagementResultAPI
 
 class BaseInteractionDialogPlugin(private val init: (InteractionDialogAPI) -> Unit) : InteractionDialogPlugin {
     private var onOptionSelected: (BaseInteractionDialogPlugin.(String, Any?) -> Unit)? = null
-    var dialog: InteractionDialogAPI? = null
+    lateinit var dialog: InteractionDialogAPI
 
     override fun init(dialog: InteractionDialogAPI) {
         this.dialog = dialog

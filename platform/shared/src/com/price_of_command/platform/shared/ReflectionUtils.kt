@@ -1,20 +1,19 @@
 @file:Suppress("UsePropertyAccessSyntax")
 
-package com.price_of_command.relfection
+package com.price_of_command.platform.shared
 
-import com.price_of_command.logger
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 
-internal object ReflectionUtils {
+object ReflectionUtils {
     private val fieldClass = Class.forName("java.lang.reflect.Field", false, Class::class.java.classLoader)
     private val setFieldHandle = MethodHandles.lookup()
         .findVirtual(fieldClass, "set", MethodType.methodType(Void.TYPE, Any::class.java, Any::class.java))
     private val getFieldHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "get", MethodType.methodType(Any::class.java, Any::class.java))
-    private val getFieldTypeHandle =
+    val getFieldTypeHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "getType", MethodType.methodType(Class::class.java))
-    private val getFieldNameHandle =
+    val getFieldNameHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "getName", MethodType.methodType(String::class.java))
     private val setFieldAccessibleHandle = MethodHandles.lookup()
         .findVirtual(fieldClass, "setAccessible", MethodType.methodType(Void.TYPE, Boolean::class.javaPrimitiveType))
@@ -48,8 +47,7 @@ internal object ReflectionUtils {
 
         try {
             field = instanceToGetFrom.javaClass.getField(fieldName)
-        } catch (e: Exception) {
-            logger().debug(e)
+        } catch (_: Exception) {
         }
         if (field == null) {
             field = instanceToGetFrom.javaClass.getDeclaredField(fieldName)
@@ -69,7 +67,7 @@ internal object ReflectionUtils {
         }
     }
 
-    inline fun <reified T> getMethodOfReturnType(instance: Any): String? {
+    internal inline fun <reified T> getMethodOfReturnType(instance: Any): String? {
         val instancesOfMethods: Array<out Any> = instance.javaClass.getDeclaredMethods()
 
         return instancesOfMethods.firstOrNull { getMethodReturnHandle.invoke(it) == T::class.java }
@@ -89,7 +87,7 @@ internal object ReflectionUtils {
     }
 
     fun instantiate(clazz: Class<*>, vararg arguments: Any?): Any? {
-        val args = arguments.map { it!!::class.javaPrimitiveType ?: it!!::class.java }
+        val args = arguments.map { it!!::class.javaPrimitiveType ?: it::class.java }
         val methodType = MethodType.methodType(Void.TYPE, args)
 
         val constructorHandle = MethodHandles.lookup().findConstructor(clazz, methodType)
