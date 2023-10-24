@@ -65,7 +65,7 @@ class ReassignOfficerReflector private constructor(
             val pickPanel = ReflectionUtils.invoke("getCurr", pickRoot) as UIPanelAPI
             val checkPanel = settings().createCustom(100f, 30f, BaseCustomUIPanelPlugin())
             val checkTooltip = checkPanel.createUIElement(100f, 30f, false)
-            val checkboxString = "Restore fleet assignments after battle or closing dialog"
+            val checkboxString = "Restore fleet assignments after battle or leaving peacefully"
             val checkboxWidth = checkTooltip.computeStringWidth(checkboxString)
             checkbox = checkTooltip.addCheckbox(
                 checkboxWidth, 16f, checkboxString, "pc_restore_fleet_assignments", ButtonAPI.UICheckboxSize.SMALL, opad
@@ -75,9 +75,8 @@ class ReassignOfficerReflector private constructor(
             checkPanel.addUIElement(checkTooltip)
             pickPanel.addComponent(checkPanel).inBL(8f, 10f)
 
-            val buttons = pickPanel.getChildrenCopy().filterIsInstance<ButtonAPI>()
-            buttons.first { it.text.lowercase().contains("cancel") }.setOpacity(0f)
-            val inner_listener = ReflectionUtils.invoke("getListener", buttons[0])!!
+            val button = pickPanel.getChildrenCopy().filterIsInstance<ButtonAPI>().first()
+            val inner_listener = ReflectionUtils.invoke("getListener", button)!!
 
             val ships =
                 pickPanel.getChildrenCopy()[4].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()
