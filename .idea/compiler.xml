@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.7" />
+    <bytecodeTargetLevel target="1.7">
+      <module name="price_of_command.platforms.linux.main" target="15" />
+      <module name="price_of_command.platforms.linux.test" target="15" />
+      <module name="price_of_command.platforms.shared.main" target="15" />
+      <module name="price_of_command.platforms.shared.test" target="15" />
+      <module name="price_of_command.shared.main" target="15" />
+      <module name="price_of_command.shared.test" target="15" />
+    </bytecodeTargetLevel>
   </component>
 </project>

@@ -42,13 +42,35 @@ val modThreadId = "00000"
 //////////////////////
 
 // Note: On Linux, use "${starsectorDirectory}" as core directory
-val starsectorCoreDirectory = "${starsectorDirectory}/starsector-core"
+val starsectorCoreDirectory = {
+    val os = System.getProperty("os.name").toLowerCase()
+    when {
+        os.contains("win") -> {
+            "${starsectorDirectory}/starsector-core"
+        }
+        os.contains("nix") || os.contains("nux") || os.contains("aix") -> {
+            starsectorDirectory
+        }
+        os.contains("mac") -> {
+            "${starsectorDirectory}/Contents/Resources/Java"
+        }
+        else -> null
+    }
+}
 val starsectorModDirectory = "${starsectorDirectory}/mods"
 val modInModsFolder = File("$starsectorModDirectory/${modFolderName}")
 val modFiles = modInModsFolder.listFiles()
 
+configurations {
+    create("jarLibs")
+}
+
 // The dependencies for the mod to *build* (not necessarily to run).
 dependencies {
+    api(project(mapOf("path" to ":platform:windows")))
+    api(project(mapOf("path" to ":platform:macos")))
+    api(project(mapOf("path" to ":platform:linux")))
+    api(project(mapOf("path" to ":platform:shared")))
     // If using auto-generated mod_info.json, scroll down and update the "dependencies" part of mod_info.json with
     // any mod dependencies to be displayed in the Starsector launcher.
 
@@ -77,6 +99,13 @@ dependencies {
 tasks {
     named<Jar>("jar")
     {
+        // Copy platform jars in to create thin-fat jar
+        fileTree("jars") {
+            include("*.jar")
+            exclude(jarFileName)
+        }.forEach {
+            from(zipTree(it.absoluteFile))
+        }
         // Tells Gradle to put the .jar file in the /jars folder.
         destinationDirectory.set(file("$rootDir/jars"))
         // Sets the name of the .jar file.
@@ -190,8 +219,24 @@ tasks {
                 into(dest)
                 exclude(".git", ".github", ".gradle", ".idea", ".run", "gradle")
                 exclude(".gitignore", "build.gradle.kts", "*gradle*", "README.md")
+                exclude("build")
+                exclude("jars/linux.jar")
+                exclude("jars/windows.jar")
+                exclude("jars/macos.jar")
+                exclude("jars/shared.jar")
             }
         }
+    }
+
+    register<Zip>("zip") {
+        dependsOn("jar")
+
+        from(projectDir)
+        exclude(".git", ".github", ".gradle", ".idea", ".run", "gradle")
+        exclude(".gitignore", "build.gradle.kts", "*gradle*", "README.md")
+        exclude("build")
+
+        archiveFileName.set("price-of-command.zip")
     }
 }
 
@@ -210,6 +255,7 @@ kotlin.sourceSets.main {
 plugins {
     kotlin("jvm") version "1.5.31"
     java
+    `java-library`
 }
 
 version = modVersion

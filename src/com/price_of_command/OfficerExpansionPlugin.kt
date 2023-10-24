@@ -10,9 +10,8 @@ import com.price_of_command.conditions.PostBattleListener
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
-import com.price_of_command.relfection.ReflectionUtils
+import com.price_of_command.platform.shared.ReflectionUtils
 import com.thoughtworks.xstream.XStream
-import org.codehaus.janino.SimpleCompiler
 import org.json.JSONObject
 import org.magiclib.kotlin.map
 
@@ -20,7 +19,6 @@ class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
         internal var vanillaSkills = emptyList<String>()
         internal var modSkillWhitelist = emptyList<String>()
-        internal lateinit var shipPickerListenerClazz: Class<*>
         internal var aptitudeFieldName: String? = null
     }
 
@@ -28,8 +26,6 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         val settings = Global.getSettings()
         overrideAptitudes(settings)
         loadCSVs(settings)
-
-        compileWorkarounds()
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -94,14 +90,5 @@ class OfficerExpansionPlugin : BaseModPlugin() {
             settings.loadCSV("data/characters/skills/poc_skill_whitelist.csv", true).map { it: JSONObject ->
                 it.getString("id")
             }
-    }
-
-    private fun compileWorkarounds() {
-        val sourceCode = settings().loadText("data/scripts/ship_picker_listener/windows/Listener.java")
-
-        val loader = SimpleCompiler()
-        loader.setParentClassLoader(this::class.java.classLoader)
-        loader.cook(sourceCode)
-        shipPickerListenerClazz = loader.classLoader.loadClass("data.scripts.ship_picker_listener.windows.Listener")
     }
 }

@@ -17,13 +17,18 @@ import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.price_of_command.memory.EscapedMemory
-import com.price_of_command.relfection.ReflectionUtils
+import com.price_of_command.platform.shared.ReflectionUtils
 import lunalib.lunaUI.elements.LunaSpriteElement
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
+import java.util.*
 
 fun Any.logger(): Logger {
     return Global.getLogger(this::class.java).apply { level = Level.ALL }
+}
+
+fun Any.debug(message: String) {
+    this.logger().debug(message)
 }
 
 fun playerFleet(): CampaignFleetAPI {
@@ -127,3 +132,24 @@ fun PersonAPI.getPossessiveSuffix() = if (nameString.endsWith('s')) {
 }
 
 fun PersonAPI.possessive() = nameString + getPossessiveSuffix()
+
+val os = System.getProperty("os.name").lowercase(Locale.getDefault())
+
+fun <T> forPlatform(
+    win: () -> T,
+    linux: () -> T,
+    macos: () -> T,
+) : T = when {
+    os.contains("win") -> win()
+    os.contains("nix") || os.contains("nux") || os.contains("aix") -> linux()
+    os.contains("mac") -> macos()
+    else -> throw Exception("Could not detect current platform")
+}
+
+fun <T> forPlatform(
+    win: T, linux: T, macos: T
+) : T = forPlatform(
+    { win },
+    { linux },
+    { macos }
+)

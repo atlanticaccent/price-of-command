@@ -4,10 +4,21 @@ import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.OptionPanelAPI
 import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl
+import com.fs.starfarer.api.ui.ButtonAPI
+import com.fs.starfarer.api.ui.TooltipMakerAPI
+import com.price_of_command.getChildrenCopy
+import com.price_of_command.getParent
 import com.price_of_command.pc_CampaignEventListener
+import com.price_of_command.platform.shared.ReflectionUtils
 
 object pc_FleetInteractionEveryFrame : EveryFrameScript {
     private var fleetInteractionWasOpen = false
+    var hack: TooltipMakerAPI? = null
+        get() {
+            val temp = field
+            field = null
+            return temp
+        }
 
     private val vanillaIDs = listOf(
         FIDPIoption.LEAVE,
@@ -33,6 +44,12 @@ object pc_FleetInteractionEveryFrame : EveryFrameScript {
     override fun runWhilePaused(): Boolean = true
 
     override fun advance(amount: Float) {
+        hack?.let { story ->
+            ReflectionUtils.invoke("getListener", story.getParent().getChildrenCopy().filterIsInstance<ButtonAPI>().first { it.text == "Cancel" })?.let { cancel ->
+                ReflectionUtils.invoke("dismiss", cancel, 1)
+            }
+        }
+
         val dialog = Global.getSector().campaignUI.currentInteractionDialog
         if (dialog != null && dialog.plugin is FleetInteractionDialogPluginImpl && shouldAppendOption(dialog.optionPanel)) {
             val options = dialog.optionPanel
