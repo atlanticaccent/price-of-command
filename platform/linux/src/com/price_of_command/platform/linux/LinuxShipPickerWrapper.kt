@@ -26,7 +26,7 @@ class LinuxShipPickerWrapper(
     )
 
     override fun reassign(target: Any) {
-        ReflectionUtils.set("ÕõOo00", target, this)
+        ReflectionUtils.set("interface.return\$do", target, this)
     }
 
     override fun fleetMemberClicked(p0: FleetMember?, p1: new?, p2: C?) {
