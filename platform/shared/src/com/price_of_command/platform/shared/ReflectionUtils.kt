@@ -87,7 +87,7 @@ object ReflectionUtils {
     }
 
     fun instantiate(clazz: Class<*>, vararg arguments: Any?): Any? {
-        val args = arguments.map { it!!::class.javaPrimitiveType ?: it!!::class.java }
+        val args = arguments.map { it!!::class.javaPrimitiveType ?: it::class.java }
         val methodType = MethodType.methodType(Void.TYPE, args)
 
         val constructorHandle = MethodHandles.lookup().findConstructor(clazz, methodType)

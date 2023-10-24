@@ -8,11 +8,10 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.campaign.fleet.CampaignFleet
-import com.fs.starfarer.campaign.fleet.FleetMember
 import com.price_of_command.*
 import com.price_of_command.platform.reassign
-import com.price_of_command.platform.shared.ShipPickerWrapper
 import com.price_of_command.platform.shared.ReflectionUtils
+import com.price_of_command.platform.shared.ShipPickerWrapper
 
 private const val opad = 10f
 
