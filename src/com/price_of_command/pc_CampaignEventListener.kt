@@ -2,9 +2,9 @@ package com.price_of_command
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener
+import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
-import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.impl.campaign.BattleAutoresolverPluginImpl
 import com.price_of_command.conditions.*
 import com.price_of_command.fleet_interaction.AfterActionReport
@@ -20,11 +20,17 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         }
 
     @Suppress("UNCHECKED_CAST")
-    var fleetAssignment: Map<FleetMemberAPI, PersonAPI>?
-        get() = Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] as? Map<FleetMemberAPI, PersonAPI>
+    var oldFleetAssignments: Map<String, PersonAPI?>?
+        get() {
+            return Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] as? Map<String, PersonAPI?>
+        }
         set(value) {
             Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] = value
         }
+
+    fun currentFleetAssignments(): Map<String, PersonAPI?> {
+        return playerFleet().fleetData.membersListCopy.mapNotNull { it.id to it.captain }.toMap()
+    }
 
     override fun reportPlayerEngagement(resultAPI: EngagementResultAPI) {
         val (result, opposition) = if (resultAPI.didPlayerWin()) {
@@ -120,16 +126,20 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
         tryRestoreFleetAssignments()
     }
 
-    fun tryRestoreFleetAssignments() {
-        val fleetAssignment = fleetAssignment
-        if (restoreFleetAssignments && fleetAssignment != null) {
+    override fun reportShownInteractionDialog(dialog: InteractionDialogAPI) {
+        oldFleetAssignments = currentFleetAssignments()
+    }
+
+    fun tryRestoreFleetAssignments(override: Boolean = false) {
+        val fleetAssignment = oldFleetAssignments
+        if ((restoreFleetAssignments || override) && fleetAssignment != null) {
             playerFleet().fleetData.membersInPriorityOrder.forEach {
-                val officer = fleetAssignment[it]
+                val officer = fleetAssignment[it.id]
                 if (officer != null && !officer.hasTag(PoC_OFFICER_DEAD)) {
                     it.captain = officer
                     if (it.captain.isPlayer) {
                         it.isFlagship = true
-                    } else if (it.isFlagship) {
+                    } else {
                         it.isFlagship = false
                     }
                 } else {

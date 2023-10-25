@@ -3,7 +3,6 @@ package com.price_of_command.fleet_interaction
 import com.fs.starfarer.api.campaign.BaseCustomUIPanelPlugin
 import com.fs.starfarer.api.campaign.FleetMemberPickerListener
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
-import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
@@ -15,24 +14,12 @@ import com.price_of_command.platform.shared.ShipPickerWrapper
 
 private const val opad = 10f
 
-class ReassignOfficerReflector private constructor(
+class ReassignOfficerReflector(
     private val dialog: InteractionDialogAPI,
     private val campaignFleet: CampaignFleet,
     private val validShips: List<FleetMemberAPI>,
-    private val originalOfficerAssignments: Map<FleetMemberAPI, PersonAPI>
 ) {
-    companion object {
-        @JvmStatic
-        fun fleetAssignments(): Map<FleetMemberAPI, PersonAPI> {
-            return playerFleet().fleetData.membersListCopy.mapNotNull { it.captain?.run { it to this } }.toMap()
-        }
-    }
-
     private var checkbox: ButtonAPI? = null
-
-    constructor(dialog: InteractionDialogAPI, campaignFleet: CampaignFleet, validShips: List<FleetMemberAPI>) : this(
-        dialog, campaignFleet, validShips, fleetAssignments()
-    )
 
     internal fun showPicker() {
         dialog.showFleetMemberPickerDialog(null,
@@ -45,16 +32,13 @@ class ReassignOfficerReflector private constructor(
             false,
             validShips,
             object : FleetMemberPickerListener {
-                override fun pickedFleetMembers(members: List<FleetMemberAPI>) = Unit
+                override fun pickedFleetMembers(members: List<FleetMemberAPI>) {
+                    setFleetAssignmentRestore()
+                }
 
                 override fun cancelledFleetMemberPicking() {
                     logger().debug("Pick cancelled")
-                    playerFleet().fleetData.membersInPriorityOrder.forEach {
-                        it.captain = originalOfficerAssignments[it]
-                        if (it.captain.isPlayer) {
-                            it.isFlagship = true
-                        }
-                    }
+                    pc_CampaignEventListener.tryRestoreFleetAssignments(true)
                     setFleetAssignmentRestore()
                 }
             })
@@ -62,7 +46,15 @@ class ReassignOfficerReflector private constructor(
             val pickRoot =
                 (dialog as UIPanelAPI).getChildrenCopy().filterIsInstance<UIPanelAPI>().last().getChildrenCopy().first()
             val pickPanel = ReflectionUtils.invoke("getCurr", pickRoot) as UIPanelAPI
-            val checkPanel = settings().createCustom(100f, 30f, BaseCustomUIPanelPlugin())
+            val checkPanel = settings().createCustom(100f, 30f, object : BaseCustomUIPanelPlugin() {
+                override fun buttonPressed(buttonId: Any) {
+                    (buttonId as? String)?.let {
+                        if (it == "pc_restore_fleet_assignments") {
+                            pc_CampaignEventListener.restoreFleetAssignments = checkbox?.isChecked ?: false
+                        }
+                    }
+                }
+            })
             val checkTooltip = checkPanel.createUIElement(100f, 30f, false)
             val checkboxString = "Restore fleet assignments after battle or leaving peacefully"
             val checkboxWidth = checkTooltip.computeStringWidth(checkboxString)
@@ -96,8 +88,5 @@ class ReassignOfficerReflector private constructor(
 
     private fun setFleetAssignmentRestore() {
         pc_CampaignEventListener.restoreFleetAssignments = checkbox?.isChecked ?: true
-        if (pc_CampaignEventListener.restoreFleetAssignments) {
-            pc_CampaignEventListener.fleetAssignment = originalOfficerAssignments
-        }
     }
 }

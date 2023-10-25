@@ -20,7 +20,7 @@ dependencies {
     // any mod dependencies to be displayed in the Starsector launcher.
 
     // Vanilla Starsector jars and dependencies
-    compileOnly(fileTree(starsectorCoreDirectory) { include("**/*.jar") })
+    api(fileTree(starsectorCoreDirectory) { include("**/*.jar") })
     // Use all mods in /mods folder to compile (this does not mean the mod requires them to run).
     // LazyLib is needed to use Kotlin, as it provides the Kotlin Runtime, so ensure that that is in your mods folder.
 //    compileOnly(fileTree(starsectorModDirectory) {
