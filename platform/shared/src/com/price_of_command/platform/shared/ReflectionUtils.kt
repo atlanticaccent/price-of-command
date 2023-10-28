@@ -11,9 +11,9 @@ object ReflectionUtils {
         .findVirtual(fieldClass, "set", MethodType.methodType(Void.TYPE, Any::class.java, Any::class.java))
     private val getFieldHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "get", MethodType.methodType(Any::class.java, Any::class.java))
-    val getFieldTypeHandle =
+    private val getFieldTypeHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "getType", MethodType.methodType(Class::class.java))
-    val getFieldNameHandle =
+    private val getFieldNameHandle =
         MethodHandles.lookup().findVirtual(fieldClass, "getName", MethodType.methodType(String::class.java))
     private val setFieldAccessibleHandle = MethodHandles.lookup()
         .findVirtual(fieldClass, "setAccessible", MethodType.methodType(Void.TYPE, Boolean::class.javaPrimitiveType))
@@ -67,10 +67,10 @@ object ReflectionUtils {
         }
     }
 
-    internal inline fun <reified T> getMethodOfReturnType(instance: Any): String? {
+    fun getMethodOfReturnType(instance: Any, clazz: Class<*>): String? {
         val instancesOfMethods: Array<out Any> = instance.javaClass.getDeclaredMethods()
 
-        return instancesOfMethods.firstOrNull { getMethodReturnHandle.invoke(it) == T::class.java }
+        return instancesOfMethods.firstOrNull { getMethodReturnHandle.invoke(it) == clazz }
             ?.let { getMethodNameHandle.invoke(it) as String }
     }
 
@@ -79,10 +79,10 @@ object ReflectionUtils {
         return instancesOfFields.any { getFieldNameHandle.invoke(it) == name }
     }
 
-    inline fun <reified T> getFieldsOfType(instance: Any): List<String> {
+    fun getFieldsOfType(instance: Any, clazz: Class<*>): List<String> {
         val instancesOfMethods: Array<out Any> = instance.javaClass.getDeclaredFields()
 
-        return instancesOfMethods.filter { getFieldTypeHandle.invoke(it) == T::class.java }
+        return instancesOfMethods.filter { getFieldTypeHandle.invoke(it) == clazz }
             .map { getFieldNameHandle.invoke(it) as String }
     }
 

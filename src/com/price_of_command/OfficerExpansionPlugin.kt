@@ -74,7 +74,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         settings.skillIds.map { settings.getSkillSpec(it) }
             .filter { it.tags.any { tag -> tag in setOf(PoC_TRAIT_TAG, PoC_CONDITION_TAG) } }.forEach {
                 if (aptitudeFieldName == null) {
-                    val fields = ReflectionUtils.getFieldsOfType<String>(it as SkillSpec)
+                    val fields = ReflectionUtils.getFieldsOfType(it as SkillSpec, String::class.java)
                     aptitudeFieldName =
                         fields.firstOrNull { fieldName -> ReflectionUtils.get(fieldName, it) == it.governingAptitudeId }
                 }
