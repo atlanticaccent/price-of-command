@@ -97,8 +97,13 @@ dependencies {
 }
 
 tasks {
+    clean {
+        File(projectDir, "jars").deleteRecursively()
+    }
+
     named<Jar>("jar")
     {
+        dependsOn(getTasksByName("jar", true).filter { this.path != it.path })
         // Copy platform jars in to create thin-fat jar
         fileTree("jars") {
             include("*.jar")
@@ -193,7 +198,7 @@ tasks {
     }
 
     register<Delete>("uninstall-mod") {
-        val enabled = true;
+        val enabled = true
 
         if (!enabled) return@register
 
@@ -205,7 +210,7 @@ tasks {
     // If enabled, will copy your mod to the /mods directory when run (and whenever gradle syncs).
     // Disabled by default, as it is not needed if your mod directory is symlinked into your /mods folder.
     register<Copy>("install-mod") {
-        val enabled = true;
+        val enabled = true
 
         if (!enabled) return@register
 
