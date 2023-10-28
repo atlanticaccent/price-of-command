@@ -44,8 +44,8 @@ class OfficerExpansionPlugin : BaseModPlugin() {
             addTransientListener(pc_CampaignEventListener)
             addTransientScript(ConditionManager.pc_ConditionManagerEveryFrame)
             addTransientScript(pc_FleetInteractionEveryFrame)
-            addTransientScript(pc_OfficerEconomyModEveryFrame)
             addTransientScript(ForceOpenNextFrame)
+            listenerManager.addListener(pc_CampaignEventListener, true)
         }
     }
 

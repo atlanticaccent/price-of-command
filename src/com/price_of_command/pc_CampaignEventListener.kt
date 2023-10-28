@@ -3,13 +3,17 @@ package com.price_of_command
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
+import com.fs.starfarer.api.campaign.PlanetAPI
+import com.fs.starfarer.api.campaign.econ.MarketAPI
+import com.fs.starfarer.api.campaign.listeners.PlayerColonizationListener
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.impl.campaign.BattleAutoresolverPluginImpl
+import com.fs.starfarer.api.impl.campaign.ids.Stats
 import com.price_of_command.conditions.*
 import com.price_of_command.fleet_interaction.AfterActionReport
 
-object pc_CampaignEventListener : BaseCampaignEventListener(false) {
+object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColonizationListener {
     private const val RESTORE_FLEET_ASSIGNMENTS = "pc_restore_fleet_assignments"
     private const val FLEET_ASSIGNMENT_TO_RESTORE = "pc_fleet_assignments_to_restore"
 
@@ -128,6 +132,20 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false) {
 
     override fun reportShownInteractionDialog(dialog: InteractionDialogAPI) {
         oldFleetAssignments = currentFleetAssignments()
+    }
+
+    override fun reportPlayerOpenedMarket(market: MarketAPI) {
+        market.stats.dynamic.getMod(
+            Stats.OFFICER_PROB_MOD
+        ).modifyFlat(PoC_INCREASE_OFFICER_PROB_MULT, 0.4f)
+    }
+
+    override fun reportPlayerAbandonedColony(m: MarketAPI) = Unit
+
+    override fun reportPlayerColonizedPlanet(planet: PlanetAPI) {
+        planet.market.stats.dynamic.getMod(
+            Stats.OFFICER_PROB_MOD
+        ).modifyFlat(PoC_INCREASE_OFFICER_PROB_MULT, 0.4f)
     }
 
     fun tryRestoreFleetAssignments(override: Boolean = false) {
