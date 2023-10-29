@@ -64,7 +64,7 @@ class pc_InjurySkill {
                         concatenated,
                         last
                     )
-                    info.addSkillPanel(Global.getFactory().createPerson().overwriteSkills(conditions), 0f)
+                    info.addSkillPanel(Global.getFactory().createPerson().overwriteSkills(conditions.map { it.skill to it.level?.toFloat() }), 0f)
                     val rems = conditions.map { it.remaining().duration.getRoundedValueMaxOneAfterDecimal() }.sorted()
                     val remsConcat = rems.subList(0, rems.size - 1).joinToString(", ")
                     val remLast = rems.last()
@@ -75,7 +75,7 @@ class pc_InjurySkill {
                     info.addPara(
                         "Until they recover they will not be able to use their skill in %s.", 0f, hc, last
                     )
-                    info.addSkillPanel(Global.getFactory().createPerson().overwriteSkills(conditions), 0f)
+                    info.addSkillPanel(Global.getFactory().createPerson().overwriteSkills(conditions.map { it.skill to it.level?.toFloat() }), 0f)
                     info.addPara(
                         "They will recover in %s days.",
                         2f,
@@ -94,9 +94,9 @@ class pc_InjurySkill {
     }
 }
 
-fun PersonAPI.overwriteSkills(injuries: List<Injury>): PersonAPI {
-    for (injury in injuries) {
-        this.stats.setSkillLevel(injury.skill, injury.level?.toFloat() ?: 1f)
+fun PersonAPI.overwriteSkills(skills: List<Pair<String?, Float?>>): PersonAPI {
+    for ((skill, level) in skills) {
+        this.stats.setSkillLevel(skill, level ?: 1f)
     }
 
     return this
