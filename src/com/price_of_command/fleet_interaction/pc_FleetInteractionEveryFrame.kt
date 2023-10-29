@@ -3,12 +3,12 @@ package com.price_of_command.fleet_interaction
 import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.OptionPanelAPI
+import com.fs.starfarer.api.characters.OfficerDataAPI
 import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
-import com.price_of_command.getChildrenCopy
-import com.price_of_command.getParent
-import com.price_of_command.pc_CampaignEventListener
+import com.price_of_command.*
+import com.price_of_command.conditions.Injury
 import com.price_of_command.platform.shared.ReflectionUtils
 
 object pc_FleetInteractionEveryFrame : EveryFrameScript {
@@ -44,6 +44,8 @@ object pc_FleetInteractionEveryFrame : EveryFrameScript {
     override fun runWhilePaused(): Boolean = true
 
     override fun advance(amount: Float) {
+        rewriteLevelUpPicks(playerOfficers())
+
         hack?.let { story ->
             ReflectionUtils.invoke("getListener", story.getParent().getChildrenCopy().filterIsInstance<ButtonAPI>().first { it.text == "Cancel" })?.let { cancel ->
                 ReflectionUtils.invoke("dismiss", cancel, 1)
@@ -71,6 +73,23 @@ object pc_FleetInteractionEveryFrame : EveryFrameScript {
         if (dialog == null && fleetInteractionWasOpen) {
             fleetInteractionWasOpen = false
             pc_CampaignEventListener.tryRestoreFleetAssignments()
+        }
+    }
+
+    private fun rewriteLevelUpPicks(officers: List<OfficerDataAPI>) {
+        for (officer in officers.filter { it.canLevelUp() }) {
+            val blockedSkills = officer.person.conditions().filterIsInstance<Injury>()
+            val repeatSkills = officer.skillPicks.count { blockedSkills.any { blocked -> blocked.skill == it } }
+
+            if (repeatSkills > 0) {
+                blockedSkills.forEach {
+                    it.level?.toFloat()?.let { level -> officer.person.stats.setSkillLevel(it.skill, level) }
+                }
+                officer.makeSkillPicks()
+                blockedSkills.forEach {
+                    officer.person.stats.setSkillLevel(it.skill, 0f)
+                }
+            }
         }
     }
 }

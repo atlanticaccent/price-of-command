@@ -24,7 +24,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColoni
         }
 
     @Suppress("UNCHECKED_CAST")
-    var oldFleetAssignments: Map<String, PersonAPI?>?
+    private var oldFleetAssignments: Map<String, PersonAPI?>?
         get() {
             return Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] as? Map<String, PersonAPI?>
         }
@@ -32,7 +32,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColoni
             Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] = value
         }
 
-    fun currentFleetAssignments(): Map<String, PersonAPI?> {
+    private fun currentFleetAssignments(): Map<String, PersonAPI?> {
         return playerFleet().fleetData.membersListCopy.mapNotNull { it.id to it.captain }.toMap()
     }
 
