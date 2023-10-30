@@ -58,24 +58,21 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
 
     @OptIn(NonPublic::class)
     fun tryInflictAppend(causeIfDeath: String? = null, deferDeathResolve: Boolean = false): Outcome {
-        val outcome = preconditionOverrides()
-            .noop { precondition() }
-            .failed {
-                return@tryInflictAppend failed()?.tryInflictAppend(causeIfDeath, deferDeathResolve) ?: Outcome.NOOP
-            }
-            .applied {
-                val mutation =
-                    mutationOverrides(true) ?: mutation()?.takeIf { it.checkImmediately }?.mutate(this@Condition)
-                val res = inflict()
-                if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend(causeIfDeath, deferDeathResolve)
-                else res
-            }
+        val outcome = preconditionOverrides().noop { precondition() }.failed {
+            return@tryInflictAppend failed()?.tryInflictAppend(causeIfDeath, deferDeathResolve) ?: Outcome.NOOP
+        }.applied {
+            val mutation = mutationOverrides(true) ?: mutation()?.takeIf { it.checkImmediately }?.mutate(this@Condition)
+            val res = inflict()
+            if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend(causeIfDeath, deferDeathResolve)
+            else res
+        }
         when (outcome) {
             is Outcome.Applied<*> -> ConditionManager.appendCondition(this.target, this)
             is Outcome.Terminal -> {
                 outcome.condition.cause = causeIfDeath
                 ConditionManager.killOfficer(this.target, outcome.condition, deferDeathResolve)
             }
+
             else -> {}
         }
         return outcome
@@ -85,10 +82,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
 }
 
 abstract class LastingCondition(
-    target: PersonAPI,
-    startDate: Long,
-    open val duration: Duration,
-    rootConditions: List<Condition>
+    target: PersonAPI, startDate: Long, open val duration: Duration, rootConditions: List<Condition>
 ) : Condition(target, startDate, rootConditions) {
     sealed class Duration {
         object Indefinite : Duration()
@@ -127,17 +121,58 @@ sealed class Outcome {
 abstract class ResolvableCondition(
     target: PersonAPI,
     startDate: Long,
-    override val duration: Duration.Time,
+    duration: Duration,
     rootConditions: List<Condition>,
     var resolveOnDeath: Boolean = true,
     var resolveOnMutation: Boolean = true,
     var resolveSilently: Boolean = false,
     var resolveSilentlyOnMutation: Boolean = false,
-) :
-    LastingCondition(target, startDate, duration, rootConditions) {
-    open fun tryResolve(): Boolean =
-        expired || (clock().getElapsedDaysSince(startDate) >= duration.duration).then { expired = true }
+) : LastingCondition(target, startDate, duration, rootConditions) {
+    open fun tryResolve(): Boolean = expired || when (val duration = duration) {
+        is Duration.Time -> (clock().getElapsedDaysSince(startDate) >= duration.duration).then { expired = true }
+        is Duration.Indefinite -> false
+    }
+}
 
+abstract class IndefiniteResolvableCondition(
+    target: PersonAPI,
+    startDate: Long,
+    rootConditions: List<Condition>,
+    override val duration: Duration.Indefinite = Duration.indefinite(),
+    resolveOnDeath: Boolean = true,
+    resolveOnMutation: Boolean = true,
+    resolveSilently: Boolean = false,
+    resolveSilentlyOnMutation: Boolean = false,
+) : ResolvableCondition(
+    target,
+    startDate,
+    duration,
+    rootConditions,
+    resolveOnDeath,
+    resolveOnMutation,
+    resolveSilently,
+    resolveSilentlyOnMutation
+)
+
+abstract class TimedResolvableCondition(
+    target: PersonAPI,
+    startDate: Long,
+    rootConditions: List<Condition>,
+    override val duration: Duration.Time,
+    resolveOnDeath: Boolean = true,
+    resolveOnMutation: Boolean = true,
+    resolveSilently: Boolean = false,
+    resolveSilentlyOnMutation: Boolean = false,
+) : ResolvableCondition(
+    target,
+    startDate,
+    duration,
+    rootConditions,
+    resolveOnDeath,
+    resolveOnMutation,
+    resolveSilently,
+    resolveSilentlyOnMutation
+) {
     override fun remaining(): Duration.Time = Duration.Time(duration.duration - clock().getElapsedDaysSince(startDate))
 
     fun extendRandomly(seed: Long) {

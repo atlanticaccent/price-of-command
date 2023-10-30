@@ -26,11 +26,11 @@ open class Fatigue(
     rootConditions: List<Condition>,
     resolveOnDeath: Boolean = false,
     resolveOnMutation: Boolean = false
-) : ResolvableCondition(
+) : TimedResolvableCondition(
     officer,
     startDate,
-    Duration.Time(generateDuration(startDate)),
     rootConditions,
+    Duration.Time(generateDuration(startDate)),
     resolveOnDeath,
     resolveOnMutation
 ) {

@@ -48,8 +48,8 @@ abstract class Wound(
     rootConditions: List<Condition>,
     resolveOnDeath: Boolean = true,
     resolveOnMutation: Boolean = true
-) : ResolvableCondition(
-    officer, startDate, Duration.Time(generateDuration(startDate)), rootConditions, resolveOnDeath, resolveOnMutation
+) : TimedResolvableCondition(
+    officer, startDate, rootConditions, Duration.Time(generateDuration(startDate)), resolveOnDeath, resolveOnMutation
 ) {
     companion object {
         @JvmStatic
