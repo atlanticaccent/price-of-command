@@ -135,7 +135,7 @@ tasks {
                         "version": { "major":"${version._1}", "minor": "${version._2}", "patch": "${version._3}" },
                         "description": "$modDescription",
                         "gameVersion": "$gameVersion",
-                        "jars":[${jars.joinToString() { "\"$it\"" }}],
+                        "jars":[${jars.joinToString { "\"$it\"" }}],
                         "modPlugin":"$modPlugin",
                         "dependencies": [
                             {
