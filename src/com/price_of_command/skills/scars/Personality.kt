@@ -1,10 +1,13 @@
 package com.price_of_command.skills.scars
 
+import com.fs.starfarer.api.GameState
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.CharacterStatsSkillEffect
 import com.fs.starfarer.api.characters.DescriptionSkillEffect
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
+import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.characters.ShipSkillEffect
+import com.fs.starfarer.api.characters.SkillEffectType
 import com.fs.starfarer.api.characters.SkillSpecAPI
 import com.fs.starfarer.api.combat.MutableShipStatsAPI
 import com.fs.starfarer.api.combat.ShipAPI
@@ -12,8 +15,15 @@ import com.fs.starfarer.api.impl.campaign.skills.BaseSkillEffectDescription
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
 import com.price_of_command.ConditionManager
+import com.price_of_command.andThenOrNull
+import com.price_of_command.conditions.Condition
 import com.price_of_command.conditions.Injury
-import com.price_of_command.conditions.scars.PersonalityChange
+import com.price_of_command.conditions.scars.*
+import com.price_of_command.conditions.scars.Aggressive
+import com.price_of_command.conditions.scars.Cautious
+import com.price_of_command.conditions.scars.Reckless
+import com.price_of_command.conditions.scars.Steady
+import com.price_of_command.conditions.scars.Timid
 import com.price_of_command.skills.overwriteSkills
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
 import java.awt.Color
@@ -38,66 +48,72 @@ class Personality {
         }
     }
 
-    abstract class Level1 : BaseSkillEffectDescription(), CharacterStatsSkillEffect {
+    abstract class Level1<T: PersonalityChange>(private val marker: Class<T>) : BaseSkillEffectDescription(), ShipSkillEffect {
+        private fun getTarget(stats: MutableCharacterStatsAPI): Pair<PersonAPI, List<T>>? = ConditionManager.findByStats(stats)?.let {
+            filterConditions(it)
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        private fun filterConditions(data: Pair<PersonAPI, List<Condition>>): Pair<PersonAPI, List<T>>? {
+            val (officer, conditions) = data
+            return conditions.filter { it::class.java == marker }.map { it as T }.let { filtered ->
+                filtered.isNotEmpty().andThenOrNull {
+                    officer to filtered
+                }
+            }
+        }
+
         override fun createCustomDescription(
             stats: MutableCharacterStatsAPI, skill: SkillSpecAPI, info: TooltipMakerAPI, width: Float
         ) {
             init(stats, skill)
 
-            ConditionManager.findByStats(stats)?.let { (officer, conditions) ->
-                officer to conditions.filterIsInstance<PersonalityChange>()
-            }?.takeIf { (_, conditions) -> conditions.isNotEmpty() }?.also { (officer, conditions) ->
-                // this is overcomplicated to account for mods that increase officer levels beyond 7
-                val injuries = conditions.size
-                val transformedText = if (injuries == 1) {
-                    "an injury"
-                } else {
-                    "$injuries injuries"
-                }
-                info.addPara("${officer.nameString} has suffered $transformedText.", 0f)
-
+            getTarget(stats)?.takeIf { (_, conditions) -> conditions.isNotEmpty() }?.also { (officer, conditions) ->
                 val settings = Global.getSettings()
-                val disabledNames = conditions.map { settings.getSkillSpec(it.skill).name }
-                val last = disabledNames.last()
-                if (disabledNames.size > 1) {
-                    val concatenated = disabledNames.subList(0, disabledNames.size - 1).joinToString(", ")
-                    info.addPara(
-                        "Until they recover they will not be able to use their skills in %s or %s.",
-                        0f,
-                        hc,
-                        concatenated,
-                        last
-                    )
-                    info.addSkillPanel(Global.getFactory().createPerson().overwriteSkills(conditions.map { it.skill to it.level?.toFloat() }), 0f)
-                    val rems = conditions.map { it.remaining().duration.getRoundedValueMaxOneAfterDecimal() }.sorted()
-                    val remsConcat = rems.subList(0, rems.size - 1).joinToString(", ")
-                    val remLast = rems.last()
-                    info.addPara(
-                        "They will recover from injuries in %s and %s days.", 2f, hc, remsConcat, remLast
-                    )
-                } else {
-                    info.addPara(
-                        "Until they recover they will not be able to use their skill in %s.", 0f, hc, last
-                    )
-                    info.addSkillPanel(Global.getFactory().createPerson().overwriteSkills(conditions.map { it.skill to it.level?.toFloat() }), 0f)
-                    info.addPara(
-                        "They will recover in %s days.",
-                        2f,
-                        hc,
-                        conditions.last().remaining().duration.getRoundedValueMaxOneAfterDecimal()
-                    )
-                }
+
+
             } ?: run {
                 info.addPara("bugg", 0f)
             }
         }
 
-        override fun apply(stats: MutableCharacterStatsAPI, id: String, level: Float) {
+        override fun apply(stats: MutableShipStatsAPI, hullSize: ShipAPI.HullSize?, id: String, level: Float) {
+            val shipMember = stats.fleetMember
+            val captain = shipMember.captain
 
+            if (Global.getCurrentState() != GameState.COMBAT) return
+
+            val factionID = Global.getCombatEngine().context.otherFleet.faction.id
+
+            ConditionManager.conditionMap[captain]?.let { conditions ->
+                filterConditions(captain to conditions)?.let { (_, filtered) ->
+                    filtered.firstOrNull { it.factionID == factionID }?.let {
+                        captain.setPersonality(it.personalityID)
+                    }
+                }
+            }
         }
 
-        override fun unapply(stats: MutableCharacterStatsAPI, id: String) {
+        override fun unapply(stats: MutableShipStatsAPI, hullSize: ShipAPI.HullSize, id: String) {
+            val shipMember = stats.fleetMember
+            val captain = shipMember.captain
 
+            ConditionManager.conditionMap[captain]?.let { conditions ->
+                filterConditions(captain to conditions)?.let { (_, filtered) ->
+                    val applicable = filtered.first()
+                    captain.setPersonality(applicable.originalPersonality)
+                }
+            }
         }
     }
 }
+
+class Timid : Personality.Level1<Timid>(Timid::class.java)
+
+class Cautious : Personality.Level1<Cautious>(Cautious::class.java)
+
+class Steady : Personality.Level1<Steady>(Steady::class.java)
+
+class Aggressive : Personality.Level1<Aggressive>(Aggressive::class.java)
+
+class Reckless : Personality.Level1<Reckless>(Reckless::class.java)

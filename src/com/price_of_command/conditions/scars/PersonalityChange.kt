@@ -10,6 +10,7 @@ import com.price_of_command.conditions.NonPublic
 import com.price_of_command.conditions.Outcome
 
 sealed class PersonalityChange(
+    val originalPersonality: String,
     target: PersonAPI,
     startDate: Long,
     rootConditions: List<Condition>,
@@ -19,19 +20,17 @@ sealed class PersonalityChange(
     target, startDate, rootConditions
 ) {
     companion object {
-        val personalities: List<PersonalityAPI> by lazy {
-            listOf(
-                Personalities.TIMID,
-                Personalities.CAUTIOUS,
-                Personalities.STEADY,
-                Personalities.AGGRESSIVE,
-                Personalities.RECKLESS
-            ).let {
+        val personalities: Map<Class<out PersonalityChange>, PersonalityAPI> by lazy {
+            mapOf(
+                Timid::class.java to Personalities.TIMID,
+                Cautious::class.java to Personalities.CAUTIOUS,
+                Steady::class.java to Personalities.STEADY,
+                Aggressive::class.java to Personalities.AGGRESSIVE,
+                Reckless::class.java to Personalities.RECKLESS
+            ).mapValues { (_, id) ->
                 val person = Global.getSettings().createPerson()
-                it.map { id ->
-                    person.setPersonality(id)
-                    person.personalityAPI
-                }
+                person.setPersonality(id)
+                person.personalityAPI
             }
         }
     }
@@ -51,24 +50,24 @@ sealed class PersonalityChange(
 
     @NonPublic
     override fun inflict(): Outcome {
-        target.stats.setSkillLevel("pc_scar_$this.personalityID", 1f)
+        target.stats.setSkillLevel("pc_scar_${personalityID.lowercase()}", 1f)
         return Outcome.Applied(this)
     }
 
     override fun pastTense(): String = "mentally scarred"
 }
 
-class Timid(target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
-    PersonalityChange(target, startDate, rootConditions, factionID, Personalities.TIMID)
+class Timid(originalPersonality: String, target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
+    PersonalityChange(originalPersonality, target, startDate, rootConditions, factionID, Personalities.TIMID)
 
-class Cautious(target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
-    PersonalityChange(target, startDate, rootConditions, factionID, Personalities.CAUTIOUS)
+class Cautious(originalPersonality: String, target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
+    PersonalityChange(originalPersonality, target, startDate, rootConditions, factionID, Personalities.CAUTIOUS)
 
-class Steady(target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
-    PersonalityChange(target, startDate, rootConditions, factionID, Personalities.STEADY)
+class Steady(originalPersonality: String, target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
+    PersonalityChange(originalPersonality, target, startDate, rootConditions, factionID, Personalities.STEADY)
 
-class Aggressive(target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
-    PersonalityChange(target, startDate, rootConditions, factionID, Personalities.AGGRESSIVE)
+class Aggressive(originalPersonality: String, target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
+    PersonalityChange(originalPersonality, target, startDate, rootConditions, factionID, Personalities.AGGRESSIVE)
 
-class Reckless(target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
-    PersonalityChange(target, startDate, rootConditions, factionID, Personalities.RECKLESS)
+class Reckless(originalPersonality: String, target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String) :
+    PersonalityChange(originalPersonality, target, startDate, rootConditions, factionID, Personalities.RECKLESS)

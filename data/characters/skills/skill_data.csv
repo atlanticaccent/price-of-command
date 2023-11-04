@@ -25,4 +25,5 @@ She will carry it for the rest of her life.","Thar Kun, Personal Physician to Hi
 pc_fatigue,Fatigue,0,0,0,,"I've seen plenty of good men die.
 In glorious combat, for the good of others. In back alleys, in drunken, meaningless brawls.
 But the thing I've seen kill the most men? Simple tiredness.",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
+pc_scar_timid,Shell Shock,0,0,0,,"Foo",Bar,TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
 pc_aptitude_condition,,0,,,,,,,,,,graphics/icons/skills/category_condition.png
