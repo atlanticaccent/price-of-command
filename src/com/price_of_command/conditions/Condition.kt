@@ -128,10 +128,12 @@ abstract class ResolvableCondition(
     var resolveSilently: Boolean = false,
     var resolveSilentlyOnMutation: Boolean = false,
 ) : LastingCondition(target, startDate, duration, rootConditions) {
-    open fun tryResolve(): Boolean = expired || when (val duration = duration) {
+    open fun resolved(): Boolean = expired || when (val duration = duration) {
         is Duration.Time -> (clock().getElapsedDaysSince(startDate) >= duration.duration).then { expired = true }
         is Duration.Indefinite -> false
     }
+
+    abstract fun tryResolve()
 }
 
 abstract class IndefiniteResolvableCondition(

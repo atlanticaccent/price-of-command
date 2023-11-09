@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  * Where your Starsector game is installed to.
  * Note: On Linux, if you installed Starsector into your home directory, you have to write /home/<user>/ instead of ~/
  */
-val starsectorDirectory = "/Users/iain.laird/Documents/starsector_linux"
+val starsectorDirectory = "../../sources/linux"
 
 val jarFileName = "linux.jar"
 

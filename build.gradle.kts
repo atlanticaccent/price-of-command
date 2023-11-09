@@ -15,7 +15,7 @@ val niceName = "Price of Command"
  * Where your Starsector game is installed to.
  * Note: On Linux, if you installed Starsector into your home directory, you have to write /home/<user>/ instead of ~/
  */
-val starsectorDirectory = "E:/Games/Starsector"
+//val starsectorDirectory = "sources/win"
 
 // Defaults to the name of your mod, with spaces replaced by hyphens.
 val modFolderName = modName.replace(" ", "-")
@@ -42,19 +42,23 @@ val modThreadId = "00000"
 //////////////////////
 
 // Note: On Linux, use "${starsectorDirectory}" as core directory
-val starsectorCoreDirectory = {
+val (starsectorCoreDirectory, starsectorDirectory) = run {
+    val starsectorDirectory: String
     val os = System.getProperty("os.name").toLowerCase()
     when {
         os.contains("win") -> {
-            "${starsectorDirectory}/starsector-core"
+            starsectorDirectory = "sources/windows"
+            "${starsectorDirectory}/starsector-core" to starsectorDirectory
         }
         os.contains("nix") || os.contains("nux") || os.contains("aix") -> {
-            starsectorDirectory
+            starsectorDirectory = "sources/linux"
+            starsectorDirectory to starsectorDirectory
         }
         os.contains("mac") -> {
-            "${starsectorDirectory}/Contents/Resources/Java"
+            starsectorDirectory = "sources/Starsector.app"
+            "${starsectorDirectory}/Contents/Resources/Java" to starsectorDirectory
         }
-        else -> null
+        else -> throw Exception("Unknown platform")
     }
 }
 val starsectorModDirectory = "${starsectorDirectory}/mods"
@@ -229,6 +233,7 @@ tasks {
                 exclude("jars/windows.jar")
                 exclude("jars/macos.jar")
                 exclude("jars/shared.jar")
+                exclude("sources")
             }
         }
     }

@@ -67,7 +67,9 @@ object ConditionManager : OverrideManager {
                     }
 
                     // Ok to call `tryResolve` "again" after a mutation because we return early above
-                    (condition is ResolvableCondition && condition.tryResolve()) || condition.expired
+                    val resolvableCondition = (condition as? ResolvableCondition)
+                    (resolvableCondition?.resolved()
+                        ?: false).then { resolvableCondition?.tryResolve() } || condition.expired
                 }
 
                 if (removed.isNotEmpty()) {
@@ -112,7 +114,8 @@ object ConditionManager : OverrideManager {
     } ?: emptyList()
 
     @JvmStatic
-    fun tryResolve(condition: ResolvableCondition): Boolean = condition.tryResolve().then {
+    fun tryResolve(condition: ResolvableCondition): Boolean = condition.resolved().then {
+        condition.tryResolve()
         removeCondition(condition)
         if (!condition.resolveSilently) {
             logger().debug("Resolving $condition")

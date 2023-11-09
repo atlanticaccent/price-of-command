@@ -151,4 +151,6 @@ gradle-app.setting
 starfarer-api-1.0.jar
 starfarer-api-1.0-sources.jar
 
-/jars
+jars/
+
+sources/

@@ -1,5 +1,6 @@
 package com.price_of_command.conditions
 
+import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.OptionPanelAPI
 import com.fs.starfarer.api.campaign.TextPanelAPI
@@ -12,6 +13,7 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.StoryOptionPara
 import com.price_of_command.*
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.ConditionMutator
+import com.price_of_command.conditions.scars.Scar
 import com.price_of_command.fleet_interaction.AfterActionReport
 import lunalib.lunaSettings.LunaSettings
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
@@ -105,18 +107,16 @@ open class Injury private constructor(
         this.level = level
     }
 
-    override fun tryResolve(): Boolean = super.tryResolve().then {
+    override fun tryResolve() {
         target.stats.setSkillLevel(skill, level?.toFloat() ?: 1f)
         target.stats.decreaseSkill("pc_injury_$injurySkillSuffix")
     }
 
-    private fun getEligibleSkills() = target.stats.skillsCopy.filter {
-        !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && (OfficerExpansionPlugin.vanillaSkills.contains(
-            it.skill.id
-        ) || OfficerExpansionPlugin.modSkillWhitelist.contains(it.skill.id) || it.skill.tags.contains(
-            PoC_SKILL_WHITELIST_TAG
-        ))
-    }
+    private fun getEligibleSkills() = target.stats.skillsCopy.asSequence().map { it.skill to it.level }
+        .filter { (skill, _) -> skill.id !in IGNORE_LIST }.filter { (_, level) -> level >= 1f }
+        .filter { (skill, _) -> !skill.isPermanent }.filter { (skill, _) ->
+            skill.id in OfficerExpansionPlugin.vanillaSkills || skill.id in OfficerExpansionPlugin.modSkillWhitelist || PoC_SKILL_WHITELIST_TAG in skill.tags
+        }.toList()
 
     private fun invalidTarget(): Boolean = !validTarget()
 
@@ -126,14 +126,14 @@ open class Injury private constructor(
         if (invalidTarget()) return Outcome.NOOP
         val conditions = target.conditions()
         val skills = getEligibleSkills()
-        if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
-            if (skills.isNotEmpty()) {
+        if (skills.isNotEmpty()) {
+            if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
                 if (ConditionManager.rand.nextFloat() <= INJURY_RATE) {
                     return Outcome.Applied(this)
                 }
-            } else {
-                return Outcome.Failed
             }
+        } else {
+            return Outcome.Failed
         }
 
         return Outcome.NOOP
@@ -142,10 +142,10 @@ open class Injury private constructor(
     @NonPublic
     override fun inflict(): Outcome.Applied<Injury> {
         val skills = getEligibleSkills()
-        val removed = skills.random()
+        val (skillAPI, level) = skills.random()
 
-        skill = removed.skill.id
-        level = removed.level.toInt()
+        this.skill = skillAPI.id
+        this.level = level.toInt()
 
         target.stats.setSkillLevel("pc_fatigue", 0f)
 
@@ -237,9 +237,12 @@ open class Injury private constructor(
 
 class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
     Wound(target, startDate, rootConditions), AfterActionReportable {
-    override fun tryResolve(): Boolean = super.tryResolve().then {
-        // TODO inflict a scar when resolved
+    private var scar: Scar? = null
+
+    override fun tryResolve() {
         target.stats.setSkillLevel("pc_grave_injury", 0f)
+
+        (scar ?: Scar.randomScar(target, startDate, rootConditions))?.tryInflictAppend()
     }
 
     override fun precondition(): Outcome {
@@ -325,6 +328,11 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
     }
 
     override fun statusInReport(): String = "Gravely Injured"
+
+    fun scar(scar: Scar): GraveInjury {
+        this.scar = scar
+        return this
+    }
 }
 
 class ExtendWounds private constructor(
@@ -366,6 +374,8 @@ class ExtendWounds private constructor(
             override fun statusInReport(): String = "Injury Deteriorated"
         }
     }
+
+    override fun tryResolve() = Unit
 
     override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() <= EXTEND_RATE) {
         Outcome.Applied(this)

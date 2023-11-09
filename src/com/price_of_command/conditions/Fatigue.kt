@@ -44,10 +44,8 @@ open class Fatigue(
 
     constructor(officer: PersonAPI, startDate: Long) : this(officer, startDate, emptyList())
 
-    override fun tryResolve(): Boolean {
-        return super.tryResolve().then {
-            target.stats.setSkillLevel("pc_fatigue", 0f)
-        }
+    override fun tryResolve() {
+        target.stats.setSkillLevel("pc_fatigue", 0f)
     }
 
     override fun precondition(): Outcome {

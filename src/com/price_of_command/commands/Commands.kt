@@ -20,8 +20,8 @@ fun MutableList<OfficerDataAPI>.findByName(name: String): PersonAPI? =
     this.find { officer -> officer.person.nameString.contains(name, true) }?.person
 
 class InjureOfficer : BaseCommand {
-    override fun runCommand(officer_name: String, ctx: BaseCommand.CommandContext): CommandResult {
-        val officer = playerOfficers().findByName(officer_name)
+    override fun runCommand(officerName: String, ctx: BaseCommand.CommandContext): CommandResult {
+        val officer = playerOfficers().findByName(officerName)
         if (officer != null) {
             try {
                 ConditionManager.addPreconditionOverride(true) { condition ->
