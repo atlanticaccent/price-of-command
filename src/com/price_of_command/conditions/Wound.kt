@@ -1,6 +1,5 @@
 package com.price_of_command.conditions
 
-import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.OptionPanelAPI
 import com.fs.starfarer.api.campaign.TextPanelAPI
@@ -402,8 +401,9 @@ class ExtendWounds private constructor(
     @NonPublic
     override fun inflict(): Outcome = tryExtendWounds(target)
 
-    override fun mutation(): ConditionMutator =
-        BaseMutator(continuous = true, checkImmediately = false) { NullCondition(target, startDate) }
+    override fun mutation(): ConditionMutator = BaseMutator(continuous = true, checkImmediately = false, applicable = {
+        it == this
+    }) { NullCondition(target, startDate) }
 
     override fun pastTense(): String = ""
 }

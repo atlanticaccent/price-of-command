@@ -14,14 +14,14 @@ abstract class PersonalityChangeStub<T : PersonalityChangeScar>(
     personalityId: String
 ) : PersonalityChangeScar(originalPersonality, target, startDate, rootConditions, factionID, personalityId)
 
-abstract class SpecStub<T : PersonalityChangeScar> : Level1<T>(), HullModEffect by PersonalityChangeHullmod()
+abstract class SpecStub<T : PersonalityChangeScar>(marker: Class<T>) : Level1<T>(marker), HullModEffect by PersonalityChangeHullmod()
 
 class Timid(
     originalPersonality: String, target: PersonAPI, startDate: Long, rootConditions: List<Condition>, factionID: String
 ) : PersonalityChangeStub<Timid>(
     originalPersonality, target, startDate, rootConditions, factionID, Personalities.TIMID
 ) {
-    class Spec : SpecStub<Timid>()
+    class Spec : SpecStub<Timid>(Timid::class.java)
 }
 
 class Cautious(
@@ -29,7 +29,7 @@ class Cautious(
 ) : PersonalityChangeStub<Cautious>(
     originalPersonality, target, startDate, rootConditions, factionID, Personalities.CAUTIOUS
 ) {
-    class Spec : SpecStub<Cautious>()
+    class Spec : SpecStub<Cautious>(Cautious::class.java)
 }
 
 class Steady(
@@ -37,7 +37,7 @@ class Steady(
 ) : PersonalityChangeStub<Steady>(
     originalPersonality, target, startDate, rootConditions, factionID, Personalities.STEADY
 ) {
-    class Spec : SpecStub<Steady>()
+    class Spec : SpecStub<Steady>(Steady::class.java)
 }
 
 class Aggressive(
@@ -45,7 +45,7 @@ class Aggressive(
 ) : PersonalityChangeStub<Aggressive>(
     originalPersonality, target, startDate, rootConditions, factionID, Personalities.AGGRESSIVE
 ) {
-    class Spec : SpecStub<Aggressive>()
+    class Spec : SpecStub<Aggressive>(Aggressive::class.java)
 }
 
 class Reckless(
@@ -53,5 +53,5 @@ class Reckless(
 ) : PersonalityChangeStub<Reckless>(
     originalPersonality, target, startDate, rootConditions, factionID, Personalities.RECKLESS
 ) {
-    class Spec : SpecStub<Reckless>()
+    class Spec : SpecStub<Reckless>(Reckless::class.java)
 }

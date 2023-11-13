@@ -1,46 +1,28 @@
 package com.price_of_command.conditions.scars.personality_change
 
-import com.fs.starfarer.api.Global
-import com.fs.starfarer.api.characters.*
+import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
+import com.fs.starfarer.api.characters.PersonAPI
+import com.fs.starfarer.api.characters.ShipSkillEffect
+import com.fs.starfarer.api.characters.SkillSpecAPI
 import com.fs.starfarer.api.combat.MutableShipStatsAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.impl.campaign.skills.BaseSkillEffectDescription
 import com.fs.starfarer.api.ui.TooltipMakerAPI
-import com.fs.starfarer.api.util.Misc
 import com.price_of_command.ConditionManager
 import com.price_of_command.andThenOrNull
 import com.price_of_command.conditions.Condition
-import java.awt.Color
+import java.util.*
 
-class Level0 : DescriptionSkillEffect {
-    override fun getString(): String {
-        return "This officer has been injured"
-    }
-
-    override fun getHighlights(): Array<String> {
-        return arrayOf("" + Global.getSettings().getInt("officerMaxLevel"))
-    }
-
-    override fun getHighlightColors(): Array<Color> {
-        val h = Misc.getDarkHighlightColor()
-        return arrayOf(h)
-    }
-
-    override fun getTextColor(): Color? {
-        return null
-    }
-}
-
-abstract class Level1<T : PersonalityChangeScar> : CustomSkillDescription by BaseSkillEffectDescription(), ShipSkillEffect {
+abstract class Level1<T : PersonalityChangeScar>(private val marker: Class<T>) : BaseSkillEffectDescription(),
+    ShipSkillEffect {
     private fun getTarget(stats: MutableCharacterStatsAPI): Pair<PersonAPI, List<T>>? =
         ConditionManager.findByStats(stats)?.let {
             filterConditions(it)
         }
 
-    @Suppress("UNCHECKED_CAST")
     private fun filterConditions(data: Pair<PersonAPI, List<Condition>>): Pair<PersonAPI, List<T>>? {
         val (officer, conditions) = data
-        return conditions.filter { it::class.java == this::class.java }.map { it as T }.let { filtered ->
+        return conditions.filterIsInstance(marker).let { filtered ->
             filtered.isNotEmpty().andThenOrNull {
                 officer to filtered
             }
@@ -50,10 +32,32 @@ abstract class Level1<T : PersonalityChangeScar> : CustomSkillDescription by Bas
     override fun createCustomDescription(
         stats: MutableCharacterStatsAPI, skill: SkillSpecAPI, info: TooltipMakerAPI, width: Float
     ) {
-        getTarget(stats)?.takeIf { (_, conditions) -> conditions.isNotEmpty() }?.also { (officer, conditions) ->
-            val settings = Global.getSettings()
+        getTarget(stats)?.also { (officer, conditions) ->
+            init(stats, skill)
 
+            val factionNames = conditions.map { name ->
+                name.faction.displayName.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(
+                    Locale.getDefault()
+                ) else it.toString()
+            } }
+            val concat = if (conditions.size > 1) {
+                factionNames.joinToString(limit = factionNames.size - 1, truncated = "")
+                    .plus(", and ${factionNames.last()}")
+            } else {
+                factionNames.first()
+            }
 
+            info.addPara("This officer has suffered significant mental trauma at the hands of the $concat", 0f, hc, concat)
+            val newPersonality = PersonalityChangeScar.personalities[marker]?.displayName
+            val originalPersonality = officer.personalityAPI.displayName
+            info.addPara(
+                "When in battle, they will adopt a $newPersonality personality instead of being $originalPersonality.",
+                2f,
+                hc,
+                newPersonality,
+                originalPersonality
+            )
         } ?: run {
             info.addPara("bugg", 0f)
         }

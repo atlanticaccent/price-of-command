@@ -12,12 +12,13 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
         get() = rootConditions.firstOrNull()
 
     companion object {
-        internal fun mutationOverrides(condition: Condition, checkImmediately: Boolean? = null): Condition? {
-            val mutators = if (checkImmediately != null) {
-                ConditionManager.mutators.filter { it.checkImmediately == checkImmediately }
-            } else {
-                ConditionManager.mutators
-            }
+        internal fun mutationOverrides(
+            condition: Condition,
+            checkImmediately: Boolean? = null,
+            continuous: Boolean? = null
+        ): Condition? {
+            val mutators = ConditionManager.mutators.filter { checkImmediately?.and(it.checkImmediately) ?: true }
+                .filter { continuous?.and(it.continuous) ?: true }
             val result = mutators.mapNotNull { it.mutateWithPriority(condition) }.maxByOrNull { it.second }?.first
             ConditionManager.mutators = ConditionManager.mutators.filter { !it.complete }
             return result

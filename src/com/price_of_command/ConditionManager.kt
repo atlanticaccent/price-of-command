@@ -49,21 +49,18 @@ object ConditionManager : OverrideManager {
             val mutations = mutableListOf<Condition>()
             conditionMap = conditionMap.mapValues { (target, extantConditions) ->
                 val (removed, conditions) = extantConditions.partition { condition ->
-                    condition.mutation()?.apply {
-                        if (continuous) {
-                            val mutation = Condition.mutationOverrides(condition) ?: mutate(condition)
-                            if (mutation != null) {
-                                if (condition is ResolvableCondition) {
-                                    if (condition.resolveOnMutation) {
-                                        condition.tryResolve()
-                                    }
-                                    condition.resolveSilently =
-                                        condition.resolveSilently || condition.resolveSilentlyOnMutation
-                                }
-                                mutations.add(mutation)
-                                return@partition true
+                    (Condition.mutationOverrides(condition, continuous = true)
+                        ?: condition.mutation()?.takeIf { it.continuous }?.mutate(condition))
+                    ?.let { mutation ->
+                        if (condition is ResolvableCondition) {
+                            condition.resolveSilently =
+                                condition.resolveSilently || condition.resolveSilentlyOnMutation
+                            if (condition.resolveOnMutation) {
+                                condition.tryResolve()
                             }
                         }
+                        mutations.add(mutation)
+                        return@partition true
                     }
 
                     // Ok to call `tryResolve` "again" after a mutation because we return early above

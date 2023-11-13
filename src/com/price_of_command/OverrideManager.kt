@@ -5,7 +5,6 @@ import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.BasePrecondition
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
-import com.price_of_command.conditions.scars.personality_change.Timid
 
 @Suppress("unused", "NAME_SHADOWING")
 internal interface OverrideManager {
