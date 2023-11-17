@@ -13,13 +13,13 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
 
     companion object {
         internal fun mutationOverrides(
-            condition: Condition,
-            checkImmediately: Boolean? = null,
-            continuous: Boolean? = null
-        ): Condition? {
+            condition: Condition, checkImmediately: Boolean? = null, continuous: Boolean? = null
+        ): Pair<ConditionMutator, Condition>? {
             val mutators = ConditionManager.mutators.filter { checkImmediately?.and(it.checkImmediately) ?: true }
                 .filter { continuous?.and(it.continuous) ?: true }
-            val result = mutators.mapNotNull { it.mutateWithPriority(condition) }.maxByOrNull { it.second }?.first
+            val result = mutators.mapNotNull { mutator ->
+                mutator.mutateWithPriority(condition)?.let { (condition, priority) -> mutator to condition to priority }
+            }.maxByOrNull { it.second }?.first
             ConditionManager.mutators = ConditionManager.mutators.filter { !it.complete }
             return result
         }
@@ -49,7 +49,7 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
 
     @Suppress("SameParameterValue")
     private fun mutationOverrides(checkImmediately: Boolean? = null): Condition? =
-        Companion.mutationOverrides(this, checkImmediately)
+        Companion.mutationOverrides(this, checkImmediately)?.second
 
     open fun mutation(): ConditionMutator? = null
 

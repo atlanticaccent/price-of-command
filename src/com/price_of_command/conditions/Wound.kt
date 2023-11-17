@@ -401,9 +401,8 @@ class ExtendWounds private constructor(
     @NonPublic
     override fun inflict(): Outcome = tryExtendWounds(target)
 
-    override fun mutation(): ConditionMutator = BaseMutator(continuous = true, checkImmediately = false, applicable = {
-        it == this
-    }) { NullCondition(target, startDate) }
+    override fun mutation(): ConditionMutator =
+        BaseMutator(continuous = true, checkImmediately = false) { NullCondition(target, startDate) }
 
     override fun pastTense(): String = ""
 }

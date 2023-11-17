@@ -50,8 +50,8 @@ object ConditionManager : OverrideManager {
             conditionMap = conditionMap.mapValues { (target, extantConditions) ->
                 val (removed, conditions) = extantConditions.partition { condition ->
                     (Condition.mutationOverrides(condition, continuous = true)
-                        ?: condition.mutation()?.takeIf { it.continuous }?.mutate(condition))
-                    ?.let { mutation ->
+                        ?: condition.mutation()?.takeIf { it.continuous }?.run { this.mutate(condition)?.let { this to it } })
+                    ?.let { (mutator, mutation) ->
                         if (condition is ResolvableCondition) {
                             condition.resolveSilently =
                                 condition.resolveSilently || condition.resolveSilentlyOnMutation
