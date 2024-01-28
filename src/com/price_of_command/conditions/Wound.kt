@@ -2,7 +2,6 @@ package com.price_of_command.conditions
 
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.OptionPanelAPI
-import com.fs.starfarer.api.campaign.StoryPointActionDelegate
 import com.fs.starfarer.api.campaign.TextPanelAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.characters.SkillSpecAPI
@@ -13,6 +12,7 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.StoryOptionPara
 import com.price_of_command.*
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.ConditionMutator
+import com.price_of_command.conditions.scars.CosmeticScar
 import com.price_of_command.conditions.scars.Scar
 import com.price_of_command.conditions.scars.ScarFactory
 import com.price_of_command.fleet_interaction.AfterActionReport
@@ -244,12 +244,10 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
         target.stats.setSkillLevel("pc_grave_injury", 0f)
 
         val scar = (scar?.build(target, startDate, rootConditions) ?: Scar.randomScar(
-            target,
-            startDate,
-            rootConditions
-        ))
+            target, startDate, rootConditions
+        )) ?: CosmeticScar(target, startDate, rootConditions)
 
-        scar?.tryInflictAppend()
+        scar.tryInflictAppend()
     }
 
     override fun precondition(): Outcome {
@@ -345,10 +343,7 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
 }
 
 class ExtendWounds private constructor(
-    target: PersonAPI,
-    startDate: Long,
-    rootConditions: List<Condition>,
-    private val reporter: Reporter
+    target: PersonAPI, startDate: Long, rootConditions: List<Condition>, private val reporter: Reporter
 ) : ResolvableCondition(target, startDate, Duration.Time(0f), rootConditions, resolveSilently = true),
     AfterActionReportable by reporter {
     private var previousDuration = 0f

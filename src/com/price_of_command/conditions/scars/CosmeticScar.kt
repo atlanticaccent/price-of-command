@@ -16,6 +16,12 @@ import com.price_of_command.conditions.Outcome
 
 class CosmeticScar(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
     Scar(target, startDate, rootConditions) {
+    companion object : ScarFactory {
+        override fun build(target: PersonAPI, startDate: Long, rootConditions: List<Condition>): Scar {
+            return CosmeticScar(target, startDate, rootConditions)
+        }
+    }
+
     override fun tryResolve() {
         target.stats.setSkillLevel("pc_scar_cosmetic", 0f)
     }
@@ -46,7 +52,10 @@ class CosmeticScar(target: PersonAPI, startDate: Long, rootConditions: List<Cond
             init(stats, skill)
 
             info.addPara("This officer has a physical scar that is impossible to hide.", 0f)
-            info.addPara("For the average spacer, this is nothing unusual. Many see physical scars as badges of pride, demonstrating a life devoted to the void.", 2f)
+            info.addPara(
+                "For the average spacer, this is nothing unusual. Many see physical scars as badges of pride, demonstrating a life devoted to the void.",
+                2f
+            )
             info.addPara("However, the average down-weller may flinch at the sight of such horrific injuries.", 2f)
             info.addPara("-1 Charisma", hc, 2f)
         }

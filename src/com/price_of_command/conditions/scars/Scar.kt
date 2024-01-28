@@ -10,7 +10,7 @@ abstract class Scar(
     rootConditions: List<Condition>,
 ) : IndefiniteResolvableCondition(target, startDate, rootConditions), ScarFactory {
     companion object {
-        val scars: MutableList<ScarFactory> = mutableListOf()
+        val scars: MutableList<ScarFactory> = mutableListOf(CosmeticScar.Companion)
 
         fun randomScar(target: PersonAPI, startDate: Long, rootConditions: List<Condition>): Scar? {
             return scars.randomOrNull()?.build(target, startDate, rootConditions)
@@ -18,11 +18,6 @@ abstract class Scar(
     }
 
     override fun build(target: PersonAPI, startDate: Long, rootConditions: List<Condition>): Scar = this
-}
-
-abstract class DemoralisingScar(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
-    Scar(target, startDate, rootConditions) {
-
 }
 
 interface ScarFactory {
