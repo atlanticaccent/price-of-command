@@ -159,3 +159,5 @@ fun <T> forPlatform(
     { linux },
     { macos }
 )
+
+fun <T> Collection<T>.notEmptyOrNull() = this.ifEmpty { null }

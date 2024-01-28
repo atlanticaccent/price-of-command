@@ -11,6 +11,7 @@ import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.impl.campaign.BattleAutoresolverPluginImpl
 import com.fs.starfarer.api.impl.campaign.ids.Stats
 import com.price_of_command.conditions.*
+import com.price_of_command.conditions.scars.personality_change.PersonalityChangeScar
 import com.price_of_command.fleet_interaction.AfterActionReport
 
 object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColonizationListener {
@@ -74,7 +75,12 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColoni
                 when (outcome.condition) {
                     is Fatigue -> logger().debug("Fatigued officer ${officer.nameString}")
                     is Injury -> logger().debug("Failed to fatigue officer ${officer.nameString}, injured them instead")
-                    is GraveInjury -> logger().debug("Failed to fatigue or injure officer ${officer.nameString}, gravely injuring them instead")
+                    is GraveInjury -> {
+                        logger().debug("Failed to fatigue or injure officer ${officer.nameString}, gravely injuring them instead")
+                        PersonalityChangeScar.generateApplicable(resultAPI, officer).let {
+                            outcome.condition.scar(it)
+                        }
+                    }
                     is Wound -> logger().debug("Did not fatigue ${officer.nameString}, applied some kind of wound instead ${outcome.condition}")
                     else -> {
                         logger().debug("${officer.nameString} was not fatigued or injured when trying to fatigue. This is probably a bug")

@@ -50,18 +50,19 @@ object ConditionManager : OverrideManager {
             conditionMap = conditionMap.mapValues { (target, extantConditions) ->
                 val (removed, conditions) = extantConditions.partition { condition ->
                     (Condition.mutationOverrides(condition, continuous = true)
-                        ?: condition.mutation()?.takeIf { it.continuous }?.run { this.mutate(condition)?.let { this to it } })
-                    ?.let { (mutator, mutation) ->
-                        if (condition is ResolvableCondition) {
-                            condition.resolveSilently =
-                                condition.resolveSilently || condition.resolveSilentlyOnMutation
-                            if (condition.resolveOnMutation) {
-                                condition.tryResolve()
+                        ?: condition.mutation()?.takeIf { it.continuous }
+                            ?.run { this.mutate(condition)?.let { this to it } })
+                        ?.let { (mutator, mutation) ->
+                            if (condition is ResolvableCondition) {
+                                condition.resolveSilently =
+                                    condition.resolveSilently || condition.resolveSilentlyOnMutation
+                                if (condition.resolveOnMutation) {
+                                    condition.tryResolve()
+                                }
                             }
+                            mutations.add(mutation)
+                            return@partition true
                         }
-                        mutations.add(mutation)
-                        return@partition true
-                    }
 
                     // Ok to call `tryResolve` "again" after a mutation because we return early above
                     val resolvableCondition = (condition as? ResolvableCondition)
@@ -77,7 +78,8 @@ object ConditionManager : OverrideManager {
                     }
                 }
 
-                conditions
+                val addedDuring = conditionMap[target]?.subtract(extantConditions.toSet())
+                addedDuring?.plus(conditions)?.toList() ?: conditions
             }
 
             for (mutation in mutations) {

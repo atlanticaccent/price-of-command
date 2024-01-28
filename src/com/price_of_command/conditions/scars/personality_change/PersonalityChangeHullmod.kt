@@ -18,16 +18,19 @@ class PersonalityChangeHullmod : HullModEffect by BaseHullMod() {
         if (Global.getCurrentState() != GameState.COMBAT) return
 
         val enemyFleetManager = Global.getCombatEngine().getFleetManager(FleetSide.ENEMY)
-        val enemyCommander = enemyFleetManager.fleetCommander ?: enemyFleetManager.defaultCommander ?: enemyFleetManager.allFleetCommanders.firstOrNull()
+        val enemyCommander = enemyFleetManager.fleetCommander ?: enemyFleetManager.defaultCommander
+        ?: enemyFleetManager.allFleetCommanders.firstOrNull()
         enemyCommander?.let { commander ->
             val enemyFaction = commander.faction.id
             if (ship.customData?.get("${PERSONALITY_CHANGE_HMOD_ID}_${ship.id}") == null) {
-                ship.captain.conditions().filterIsInstance<PersonalityChangeScar>().firstOrNull()?.let { scar ->
-                    if (scar.factionId == enemyFaction) {
-                        overrideAI(ship, scar.personalityId)
-                        ship.setCustomData("${PERSONALITY_CHANGE_HMOD_ID}_${ship.id}", true)
+                ship.captain.conditions().filterIsInstance<PersonalityChangeScar>()
+                    .filter { it.factionId == enemyFaction }.ifEmpty { null }
+                    ?.random()?.let { scar ->
+                        if (scar.factionId == enemyFaction) {
+                            overrideAI(ship, scar.personality.id)
+                            ship.setCustomData("${PERSONALITY_CHANGE_HMOD_ID}_${ship.id}", true)
+                        }
                     }
-                }
             }
         }
     }

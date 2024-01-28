@@ -2,6 +2,7 @@ package com.price_of_command.conditions
 
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.OptionPanelAPI
+import com.fs.starfarer.api.campaign.StoryPointActionDelegate
 import com.fs.starfarer.api.campaign.TextPanelAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.characters.SkillSpecAPI
@@ -13,6 +14,7 @@ import com.price_of_command.*
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.conditions.scars.Scar
+import com.price_of_command.conditions.scars.ScarFactory
 import com.price_of_command.fleet_interaction.AfterActionReport
 import lunalib.lunaSettings.LunaSettings
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
@@ -236,12 +238,18 @@ open class Injury private constructor(
 
 class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
     Wound(target, startDate, rootConditions), AfterActionReportable {
-    private var scar: Scar? = null
+    private var scar: ScarFactory? = null
 
     override fun tryResolve() {
         target.stats.setSkillLevel("pc_grave_injury", 0f)
 
-        (scar ?: Scar.randomScar(target, startDate, rootConditions))?.tryInflictAppend()
+        val scar = (scar?.build(target, startDate, rootConditions) ?: Scar.randomScar(
+            target,
+            startDate,
+            rootConditions
+        ))
+
+        scar?.tryInflictAppend()
     }
 
     override fun precondition(): Outcome {
@@ -265,6 +273,8 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
     }
 
     override fun failed(): Condition = Death(target, startDate, rootConditions)
+
+    override fun pastTense(): String = "gravely wounded"
 
     override fun generateReport(
         dialog: InteractionDialogAPI,
@@ -328,7 +338,7 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
 
     override fun statusInReport(): String = "Gravely Injured"
 
-    fun scar(scar: Scar): GraveInjury {
+    fun scar(scar: ScarFactory): GraveInjury {
         this.scar = scar
         return this
     }
@@ -338,40 +348,18 @@ class ExtendWounds private constructor(
     target: PersonAPI,
     startDate: Long,
     rootConditions: List<Condition>,
-    private var reporter: BaseAfterActionReportable? = null
+    private val reporter: Reporter
 ) : ResolvableCondition(target, startDate, Duration.Time(0f), rootConditions, resolveSilently = true),
-    AfterActionReportable by reporter!! {
+    AfterActionReportable by reporter {
     private var previousDuration = 0f
     private lateinit var extended: Wound
 
     constructor(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) : this(
-        target, startDate, rootConditions, null
+        target, startDate, rootConditions, Reporter(null)
     )
 
     init {
-        reporter = object : BaseAfterActionReportable() {
-            override fun generateReport(
-                dialog: InteractionDialogAPI,
-                textPanel: TextPanelAPI,
-                optionPanel: OptionPanelAPI,
-                outcome: Outcome,
-                shipStatus: FleetMemberStatusAPI,
-                disabled: Boolean,
-                destroyed: Boolean,
-            ): Boolean {
-                val name = target.nameString
-                val remaining = this@ExtendWounds.extended.remaining().duration.getRoundedValueMaxOneAfterDecimal()
-
-                textPanel.addPara("It appears that during the last encounter one of Officer $name's injuries was notably exacerbated.")
-                textPanel.addPara("As such, their injury that would have taken ${this@ExtendWounds.previousDuration.getRoundedValueMaxOneAfterDecimal()} days to heal will now take $remaining days to heal.")
-
-                optionPanel.addOption("Return to the rest of the report.", AfterActionReport.REMOVE_SELF)
-
-                return false
-            }
-
-            override fun statusInReport(): String = "Injury Deteriorated"
-        }
+        reporter.self = this
     }
 
     override fun tryResolve() = Unit
@@ -405,6 +393,32 @@ class ExtendWounds private constructor(
         BaseMutator(continuous = true, checkImmediately = false) { NullCondition(target, startDate) }
 
     override fun pastTense(): String = ""
+
+    class Reporter(var self: ExtendWounds?) : BaseAfterActionReportable() {
+        override fun generateReport(
+            dialog: InteractionDialogAPI,
+            textPanel: TextPanelAPI,
+            optionPanel: OptionPanelAPI,
+            outcome: Outcome,
+            shipStatus: FleetMemberStatusAPI,
+            disabled: Boolean,
+            destroyed: Boolean,
+        ): Boolean {
+            self?.let { self ->
+                val name = self.target.nameString
+                val remaining = self.extended.remaining().duration.getRoundedValueMaxOneAfterDecimal()
+
+                textPanel.addPara("It appears that during the last encounter one of Officer $name's injuries was notably exacerbated.")
+                textPanel.addPara("As such, their injury that would have taken ${self.previousDuration.getRoundedValueMaxOneAfterDecimal()} days to heal will now take $remaining days to heal.")
+
+                optionPanel.addOption("Return to the rest of the report.", AfterActionReport.REMOVE_SELF)
+            }
+
+            return false
+        }
+
+        override fun statusInReport(): String = "Injury Deteriorated"
+    }
 }
 
 fun PersonAPI.canBeInjured(): Boolean = !immuneToInjury()
