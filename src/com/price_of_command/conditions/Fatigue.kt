@@ -3,8 +3,9 @@ package com.price_of_command.conditions
 import com.fs.starfarer.api.characters.PersonAPI
 import com.price_of_command.ConditionManager
 import com.price_of_command.conditions
+import com.price_of_command.conditions.overrides.BaseMutator
+import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.modID
-import com.price_of_command.then
 import lunalib.lunaSettings.LunaSettings
 import kotlin.random.Random
 
@@ -84,4 +85,36 @@ open class Fatigue(
     override fun failed(): LastingCondition = Injury(target, startDate, extendRootConditions())
 
     override fun pastTense() = "fatigued"
+}
+
+class ExtendFatigue private constructor(
+    target: PersonAPI, startDate: Long, rootConditions: List<Condition>
+) : ResolvableCondition(target, startDate, Duration.Time(0f), rootConditions, resolveSilently = true) {
+    private var previousDuration = 0f
+    private lateinit var extended: Fatigue
+
+    override fun tryResolve() = Unit
+
+    override fun precondition(): Outcome = Outcome.Applied(this)
+
+    private fun tryExtendFatigue(target: PersonAPI): Outcome {
+        val fatigue = target.conditions().filterIsInstance<Fatigue>().firstOrNull()
+
+        return if (fatigue != null) {
+            previousDuration = fatigue.remaining().duration
+            fatigue.extendRandomly(ConditionManager.now)
+            this.extended = fatigue
+            Outcome.Applied(this)
+        } else {
+            Outcome.Applied(NullCondition(target, startDate))
+        }
+    }
+
+    @NonPublic
+    override fun inflict(): Outcome = tryExtendFatigue(target)
+
+    override fun mutation(): ConditionMutator =
+        BaseMutator(continuous = true, checkImmediately = false) { NullCondition(target, startDate) }
+
+    override fun pastTense(): String = ""
 }

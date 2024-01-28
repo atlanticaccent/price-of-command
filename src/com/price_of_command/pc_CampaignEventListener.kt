@@ -11,8 +11,16 @@ import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.impl.campaign.BattleAutoresolverPluginImpl
 import com.fs.starfarer.api.impl.campaign.ids.Stats
 import com.price_of_command.conditions.*
+import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.conditions.scars.personality_change.PersonalityChangeScar
 import com.price_of_command.fleet_interaction.AfterActionReport
+import lunalib.lunaSettings.LunaSettings
+import kotlin.math.floor
+
+private val FORCE_INJURY_HULL_DAMAGE
+    get() = LunaSettings.getFloat(modID, "injury_force_damage_threshold")?.div(100)?.let { floor(1f - it) } ?: 0.2f
+private val FORCE_INJURY_TOGGLE
+    get() = LunaSettings.getBoolean(modID, "injury_force_damage_toggle") ?: true
 
 object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColonizationListener {
     private const val RESTORE_FLEET_ASSIGNMENTS = "pc_restore_fleet_assignments"
@@ -53,23 +61,45 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColoni
             }
         }
 
+        var fatigueMutator: ConditionMutator? = null
         var appliedConditions = emptyList<Outcome.WithCondition<*>>()
         for (deployed in captainedShips) {
             val officer = deployed.captain
             val significantDamage =
-                result.destroyed.contains(deployed) || result.disabled.contains(deployed) || deployed.status.hullFraction <= 0.2
+                result.destroyed.contains(deployed) || result.disabled.contains(deployed) || (FORCE_INJURY_TOGGLE && deployed.status.hullFraction <= FORCE_INJURY_HULL_DAMAGE)
+
             val condition = if (significantDamage && officer.canBeInjured()) {
                 val injury = Injury(officer, ConditionManager.now, emptyList())
-                ConditionManager.addPreconditionOverride(true) {
+                ConditionManager.addPreconditionOverride(true, Int.MAX_VALUE) {
                     (it == injury && injury.validTarget()).andThenOrNull {
                         it.precondition().noop { Outcome.Applied(it) }
                     }
                 }
                 injury
             } else {
-                Fatigue(officer, ConditionManager.now)
+                val fatigue = Fatigue(officer, ConditionManager.now)
+                fatigueMutator = object : ConditionMutator() {
+                    override fun priority(): Int = Int.MAX_VALUE
+
+                    override fun mutate(condition: Condition): Condition? {
+                        if (condition is Wound && condition.rootCondition == fatigue) {
+                            this.complete = true
+                            if (officer.conditions().filterIsInstance<Wound>()
+                                    .isEmpty() && ConditionManager.rand.nextFloat() <= deployed.stats.crewLossMult.modifiedValue
+                            ) {
+                                return fatigue
+                            }
+                        }
+                        return null
+                    }
+                }
+                ConditionManager.addMutationOverride(fatigueMutator)
+                fatigue
             }
             val outcome = condition.tryInflictAppend("Combat with $opposition", true)
+            if (fatigueMutator != null) {
+                ConditionManager.removeMutationOverride(fatigueMutator)
+            }
 
             if (outcome is Outcome.Applied<*>) {
                 when (outcome.condition) {

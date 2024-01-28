@@ -10,6 +10,11 @@ Thus, the duration of all injuries is randomly and evenly distributed in the int
 injury_extension_rate,Injury Extend Chance,Double,50,,"Percentage chance that the duration of an existing injury (if it exists) on an officer will be increased if there are no skills left to remove from an officer.
 If this check fails then a Grave Injury will be inflicted on the officer instead. Increasing this value correspondingly reduces the chance officers will die when badly wounded.",,,Injuries
 
+injury_force_damage_toggle,Guarantee Injury Following Significant Hull Damage,Boolean,true,,"When true, significant hull damage guarantees an officer will be injured.",,,Injuries
+injury_force_damage_threshold,Hull Damage Percentage Guaranteeing Injury,Double,80,,"Percentage of hull damage that will guarantee an officer will be injured in a battle.
+Set to 100 to disable this mechanic.
+Be warned: setting this to 0 will cause officers to always be injured, regardless of any other mechanics",0,100,Injuries
+
 death_rate,Death Chance,Double,10,,"Percentage chance that an officer will be die if they suffer a Grave Injury whilst already Gravely Injured.
 Thus, if an officer is already Gravely Injured, the chance they will die is:
 Fatigue Chance x Injury Chance x (1 - Injury Extend Chance) x Death Chance",0,100,Injuries
