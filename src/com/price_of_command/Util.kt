@@ -59,6 +59,9 @@ fun MemoryAPI.escape(): EscapedMemory {
     return EscapedMemory(this)
 }
 
+/**
+ * Executes the given block if true
+ */
 fun Boolean.then(block: () -> Unit): Boolean {
     if (this) {
         block()
@@ -66,6 +69,9 @@ fun Boolean.then(block: () -> Unit): Boolean {
     return this
 }
 
+/**
+ * Returns the result of the given block if true otherwise null
+ */
 inline fun <T> Boolean.andThenOrNull(block: () -> T?): T? {
     return if (this) {
         block()
@@ -153,3 +159,5 @@ fun <T> forPlatform(
     { linux },
     { macos }
 )
+
+fun <T> Collection<T>.notEmptyOrNull() = this.ifEmpty { null }

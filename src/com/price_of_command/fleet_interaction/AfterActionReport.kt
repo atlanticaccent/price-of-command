@@ -113,7 +113,7 @@ class AfterActionReport<T>(private var undecided: List<ReportData<T>>) :
         val tooltip = textPanel.beginTooltip()
         if (undecided.isNotEmpty() || decided.isNotEmpty()) {
             val width = (undecided.map { tooltip.computeStringWidth(it.condition.target.nameString) }
-                .plus(decided.keys.map { tooltip.computeStringWidth(it.target.nameString) }).maxOrNull() ?: 200f) * 3f
+                .plus(decided.keys.map { tooltip.computeStringWidth(it.target.nameString) }).maxOrNull() ?: 200f) * 6f
 
             tooltip.beginGrid(width, 1)
             tooltip.setGridFont("orbitron20")

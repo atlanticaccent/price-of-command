@@ -49,25 +49,25 @@ object ConditionManager : OverrideManager {
             val mutations = mutableListOf<Condition>()
             conditionMap = conditionMap.mapValues { (target, extantConditions) ->
                 val (removed, conditions) = extantConditions.partition { condition ->
-                    condition.mutation()?.apply {
-                        if (continuous) {
-                            val mutation = Condition.mutationOverrides(condition) ?: mutate(condition)
-                            if (mutation != null) {
-                                if (condition is ResolvableCondition) {
-                                    if (condition.resolveOnMutation) {
-                                        condition.tryResolve()
-                                    }
-                                    condition.resolveSilently =
-                                        condition.resolveSilently || condition.resolveSilentlyOnMutation
+                    (Condition.mutationOverrides(condition, continuous = true)
+                        ?: condition.mutation()?.takeIf { it.continuous }
+                            ?.run { this.mutate(condition)?.let { this to it } })
+                        ?.let { (mutator, mutation) ->
+                            if (condition is ResolvableCondition) {
+                                condition.resolveSilently =
+                                    condition.resolveSilently || condition.resolveSilentlyOnMutation
+                                if (condition.resolveOnMutation) {
+                                    condition.tryResolve()
                                 }
-                                mutations.add(mutation)
-                                return@partition true
                             }
+                            mutations.add(mutation)
+                            return@partition true
                         }
-                    }
 
                     // Ok to call `tryResolve` "again" after a mutation because we return early above
-                    (condition is ResolvableCondition && condition.tryResolve()) || condition.expired
+                    val resolvableCondition = (condition as? ResolvableCondition)
+                    (resolvableCondition?.resolved()
+                        ?: false).then { resolvableCondition?.tryResolve() } || condition.expired
                 }
 
                 if (removed.isNotEmpty()) {
@@ -78,7 +78,8 @@ object ConditionManager : OverrideManager {
                     }
                 }
 
-                conditions
+                val addedDuring = conditionMap[target]?.subtract(extantConditions.toSet())
+                addedDuring?.plus(conditions)?.toList() ?: conditions
             }
 
             for (mutation in mutations) {
@@ -112,7 +113,8 @@ object ConditionManager : OverrideManager {
     } ?: emptyList()
 
     @JvmStatic
-    fun tryResolve(condition: ResolvableCondition): Boolean = condition.tryResolve().then {
+    fun tryResolve(condition: ResolvableCondition): Boolean = condition.resolved().then {
+        condition.tryResolve()
         removeCondition(condition)
         if (!condition.resolveSilently) {
             logger().debug("Resolving $condition")

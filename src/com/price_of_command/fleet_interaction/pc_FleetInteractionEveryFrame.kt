@@ -10,7 +10,9 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.price_of_command.*
 import com.price_of_command.conditions.Injury
 import com.price_of_command.platform.shared.ReflectionUtils
+import org.lwjgl.input.Keyboard
 
+@Suppress("UNCHECKED_CAST")
 object pc_FleetInteractionEveryFrame : EveryFrameScript {
     private var fleetInteractionWasOpen = false
     var hack: TooltipMakerAPI? = null
@@ -56,17 +58,56 @@ object pc_FleetInteractionEveryFrame : EveryFrameScript {
         if (dialog != null && dialog.plugin is FleetInteractionDialogPluginImpl && shouldAppendOption(dialog.optionPanel)) {
             val options = dialog.optionPanel
 
-            dialog.optionPanel.addOption(
+            options.addOption(
                 "Reassign captains",
                 pc_AutoClosingOptionDelegate.OPTION_ID,
                 "Last minute reassignment of captains to ships"
             )
 
+            val originalOptions = options.savedOptionList
+
+            val newOptions = originalOptions.toMutableList()
+            val added = newOptions.removeLast()
+            newOptions.add(1, added)
+
+            val oldOptionMap = (ReflectionUtils.invoke(
+                "getButtonToItemMap",
+                options
+            ) as Map<Any?, Any?>).toMap()
+
+            options.restoreSavedOptions(newOptions)
+
+            val idMethodName = ReflectionUtils.getMethodOfReturnType(originalOptions.first()!!, "".javaClass)!!
+            fun Any?.id() = ReflectionUtils.invoke(idMethodName, this!!)
+            val originalMap = originalOptions.associateBy { it.id() }
+            val optionMap = ReflectionUtils.invoke("getButtonToItemMap", options) as MutableMap<Any?, Any?>
+            for (key in optionMap.keys) {
+                val item = optionMap[key]!!
+                val id = item.id()
+                val newItem = originalMap[id]
+                optionMap[key] = newItem
+
+                val oldKey = oldOptionMap.entries.first { (_, entry) -> entry.id() == id }.key!!
+
+                val firstArgClassOfAltShortcut = ReflectionUtils.getMethodArguments("setAltShortcut", oldKey)!![0]
+                val optionHandlingScriptField = ReflectionUtils.findFieldWithMethodName(oldKey, "focusLost")!!
+                val optionHandlingScriptObj = optionHandlingScriptField.get(oldKey)!!
+                val keyHandlerFields =
+                    ReflectionUtils.findFieldsOfType(optionHandlingScriptObj, firstArgClassOfAltShortcut)
+                keyHandlerFields
+                    .mapNotNull { it.get(optionHandlingScriptObj) }
+                    .forEach { keyHandlerObj ->
+                        val keyField = ReflectionUtils.findFieldsOfType(keyHandlerObj, Int::class.java)[0]
+                        val actualKey = keyField.get(keyHandlerObj) as Int
+                        if (!(Keyboard.KEY_1..Keyboard.KEY_9).contains(actualKey)) {
+                            ReflectionUtils.invoke("setAltShortcut", key!!, keyHandlerObj, true)
+                        }
+                    }
+            }
+
             options.addOptionConfirmation(
                 pc_AutoClosingOptionDelegate.OPTION_ID, pc_ReassignOfficerOptionDelegate(dialog)
             )
-
-            dialog.setOptionOnEscape("foo", pc_AutoClosingOptionDelegate.OPTION_ID)
 
             fleetInteractionWasOpen = true
         }

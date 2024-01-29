@@ -12,6 +12,9 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.StoryOptionPara
 import com.price_of_command.*
 import com.price_of_command.conditions.overrides.BaseMutator
 import com.price_of_command.conditions.overrides.ConditionMutator
+import com.price_of_command.conditions.scars.CosmeticScar
+import com.price_of_command.conditions.scars.Scar
+import com.price_of_command.conditions.scars.ScarFactory
 import com.price_of_command.fleet_interaction.AfterActionReport
 import lunalib.lunaSettings.LunaSettings
 import org.magiclib.kotlin.getRoundedValueMaxOneAfterDecimal
@@ -48,8 +51,8 @@ abstract class Wound(
     rootConditions: List<Condition>,
     resolveOnDeath: Boolean = true,
     resolveOnMutation: Boolean = true
-) : ResolvableCondition(
-    officer, startDate, Duration.Time(generateDuration(startDate)), rootConditions, resolveOnDeath, resolveOnMutation
+) : TimedResolvableCondition(
+    officer, startDate, rootConditions, Duration.Time(generateDuration(startDate)), resolveOnDeath, resolveOnMutation
 ) {
     companion object {
         @JvmStatic
@@ -105,18 +108,16 @@ open class Injury private constructor(
         this.level = level
     }
 
-    override fun tryResolve(): Boolean = super.tryResolve().then {
+    override fun tryResolve() {
         target.stats.setSkillLevel(skill, level?.toFloat() ?: 1f)
         target.stats.decreaseSkill("pc_injury_$injurySkillSuffix")
     }
 
-    private fun getEligibleSkills() = target.stats.skillsCopy.filter {
-        !IGNORE_LIST.contains(it.skill.id) && it.level > 0 && !it.skill.isPermanent && (OfficerExpansionPlugin.vanillaSkills.contains(
-            it.skill.id
-        ) || OfficerExpansionPlugin.modSkillWhitelist.contains(it.skill.id) || it.skill.tags.contains(
-            PoC_SKILL_WHITELIST_TAG
-        ))
-    }
+    private fun getEligibleSkills() = target.stats.skillsCopy.asSequence().map { it.skill to it.level }
+        .filter { (skill, _) -> skill.id !in IGNORE_LIST }.filter { (_, level) -> level >= 1f }
+        .filter { (skill, _) -> !skill.isPermanent }.filter { (skill, _) ->
+            skill.id in OfficerExpansionPlugin.vanillaSkills || skill.id in OfficerExpansionPlugin.modSkillWhitelist || PoC_SKILL_WHITELIST_TAG in skill.tags
+        }.toList()
 
     private fun invalidTarget(): Boolean = !validTarget()
 
@@ -126,14 +127,14 @@ open class Injury private constructor(
         if (invalidTarget()) return Outcome.NOOP
         val conditions = target.conditions()
         val skills = getEligibleSkills()
-        if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
-            if (skills.isNotEmpty()) {
+        if (skills.isNotEmpty()) {
+            if (conditions.any { it is Fatigue || it is Wound } || !Fatigue.fatigueEnabled()) {
                 if (ConditionManager.rand.nextFloat() <= INJURY_RATE) {
                     return Outcome.Applied(this)
                 }
-            } else {
-                return Outcome.Failed
             }
+        } else {
+            return Outcome.Failed
         }
 
         return Outcome.NOOP
@@ -142,10 +143,10 @@ open class Injury private constructor(
     @NonPublic
     override fun inflict(): Outcome.Applied<Injury> {
         val skills = getEligibleSkills()
-        val removed = skills.random()
+        val (skillAPI, level) = skills.random()
 
-        skill = removed.skill.id
-        level = removed.level.toInt()
+        this.skill = skillAPI.id
+        this.level = level.toInt()
 
         target.stats.setSkillLevel("pc_fatigue", 0f)
 
@@ -237,9 +238,16 @@ open class Injury private constructor(
 
 class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) :
     Wound(target, startDate, rootConditions), AfterActionReportable {
-    override fun tryResolve(): Boolean = super.tryResolve().then {
-        // TODO inflict a scar when resolved
+    private var scar: ScarFactory? = null
+
+    override fun tryResolve() {
         target.stats.setSkillLevel("pc_grave_injury", 0f)
+
+        val scar = (scar?.build(target, startDate, rootConditions) ?: Scar.randomScar(
+            target, startDate, rootConditions
+        )) ?: CosmeticScar(target, startDate, rootConditions)
+
+        scar.tryInflictAppend()
     }
 
     override fun precondition(): Outcome {
@@ -263,6 +271,8 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
     }
 
     override fun failed(): Condition = Death(target, startDate, rootConditions)
+
+    override fun pastTense(): String = "gravely wounded"
 
     override fun generateReport(
         dialog: InteractionDialogAPI,
@@ -325,47 +335,29 @@ class GraveInjury(target: PersonAPI, startDate: Long, rootConditions: List<Condi
     }
 
     override fun statusInReport(): String = "Gravely Injured"
+
+    fun scar(scar: ScarFactory): GraveInjury {
+        this.scar = scar
+        return this
+    }
 }
 
 class ExtendWounds private constructor(
-    target: PersonAPI,
-    startDate: Long,
-    rootConditions: List<Condition>,
-    private var reporter: BaseAfterActionReportable? = null
+    target: PersonAPI, startDate: Long, rootConditions: List<Condition>, private val reporter: Reporter
 ) : ResolvableCondition(target, startDate, Duration.Time(0f), rootConditions, resolveSilently = true),
-    AfterActionReportable by reporter!! {
+    AfterActionReportable by reporter {
     private var previousDuration = 0f
     private lateinit var extended: Wound
 
     constructor(target: PersonAPI, startDate: Long, rootConditions: List<Condition>) : this(
-        target, startDate, rootConditions, null
+        target, startDate, rootConditions, Reporter(null)
     )
 
     init {
-        reporter = object : BaseAfterActionReportable() {
-            override fun generateReport(
-                dialog: InteractionDialogAPI,
-                textPanel: TextPanelAPI,
-                optionPanel: OptionPanelAPI,
-                outcome: Outcome,
-                shipStatus: FleetMemberStatusAPI,
-                disabled: Boolean,
-                destroyed: Boolean,
-            ): Boolean {
-                val name = target.nameString
-                val remaining = this@ExtendWounds.extended.remaining().duration.getRoundedValueMaxOneAfterDecimal()
-
-                textPanel.addPara("It appears that during the last encounter one of Officer $name's injuries was notably exacerbated.")
-                textPanel.addPara("As such, their injury that would have taken ${this@ExtendWounds.previousDuration.getRoundedValueMaxOneAfterDecimal()} days to heal will now take $remaining days to heal.")
-
-                optionPanel.addOption("Return to the rest of the report.", AfterActionReport.REMOVE_SELF)
-
-                return false
-            }
-
-            override fun statusInReport(): String = "Injury Deteriorated"
-        }
+        reporter.self = this
     }
+
+    override fun tryResolve() = Unit
 
     override fun precondition(): Outcome = if (ConditionManager.rand.nextFloat() <= EXTEND_RATE) {
         Outcome.Applied(this)
@@ -396,6 +388,32 @@ class ExtendWounds private constructor(
         BaseMutator(continuous = true, checkImmediately = false) { NullCondition(target, startDate) }
 
     override fun pastTense(): String = ""
+
+    class Reporter(var self: ExtendWounds?) : BaseAfterActionReportable() {
+        override fun generateReport(
+            dialog: InteractionDialogAPI,
+            textPanel: TextPanelAPI,
+            optionPanel: OptionPanelAPI,
+            outcome: Outcome,
+            shipStatus: FleetMemberStatusAPI,
+            disabled: Boolean,
+            destroyed: Boolean,
+        ): Boolean {
+            self?.let { self ->
+                val name = self.target.nameString
+                val remaining = self.extended.remaining().duration.getRoundedValueMaxOneAfterDecimal()
+
+                textPanel.addPara("It appears that during the last encounter one of Officer $name's injuries was notably exacerbated.")
+                textPanel.addPara("As such, their injury that would have taken ${self.previousDuration.getRoundedValueMaxOneAfterDecimal()} days to heal will now take $remaining days to heal.")
+
+                optionPanel.addOption("Return to the rest of the report.", AfterActionReport.REMOVE_SELF)
+            }
+
+            return false
+        }
+
+        override fun statusInReport(): String = "Injury Deteriorated"
+    }
 }
 
 fun PersonAPI.canBeInjured(): Boolean = !immuneToInjury()
