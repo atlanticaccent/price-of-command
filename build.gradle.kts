@@ -28,7 +28,7 @@ val shouldAutomaticallyCreateMetadataFiles = true
 /**
  * Modify these if you wish to have mod_info.json and the Version Checker files updated for you automatically.
  */
-val modVersion = "0.0.4"
+val modVersion = "0.0.5"
 val jarFileName = "${modName}.jar"
 val modId = "price_of_command"
 val modAuthor = "AtlanticAccent"
@@ -244,6 +244,7 @@ tasks {
         exclude(".git", ".github", ".gradle", ".idea", ".run", "gradle")
         exclude(".gitignore", "build.gradle.kts", "*gradle*", "README.md")
         exclude("build")
+        exclude("sources")
 
         archiveFileName.set("price-of-command.zip")
     }

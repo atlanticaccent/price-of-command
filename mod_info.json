@@ -4,7 +4,7 @@
     "name": "Price of Command",
     "author": "AtlanticAccent",
     "utility": "false",
-    "version": { "major":"0", "minor": "0", "patch": "4" },
+    "version": { "major":"0", "minor": "0", "patch": "5" },
     "description": "Price of Command. Adds Fatigue, Injuries, Grave Injuries and Death to Officers.",
     "gameVersion": "0.96a-RC10",
     "jars":["jars/price_of_command.jar"],
