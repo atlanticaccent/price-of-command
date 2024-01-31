@@ -7,7 +7,13 @@
     "version": { "major":"0", "minor": "0", "patch": "5" },
     "description": "Price of Command. Adds Fatigue, Injuries, Grave Injuries and Death to Officers.",
     "gameVersion": "0.96a-RC10",
-    "jars":["jars/price_of_command.jar"],
+    "jars": [
+        "jars/price_of_command.jar",
+        "jars/windows.jar",
+        "jars/macos.jar",
+        "jars/linux.jar",
+        "jars/shared.jar"
+    ],
     "modPlugin":"com.price_of_command.OfficerExpansionPlugin",
     "dependencies": [
         {
