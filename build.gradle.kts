@@ -32,8 +32,8 @@ val modVersion = "0.0.5-RC2"
 val jarFileName = "${modName}.jar"
 val modId = "price_of_command"
 val modAuthor = "AtlanticAccent"
-val modDescription = "Price of Command. Adds Fatigue, Injuries, Grave Injuries and Death to Officers."
-val gameVersion = "0.96a-RC10"
+val modDescription = "Price of Command. Adds Fatigue, Injuries, Grave Injuries and Death to Officers. "
+val gameVersion = "0.97a-RC6"
 val jars = arrayOf("jars/$jarFileName")
 val modPlugin = "com.price_of_command.OfficerExpansionPlugin"
 val isUtilityMod = false
@@ -234,10 +234,6 @@ tasks {
                 exclude(".git", ".github", ".gradle", ".idea", ".run", "gradle")
                 exclude(".gitignore", "build.gradle.kts", "*gradle*", "README.md")
                 exclude("build")
-                exclude("jars/linux.jar")
-                exclude("jars/windows.jar")
-                exclude("jars/macos.jar")
-                exclude("jars/shared.jar")
                 exclude("sources")
             }
         }
