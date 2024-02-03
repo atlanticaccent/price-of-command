@@ -160,4 +160,4 @@ fun <T> forPlatform(
     { macos }
 )
 
-fun <T> Collection<T>.notEmptyOrNull() = this.ifEmpty { null }
+fun <T, C: Collection<T>?> C.notEmptyOrNull() = this?.ifEmpty { null }

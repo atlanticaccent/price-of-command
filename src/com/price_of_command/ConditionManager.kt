@@ -52,7 +52,7 @@ object ConditionManager : OverrideManager {
                     (Condition.mutationOverrides(condition, continuous = true)
                         ?: condition.mutation()?.takeIf { it.continuous }
                             ?.run { this.mutate(condition)?.let { this to it } })
-                        ?.let { (mutator, mutation) ->
+                        ?.let { (_, mutation) ->
                             if (condition is ResolvableCondition) {
                                 condition.resolveSilently =
                                     condition.resolveSilently || condition.resolveSilentlyOnMutation
@@ -70,16 +70,15 @@ object ConditionManager : OverrideManager {
                         ?: false).then { resolvableCondition?.tryResolve() } || condition.expired
                 }
 
+                val addedDuring = conditionMap[target]?.subtract(extantConditions.toSet())?.toList()
                 if (removed.isNotEmpty()) {
                     val notifyRemoved = removed.filter { it !is ResolvableCondition || !it.resolveSilently }
                     if (notifyRemoved.isNotEmpty()) {
                         logger().debug("Resolving ${notifyRemoved.map { it::class }}")
-                        Global.getSector().campaignUI.addMessage(pc_RecoveryIntel(target.nameString, notifyRemoved))
+                        Global.getSector().campaignUI.addMessage(pc_RecoveryIntel(target.nameString, notifyRemoved, addedDuring.notEmptyOrNull()))
                     }
                 }
-
-                val addedDuring = conditionMap[target]?.subtract(extantConditions.toSet())
-                addedDuring?.plus(conditions)?.toList() ?: conditions
+                addedDuring?.plus(conditions) ?: conditions
             }
 
             for (mutation in mutations) {
