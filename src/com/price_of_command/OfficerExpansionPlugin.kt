@@ -12,6 +12,7 @@ import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
 import com.price_of_command.platform.shared.ReflectionUtils
 import com.thoughtworks.xstream.XStream
+import lunalib.lunaSettings.LunaSettings
 import org.json.JSONObject
 import org.magiclib.kotlin.map
 
@@ -46,6 +47,12 @@ class OfficerExpansionPlugin : BaseModPlugin() {
             addTransientScript(pc_FleetInteractionEveryFrame)
             addTransientScript(ForceOpenNextFrame)
             listenerManager.addListener(pc_CampaignEventListener, true)
+        }
+
+        val baseOfficers = Global.getSector().playerStats.officerNumber.modifiedValue
+        val increasedBase = LunaSettings.getInt(modID, "minimum_roster_size") ?: 12
+        if (baseOfficers < increasedBase) {
+            Global.getSector().playerStats.officerNumber.modifyFlat("poc_increase_base_officers", increasedBase - baseOfficers)
         }
     }
 

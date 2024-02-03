@@ -28,3 +28,9 @@ Thus, the duration of all injuries is randomly and evenly distributed in the int
 (Fatigue Base Duration - Fatigue Duration Variation) <= Fatigue Duration <= (Fatigue Base Duration + Fatigue Duration Variation)",,,Fatigue
 fatigue_extension_rate,Fatigue Extend Chance,Double,10,,"Percentage chance that an officer will be fatigued for longer instead of being injured, if they are already fatigued when engaging in an exhausting activity.",,,Fatigue
 fatigue_toggle,Enable/Disable Fatigue,Boolean,true,,"Toggle to disable or re-enable the fatigue mechanic",,,Fatigue
+
+officer_heading,Officer Management,Header,Officer Management,,,,,Officer Management
+minimum_roster_size,Base Number of Officers,Int,12,,"The number of officers you can have hired before any increases, such as from the Officer Management skill or other mods.
+The base value in vanilla is 8. Settings this value below that will have no effect.
+This settings may or may not stack with increases from other mods. It does stack with any increases to the vanilla settings.json entry.
+If already in-game, requires reloading your save for any changes to take effect."
