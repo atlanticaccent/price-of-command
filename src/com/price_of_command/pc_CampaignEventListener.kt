@@ -111,6 +111,7 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColoni
                             outcome.condition.scar(it)
                         }
                     }
+
                     is Wound -> logger().debug("Did not fatigue ${officer.nameString}, applied some kind of wound instead ${outcome.condition}")
                     else -> {
                         logger().debug("${officer.nameString} was not fatigued or injured when trying to fatigue. This is probably a bug")

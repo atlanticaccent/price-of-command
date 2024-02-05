@@ -63,9 +63,8 @@ abstract class Condition(val target: PersonAPI, val startDate: Long, var rootCon
             return@tryInflictAppend failed()?.tryInflictAppend(causeIfDeath, deferDeathResolve) ?: Outcome.NOOP
         }.applied {
             val mutation = mutationOverrides(true) ?: mutation()?.takeIf { it.checkImmediately }?.mutate(this@Condition)
-            val res = inflict()
             if (mutation != null) return@tryInflictAppend mutation.tryInflictAppend(causeIfDeath, deferDeathResolve)
-            else res
+            else inflict()
         }
         when (outcome) {
             is Outcome.Applied<*> -> ConditionManager.appendCondition(this.target, this)

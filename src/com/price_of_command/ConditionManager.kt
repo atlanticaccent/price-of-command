@@ -75,7 +75,7 @@ object ConditionManager : OverrideManager {
                     val notifyRemoved = removed.filter { it !is ResolvableCondition || !it.resolveSilently }
                     if (notifyRemoved.isNotEmpty()) {
                         logger().debug("Resolving ${notifyRemoved.map { it::class }}")
-                        Global.getSector().campaignUI.addMessage(pc_RecoveryIntel(target.nameString, notifyRemoved, addedDuring.notEmptyOrNull()))
+                        Global.getSector().campaignUI.addMessage(pc_RecoveryIntel(target.nameString, notifyRemoved, addedDuring.ifEmptyNull()))
                     }
                 }
                 addedDuring?.plus(conditions) ?: conditions

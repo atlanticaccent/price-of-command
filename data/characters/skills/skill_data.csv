@@ -2,40 +2,40 @@ id,name,order,tier,reqPoints,reqPointsPerExtraSkill,description,author,combat of
 pc_injury_1,Injury,0,0,0,,"Commander, please find attached my latest medical report on the officer corps.
 The usual range of mental and physical maladies. I do recommend scheduling some R&R soon: a bit of time off does wonders.
 
-And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/brain-freeze.png
+And if you could please remind the crew that hangovers don't count as medical emergencies...",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/brain-freeze.png
 pc_injury_2,Injury,0,0,0,,"I'd very much like to know why bridge consoles keep catching fire whenever we take hits in combat, regardless of where the ship is actually hit.
-This is the third electrical burn we've had on the bridge in as many sorties - I'm going to run out of bridge crew at this rate!",Maintenance Complaints Log EM-461-Psi,TRUE,,,"npc_only, deprecated",graphics/icons/skills/burns.png
+This is the third electrical burn we've had on the bridge in as many sorties - I'm going to run out of bridge crew at this rate!",Maintenance Complaints Log EM-461-Psi,TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/burns.png
 pc_injury_3,Injury,0,0,0,,"CLASS 70B DIRECTED ENERGY 'LASER' WEAPON
 WARNING
-AVOID EYE OR SKIN EXPOSURE TO DIRECT OR SCATTERED RADIATION",Warning on TekKon IR Pulse Laser housing,TRUE,,,"npc_only, deprecated",graphics/icons/skills/conjunctivitis.png
+AVOID EYE OR SKIN EXPOSURE TO DIRECT OR SCATTERED RADIATION",Warning on TekKon IR Pulse Laser housing,TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/conjunctivitis.png
 pc_injury_4,Injury,0,0,0,,"Internal spalling, direct penetration by munitions, or any other depressurisation event are a spacer's worst nightmare.
 However, modern ship hulls and internal compartments - even bridge viewports - demonstrate high degrees of self-sealing capability.
-Unfortunately, science is still working on keeping the crew in the way in one piece...","Hegemony Annual Technical Starship Readout, c162",TRUE,,,"npc_only, deprecated",graphics/icons/skills/destroy-1.png
+If only crew could be fixed so easily...","Hegemony Annual Technical Starship Readout, c162",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/destroy-1.png
 pc_injury_5,Injury,0,0,0,,"Warning: TriTachyon maintains no liability in the event of inertial dampener failure due to any or all of the following scenarios, including but not limited to:
 ...
 G.X.III) Hegemony Tax Force Repossession of Ship Power Core
 ......
-Z.omega.5.$) Failure to Appease Hypothetical Artificial Super-Intelligence",TriTachyon Inertial Dampener Installation Waiver,TRUE,,,"npc_only, deprecated",graphics/icons/skills/wound.png
+Z.omega.5.$) Failure to Appease Hypothetical Artificial Super-Intelligence",TriTachyon Inertial Dampener Installation Waiver,TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/wound.png
 pc_injury_6,Injury,0,0,0,,"Oblique fracture of the right ulna. Surgical intervention unnecessary beyond insertion of standard piezoelectric recovery stimulation mesh.
-Projected recovery time is roughly two weeks, provided no further stress.",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated",graphics/icons/skills/fracture.png
-pc_injury_7,Injury,0,0,0,,"The odds of being stabbed on a starship are low but never zero.","Officer Botano, following mutiny on the Arcana",TRUE,,,"npc_only, deprecated",graphics/icons/skills/sharp-hazard.png
+Projected recovery time is roughly two weeks, provided no further stress.",Chief Medical Officer Dr. J. Yamada,TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/fracture.png
+pc_injury_7,Injury,0,0,0,,"The odds of being stabbed on a starship are low but never zero.","Officer Botano, following mutiny on the Arcana",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/sharp-hazard.png
 pc_grave_injury,Grave Injury,0,0,0,,"That wound will never truly heal.
-She will carry it for the rest of her life.","Thar Kun, Personal Physician to High Hegemon [REDACTED]",TRUE,,,"npc_only, deprecated",graphics/icons/skills/zombie-2.png
+She will carry it for the rest of her life.","Thar Kun, Personal Physician to High Hegemon [REDACTED]",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/zombie-2.png
 pc_fatigue,Fatigue,0,0,0,,"I've seen plenty of good men die.
 In battle. In back alleys. Rarely, peacefully.
-But the thing I've seen kill the most men? Tiredness.",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
+But the thing I've seen kill the most men? Tiredness.",Censored autobiography of Admiral [REDACTED],TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/chronic-fatigue.png
 pc_aptitude_condition,,0,,,,,,,,,,graphics/icons/skills/category_condition.png
 #
-pc_scar_cosmetic,Visible Scar,0,0,0,,"Foo",Bar,TRUE,,,"npc_only, deprecated",graphics/icons/skills/chronic-fatigue.png
+pc_scar_cosmetic,Visible Scar,0,0,0,,"Foo",Bar,TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/chronic-fatigue.png
 pc_low_morale,Low Morale,0,0,0,,"I survived because the fire inside burned brighter than the fire around me.
-I fell down into that dark chasm, but the flame burned on and on.","Ex-Church Missionary, Resistance leader on [REDACTED]",TRUE,,,"npc_only, deprecated",graphics/icons/skills/stress.png
+I fell down into that dark chasm, but the flame burned on and on.","Ex-Church Missionary, Resistance leader on [REDACTED]",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/stress.png
 pc_scar_timid,Shell Shock,0,0,0,,"My alarm clock is a klaxon. My shower is hissing atmo.
 My locker door is a slamming bulkhead. My command seat is a coffin.
-Everywhere on this ship, I am fighting alone.","Franco 'Piccione' Caso, 117th Battlegroup",TRUE,,,"npc_only, deprecated",graphics/icons/skills/stress.png
+Everywhere on this ship, I am fighting alone.","Franco 'Piccione' Caso, 117th Battlegroup",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/stress.png
 pc_scar_cautious,Shell Shock,0,0,0,,"My alarm clock is a klaxon. My shower is hissing atmo.
 My locker door is a slamming bulkhead. My command seat is a coffin.
-Everywhere on this ship, I am fighting alone.","Franco 'Piccione' Caso, 117th Battlegroup",TRUE,,,"npc_only, deprecated",graphics/icons/skills/stress.png
+Everywhere on this ship, I am fighting alone.","Franco 'Piccione' Caso, 117th Battlegroup",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/stress.png
 pc_scar_aggressive,Shell Shock,0,0,0,,"I survived because the fire inside burned brighter than the fire around me.
-I fell down into that dark chasm, but the flame burned on and on.","Ex-Church Missionary, Resistance leader on [REDACTED]",TRUE,,,"npc_only, deprecated",graphics/icons/skills/stress.png
+I fell down into that dark chasm, but the flame burned on and on.","Ex-Church Missionary, Resistance leader on [REDACTED]",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/stress.png
 pc_scar_reckless,Shell Shock,0,0,0,,"I survived because the fire inside burned brighter than the fire around me.
-I fell down into that dark chasm, but the flame burned on and on.","Ex-Church Missionary, Resistance leader on [REDACTED]",TRUE,,,"npc_only, deprecated",graphics/icons/skills/stress.png
+I fell down into that dark chasm, but the flame burned on and on.","Ex-Church Missionary, Resistance leader on [REDACTED]",TRUE,,,"npc_only, deprecated, officerextension_unremovable",graphics/icons/skills/stress.png
