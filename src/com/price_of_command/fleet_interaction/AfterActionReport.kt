@@ -112,8 +112,7 @@ class AfterActionReport<T>(private var undecided: List<ReportData<T>>) :
 
         val tooltip = textPanel.beginTooltip()
         if (undecided.isNotEmpty() || decided.isNotEmpty()) {
-            val width = (undecided.map { tooltip.computeStringWidth(it.condition.target.nameString) }
-                .plus(decided.keys.map { tooltip.computeStringWidth(it.target.nameString) }).maxOrNull() ?: 200f) * 6f
+            val width = textPanel.dialog.textWidth
 
             tooltip.beginGrid(width, 1)
             tooltip.setGridFont("orbitron20")
