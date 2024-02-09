@@ -1,4 +1,4 @@
-@file:Suppress("UsePropertyAccessSyntax")
+@file:Suppress("UsePropertyAccessSyntax", "unused", "UNUSED_DESTRUCTURED_PARAMETER_ENTRY", "UNCHECKED_CAST")
 
 package com.price_of_command.reflection
 

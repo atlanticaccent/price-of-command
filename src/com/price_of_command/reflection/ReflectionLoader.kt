@@ -3,9 +3,8 @@ package com.price_of_command.reflection
 import java.net.URL
 import java.net.URLClassLoader
 
-
-class ReflectionLoader(url: URL, parent: ClassLoader?) :
-    URLClassLoader(arrayOf<URL>(url), parent) {
+// Credit qcwxezda at https://github.com/qcwxezda/Starsector-Officer-Extension/blob/5f2868b4028f8e21ad9a83ec6b903700ee704aff/src/officerextension/plugin/OfficerExtension.java#L73
+class ReflectionLoader(url: URL, parent: ClassLoader?) : URLClassLoader(arrayOf(url), parent) {
     companion object {
         const val PACKAGE = "com.price_of_command"
     }

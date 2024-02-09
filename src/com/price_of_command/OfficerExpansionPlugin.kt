@@ -37,7 +37,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         loadCSVs(settings)
     }
 
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST", "DEPRECATION")
     override fun onGameLoad(newGame: Boolean) {
         super.onGameLoad(newGame)
 
@@ -49,7 +49,6 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         ConditionManager.postBattleListeners =
             memory[ConditionManager.POST_BATTLE_LISTENERS] as? List<PostBattleListener> ?: listOf()
 
-        // Credit qcwxezda at https://github.com/qcwxezda/Starsector-Officer-Extension/blob/5f2868b4028f8e21ad9a83ec6b903700ee704aff/src/officerextension/plugin/OfficerExtension.java#L73
         val url: URL = try {
             javaClass.getProtectionDomain().codeSource.location
         } catch (e: SecurityException) {
