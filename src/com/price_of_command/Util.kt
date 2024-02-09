@@ -17,7 +17,7 @@ import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.price_of_command.memory.EscapedMemory
-import com.price_of_command.platform.shared.ReflectionUtils
+import com.price_of_command.reflection.ReflectionUtils
 import lunalib.lunaUI.elements.LunaSpriteElement
 import org.apache.log4j.Level
 import org.apache.log4j.Logger

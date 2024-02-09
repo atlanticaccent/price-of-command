@@ -1,12 +1,13 @@
 @file:Suppress("UsePropertyAccessSyntax")
 
-package com.price_of_command.platform.shared
+package com.price_of_command.reflection
 
+import com.price_of_command.OfficerExpansionPlugin
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 
 object ReflectionUtils {
-    private val fieldClass = Class.forName("java.lang.reflect.Field", false, Class::class.java.classLoader)
+    private val fieldClass = Class.forName("java.lang.reflect.Field", false, OfficerExpansionPlugin.classLoader)
     private val setFieldHandle = MethodHandles.lookup()
         .findVirtual(fieldClass, "set", MethodType.methodType(Void.TYPE, Any::class.java, Any::class.java))
     private val getFieldHandle =
@@ -18,7 +19,7 @@ object ReflectionUtils {
     private val setFieldAccessibleHandle = MethodHandles.lookup()
         .findVirtual(fieldClass, "setAccessible", MethodType.methodType(Void.TYPE, Boolean::class.javaPrimitiveType))
 
-    private val methodClass = Class.forName("java.lang.reflect.Method", false, Class::class.java.classLoader)
+    private val methodClass = Class.forName("java.lang.reflect.Method", false, OfficerExpansionPlugin.classLoader)
     internal val getMethodNameHandle =
         MethodHandles.lookup().findVirtual(methodClass, "getName", MethodType.methodType(String::class.java))
     internal val getMethodReturnHandle =
@@ -112,6 +113,20 @@ object ReflectionUtils {
         }
 
         return invokeMethodHandle.invoke(method, instance, arguments)
+    }
+
+    fun invoke_static(methodName: String, clazz: Class<*>, vararg arguments: Any?, declared: Boolean = false) : Any? {
+        val method: Any?
+        val args = arguments.map { it!!::class.javaPrimitiveType ?: it::class.java }
+        val methodType = MethodType.methodType(Void.TYPE, args)
+
+        method = if (!declared) {
+            clazz.getMethod(methodName, *methodType.parameterArray())
+        } else {
+            clazz.getDeclaredMethod(methodName, *methodType.parameterArray())
+        }
+
+        return invokeMethodHandle.invoke(method, null, arguments)
     }
 
     fun findFieldWithMethodReturnType(instance: Any, clazz: Class<*>): ReflectedField? {

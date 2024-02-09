@@ -22,24 +22,47 @@ private val FORCE_INJURY_HULL_DAMAGE
 private val FORCE_INJURY_TOGGLE
     get() = LunaSettings.getBoolean(modID, "injury_force_damage_toggle") ?: true
 
-object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColonizationListener {
-    private const val RESTORE_FLEET_ASSIGNMENTS = "pc_restore_fleet_assignments"
-    private const val FLEET_ASSIGNMENT_TO_RESTORE = "pc_fleet_assignments_to_restore"
+private const val RESTORE_FLEET_ASSIGNMENTS = "pc_restore_fleet_assignments"
+private const val FLEET_ASSIGNMENT_TO_RESTORE = "pc_fleet_assignments_to_restore"
+class pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColonizationListener {
+    companion object {
+        var restoreFleetAssignments: Boolean
+            get() = Global.getSector().memoryWithoutUpdate.escape()[RESTORE_FLEET_ASSIGNMENTS] as? Boolean ?: true
+            set(value) {
+                Global.getSector().memoryWithoutUpdate.escape()[RESTORE_FLEET_ASSIGNMENTS] = value
+            }
 
-    var restoreFleetAssignments: Boolean
-        get() = Global.getSector().memoryWithoutUpdate.escape()[RESTORE_FLEET_ASSIGNMENTS] as? Boolean ?: true
-        set(value) {
-            Global.getSector().memoryWithoutUpdate.escape()[RESTORE_FLEET_ASSIGNMENTS] = value
-        }
+        @Suppress("UNCHECKED_CAST")
+        private var oldFleetAssignments: Map<String, PersonAPI?>?
+            get() {
+                return Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] as? Map<String, PersonAPI?>
+            }
+            set(value) {
+                Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] = value
+            }
 
-    @Suppress("UNCHECKED_CAST")
-    private var oldFleetAssignments: Map<String, PersonAPI?>?
-        get() {
-            return Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] as? Map<String, PersonAPI?>
+        fun tryRestoreFleetAssignments(override: Boolean = false) {
+            val fleetAssignment = oldFleetAssignments
+            if ((restoreFleetAssignments || override) && fleetAssignment != null) {
+                playerFleet().fleetData.membersInPriorityOrder.forEach {
+                    val officer = fleetAssignment[it.id]
+                    if (officer != null && !officer.hasTag(PoC_OFFICER_DEAD)) {
+                        it.captain = officer
+                        if (it.captain.isPlayer) {
+                            it.isFlagship = true
+                        } else {
+                            it.isFlagship = false
+                        }
+                    } else {
+                        it.captain = null
+                        if (it.isFlagship) {
+                            it.isFlagship = false
+                        }
+                    }
+                }
+            }
         }
-        set(value) {
-            Global.getSector().memoryWithoutUpdate.escape()[FLEET_ASSIGNMENT_TO_RESTORE] = value
-        }
+    }
 
     private fun currentFleetAssignments(): Map<String, PersonAPI?> {
         return playerFleet().fleetData.membersListCopy.mapNotNull { it.id to it.captain }.toMap()
@@ -183,27 +206,5 @@ object pc_CampaignEventListener : BaseCampaignEventListener(false), PlayerColoni
         planet.market.stats.dynamic.getMod(
             Stats.OFFICER_PROB_MOD
         ).modifyFlat(PoC_INCREASE_OFFICER_PROB_MULT, 0.4f)
-    }
-
-    fun tryRestoreFleetAssignments(override: Boolean = false) {
-        val fleetAssignment = oldFleetAssignments
-        if ((restoreFleetAssignments || override) && fleetAssignment != null) {
-            playerFleet().fleetData.membersInPriorityOrder.forEach {
-                val officer = fleetAssignment[it.id]
-                if (officer != null && !officer.hasTag(PoC_OFFICER_DEAD)) {
-                    it.captain = officer
-                    if (it.captain.isPlayer) {
-                        it.isFlagship = true
-                    } else {
-                        it.isFlagship = false
-                    }
-                } else {
-                    it.captain = null
-                    if (it.isFlagship) {
-                        it.isFlagship = false
-                    }
-                }
-            }
-        }
     }
 }

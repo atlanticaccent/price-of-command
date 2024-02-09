@@ -9,18 +9,20 @@ import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.price_of_command.*
 import com.price_of_command.conditions.Injury
-import com.price_of_command.platform.shared.ReflectionUtils
+import com.price_of_command.reflection.ReflectionUtils
 import org.lwjgl.input.Keyboard
 
 @Suppress("UNCHECKED_CAST")
-object pc_FleetInteractionEveryFrame : EveryFrameScript {
-    private var fleetInteractionWasOpen = false
-    var hack: TooltipMakerAPI? = null
-        get() {
-            val temp = field
-            field = null
-            return temp
-        }
+class pc_FleetInteractionEveryFrame : EveryFrameScript {
+    companion object {
+        private var fleetInteractionWasOpen = false
+        var hack: TooltipMakerAPI? = null
+            get() {
+                val temp = field
+                field = null
+                return temp
+            }
+    }
 
     private val vanillaIDs = listOf(
         FIDPIoption.LEAVE,

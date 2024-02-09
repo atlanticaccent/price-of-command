@@ -71,10 +71,6 @@ configurations {
 
 // The dependencies for the mod to *build* (not necessarily to run).
 dependencies {
-    api(project(mapOf("path" to ":platform:windows")))
-    api(project(mapOf("path" to ":platform:macos")))
-    api(project(mapOf("path" to ":platform:linux")))
-    api(project(mapOf("path" to ":platform:shared")))
     // If using auto-generated mod_info.json, scroll down and update the "dependencies" part of mod_info.json with
     // any mod dependencies to be displayed in the Starsector launcher.
 
@@ -107,14 +103,6 @@ tasks {
 
     named<Jar>("jar")
     {
-        dependsOn(getTasksByName("jar", true).filter { this.path != it.path })
-        // Copy platform jars in to create thin-fat jar
-        fileTree("jars") {
-            include("*.jar")
-            exclude(jarFileName)
-        }.forEach {
-            from(zipTree(it.absoluteFile))
-        }
         // Tells Gradle to put the .jar file in the /jars folder.
         destinationDirectory.set(file("$rootDir/jars"))
         // Sets the name of the .jar file.

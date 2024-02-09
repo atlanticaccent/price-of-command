@@ -16,7 +16,7 @@ import com.fs.starfarer.api.util.Misc
 import com.price_of_command.addToManager
 import com.price_of_command.conditions.Condition
 import com.price_of_command.constrainWithRatio
-import com.price_of_command.platform.shared.ReflectionUtils
+import com.price_of_command.reflection.ReflectionUtils
 import lunalib.lunaExtensions.addLunaSpriteElement
 import lunalib.lunaUI.elements.LunaElement
 import lunalib.lunaUI.elements.LunaSpriteElement

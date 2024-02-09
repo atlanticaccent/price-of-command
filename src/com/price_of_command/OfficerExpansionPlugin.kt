@@ -1,26 +1,34 @@
 package com.price_of_command
 
 import com.fs.starfarer.api.BaseModPlugin
+import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.SettingsAPI
+import com.fs.starfarer.api.campaign.CampaignEventListener
 import com.fs.starfarer.api.characters.PersonAPI
+import com.fs.starfarer.api.impl.campaign.intel.bar.events.BarEventManager
 import com.fs.starfarer.loading.SkillSpec
 import com.price_of_command.conditions.LastingCondition
 import com.price_of_command.conditions.PostBattleListener
 import com.price_of_command.conditions.overrides.ConditionGate
 import com.price_of_command.conditions.overrides.ConditionMutator
 import com.price_of_command.fleet_interaction.pc_FleetInteractionEveryFrame
-import com.price_of_command.platform.shared.ReflectionUtils
+import com.price_of_command.reflection.ReflectionUtils
+import com.price_of_command.reflection.ReflectionLoader
 import com.thoughtworks.xstream.XStream
 import lunalib.lunaSettings.LunaSettings
 import org.json.JSONObject
 import org.magiclib.kotlin.map
+import java.net.URL
+import java.nio.file.Paths
+
 
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
         internal var vanillaSkills = emptyList<String>()
         internal var modSkillWhitelist = emptyList<String>()
         internal var aptitudeFieldName: String? = null
+        internal var classLoader: ReflectionLoader? = null
     }
 
     override fun onApplicationLoad() {
@@ -41,18 +49,38 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         ConditionManager.postBattleListeners =
             memory[ConditionManager.POST_BATTLE_LISTENERS] as? List<PostBattleListener> ?: listOf()
 
+        // Credit qcwxezda at https://github.com/qcwxezda/Starsector-Officer-Extension/blob/5f2868b4028f8e21ad9a83ec6b903700ee704aff/src/officerextension/plugin/OfficerExtension.java#L73
+        val url: URL = try {
+            javaClass.getProtectionDomain().codeSource.location
+        } catch (e: SecurityException) {
+            try {
+                Paths.get("../mods/**/price_of_command.jar").toUri().toURL()
+            } catch (ex: Exception) {
+                logger().error("Could not convert jar path to URL; exiting", ex)
+                return
+            }
+        }
+
+        val classLoader = ReflectionLoader(url, javaClass.getClassLoader())
+        Companion.classLoader = classLoader
         Global.getSector().run {
-            addTransientListener(pc_CampaignEventListener)
+            addTransientListener(
+                classLoader.loadClass(pc_CampaignEventListener::class.java.name).newInstance() as CampaignEventListener
+            )
             addTransientScript(ConditionManager.pc_ConditionManagerEveryFrame)
-            addTransientScript(pc_FleetInteractionEveryFrame)
+            addTransientScript(
+                classLoader.loadClass(pc_FleetInteractionEveryFrame::class.java.name).newInstance() as EveryFrameScript
+            )
             addTransientScript(ForceOpenNextFrame)
-            listenerManager.addListener(pc_CampaignEventListener, true)
+            listenerManager.addListener(pc_CampaignEventListener(), true)
         }
 
         val baseOfficers = Global.getSector().playerStats.officerNumber.modifiedValue
         val increasedBase = LunaSettings.getInt(modID, "minimum_roster_size") ?: 12
         if (baseOfficers < increasedBase) {
-            Global.getSector().playerStats.officerNumber.modifyFlat("poc_increase_base_officers", increasedBase - baseOfficers)
+            Global.getSector().playerStats.officerNumber.modifyFlat(
+                "poc_increase_base_officers", increasedBase - baseOfficers
+            )
         }
     }
 

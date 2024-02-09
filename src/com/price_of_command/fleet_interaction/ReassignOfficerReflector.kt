@@ -8,9 +8,8 @@ import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.campaign.fleet.CampaignFleet
 import com.price_of_command.*
-import com.price_of_command.platform.reassign
-import com.price_of_command.platform.shared.ReflectionUtils
-import com.price_of_command.platform.shared.ShipPickerWrapper
+import com.price_of_command.fleet_interaction.ship_picker.ShipPickHandler
+import com.price_of_command.reflection.ReflectionUtils
 
 private const val opad = 10f
 
@@ -22,7 +21,8 @@ class ReassignOfficerReflector(
     private var checkbox: ButtonAPI? = null
 
     internal fun showPicker() {
-        dialog.showFleetMemberPickerDialog(null,
+        dialog.showFleetMemberPickerDialog(
+            null,
             "Ok",
             "Cancel",
             3,
@@ -73,13 +73,15 @@ class ReassignOfficerReflector(
                 pickPanel.getChildrenCopy()[4].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()[0].getChildrenCopy()
             val target_listener = ReflectionUtils.invoke("getListener", ships.first())!!
 
-            ShipPickerWrapper.reassign(
-                target_listener,
-                inner_listener,
-                dialog,
-                campaignFleet
-            ) { _, _ ->
+            val proxy = ShipPickHandler(inner_listener, dialog, campaignFleet) { _, _ ->
                 showPicker()
+            }.build(inner_listener.javaClass.interfaces)
+
+            for (clazz in inner_listener.javaClass.interfaces) {
+                val fields = ReflectionUtils.getFieldsOfType(target_listener, clazz)
+                if (fields.size == 1) {
+                    ReflectionUtils.set(fields[0], target_listener, clazz.cast(proxy))
+                }
             }
         } catch (e: Exception) {
             logger().debug(e)
