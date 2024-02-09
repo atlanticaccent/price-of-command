@@ -33,7 +33,7 @@ val jarFileName = "${modName}.jar"
 val modId = "price_of_command"
 val modAuthor = "AtlanticAccent"
 val modDescription = "Price of Command. Adds Fatigue, Injuries, Grave Injuries and Death to Officers. "
-val gameVersion = "0.97a-RC6"
+val gameVersion = "0.97a-RC8"
 val jars = arrayOf("jars/$jarFileName")
 val modPlugin = "com.price_of_command.OfficerExpansionPlugin"
 val isUtilityMod = false
@@ -128,11 +128,7 @@ tasks {
                         "description": "$modDescription",
                         "gameVersion": "$gameVersion",
                         "jars": [
-                            ${jars.joinToString { "\"$it\"" }},
-                            "jars/windows.jar",
-                            "jars/macos.jar",
-                            "jars/linux.jar",
-                            "jars/shared.jar"
+                            ${jars.joinToString { "\"$it\"" }}
                         ],
                         "modPlugin":"$modPlugin",
                         "dependencies": [
