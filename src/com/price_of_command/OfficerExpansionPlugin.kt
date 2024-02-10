@@ -81,6 +81,8 @@ class OfficerExpansionPlugin : BaseModPlugin() {
                 "poc_increase_base_officers", increasedBase - baseOfficers
             )
         }
+
+        val barManager = BarEventManager.getInstance()
     }
 
     override fun beforeGameSave() {
