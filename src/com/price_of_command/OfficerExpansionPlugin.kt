@@ -22,13 +22,25 @@ import org.magiclib.kotlin.map
 import java.net.URL
 import java.nio.file.Paths
 
-
 class OfficerExpansionPlugin : BaseModPlugin() {
     companion object {
         internal var vanillaSkills = emptyList<String>()
         internal var modSkillWhitelist = emptyList<String>()
         internal var aptitudeFieldName: String? = null
-        internal var classLoader: ReflectionLoader? = null
+        internal val classLoader: ReflectionLoader by lazy {
+            val url: URL = try {
+                OfficerExpansionPlugin::class.java.getProtectionDomain().codeSource.location
+            } catch (e: SecurityException) {
+                try {
+                    Paths.get("../mods/**/price_of_command.jar").toUri().toURL()
+                } catch (ex: Exception) {
+                    logger().error("Could not convert jar path to URL; exiting", ex)
+                    throw Exception("Could not build custom classloader")
+                }
+            }
+
+            ReflectionLoader(url, OfficerExpansionPlugin::class.java.getClassLoader())
+        }
     }
 
     override fun onApplicationLoad() {
@@ -37,7 +49,7 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         loadCSVs(settings)
     }
 
-    @Suppress("UNCHECKED_CAST", "DEPRECATION")
+    @Suppress("UNCHECKED_CAST")
     override fun onGameLoad(newGame: Boolean) {
         super.onGameLoad(newGame)
 
@@ -49,29 +61,12 @@ class OfficerExpansionPlugin : BaseModPlugin() {
         ConditionManager.postBattleListeners =
             memory[ConditionManager.POST_BATTLE_LISTENERS] as? List<PostBattleListener> ?: listOf()
 
-        val url: URL = try {
-            javaClass.getProtectionDomain().codeSource.location
-        } catch (e: SecurityException) {
-            try {
-                Paths.get("../mods/**/price_of_command.jar").toUri().toURL()
-            } catch (ex: Exception) {
-                logger().error("Could not convert jar path to URL; exiting", ex)
-                return
-            }
-        }
-
-        val classLoader = ReflectionLoader(url, javaClass.getClassLoader())
-        Companion.classLoader = classLoader
         Global.getSector().run {
-            addTransientListener(
-                classLoader.loadClass(pc_CampaignEventListener::class.java.name).newInstance() as CampaignEventListener
-            )
+            addTransientListener(pc_CampaignEventListener)
             addTransientScript(ConditionManager.pc_ConditionManagerEveryFrame)
-            addTransientScript(
-                classLoader.loadClass(pc_FleetInteractionEveryFrame::class.java.name).newInstance() as EveryFrameScript
-            )
+            addTransientScript(pc_FleetInteractionEveryFrame)
             addTransientScript(ForceOpenNextFrame)
-            listenerManager.addListener(pc_CampaignEventListener(), true)
+            listenerManager.addListener(pc_CampaignEventListener, true)
         }
 
         val baseOfficers = Global.getSector().playerStats.officerNumber.modifiedValue

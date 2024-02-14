@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.price_of_command.fleet_interaction
 
 import com.fs.starfarer.api.campaign.BaseCustomUIPanelPlugin
@@ -20,7 +22,7 @@ class ReassignOfficerReflector(
 ) {
     private var checkbox: ButtonAPI? = null
 
-    internal fun showPicker() {
+    fun showPicker() {
         dialog.showFleetMemberPickerDialog(
             null,
             "Ok",

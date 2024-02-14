@@ -4,7 +4,10 @@ import com.fs.starfarer.api.campaign.BaseStoryPointActionDelegate
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.campaign.CampaignEngine
+import com.fs.starfarer.campaign.fleet.CampaignFleet
+import com.price_of_command.OfficerExpansionPlugin
 import com.price_of_command.playerFleet
+import com.price_of_command.reflection.ReflectionUtils
 import org.magiclib.kotlin.isAutomated
 
 open class pc_AutoClosingOptionDelegate(val block: () -> Unit) :
@@ -32,5 +35,13 @@ class pc_ReassignOfficerOptionDelegate(dialog: InteractionDialogAPI) : pc_AutoCl
     val validShips = playerFleet().fleetData.membersInPriorityOrder.filter {
         !it.isAutomated() && it.canBeDeployedForCombat() && !it.isFighterWing
     }
-    ReassignOfficerReflector(dialog, fleet, validShips).showPicker()
+    val clazz =
+        OfficerExpansionPlugin.classLoader.loadClass("com.price_of_command.fleet_interaction.ReassignOfficerReflector")
+    val reassignOfficerReflector = ReflectionUtils.getConstructor(
+        clazz,
+        InteractionDialogAPI::class.java,
+        CampaignFleet::class.java,
+        List::class.java
+    )!!.invokeWithArguments(dialog, fleet, validShips)
+    ReflectionUtils.invoke("showPicker", reassignOfficerReflector)
 })

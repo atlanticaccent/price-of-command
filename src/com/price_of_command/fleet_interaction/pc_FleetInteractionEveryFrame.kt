@@ -13,16 +13,14 @@ import com.price_of_command.reflection.ReflectionUtils
 import org.lwjgl.input.Keyboard
 
 @Suppress("UNCHECKED_CAST")
-class pc_FleetInteractionEveryFrame : EveryFrameScript {
-    companion object {
-        private var fleetInteractionWasOpen = false
-        var hack: TooltipMakerAPI? = null
-            get() {
-                val temp = field
-                field = null
-                return temp
-            }
-    }
+object pc_FleetInteractionEveryFrame : EveryFrameScript {
+    private var fleetInteractionWasOpen = false
+    var hack: TooltipMakerAPI? = null
+        get() {
+            val temp = field
+            field = null
+            return temp
+        }
 
     private val vanillaIDs = listOf(
         FIDPIoption.LEAVE,
@@ -51,9 +49,11 @@ class pc_FleetInteractionEveryFrame : EveryFrameScript {
         rewriteLevelUpPicks(playerOfficers())
 
         hack?.let { story ->
-            ReflectionUtils.invoke("getListener", story.getParent().getChildrenCopy().filterIsInstance<ButtonAPI>().first { it.text == "Cancel" })?.let { cancel ->
-                ReflectionUtils.invoke("dismiss", cancel, 1)
-            }
+            ReflectionUtils.invoke("getListener",
+                story.getParent().getChildrenCopy().filterIsInstance<ButtonAPI>().first { it.text == "Cancel" })
+                ?.let { cancel ->
+                    ReflectionUtils.invoke("dismiss", cancel, 1)
+                }
         }
 
         val dialog = Global.getSector().campaignUI.currentInteractionDialog
@@ -73,8 +73,7 @@ class pc_FleetInteractionEveryFrame : EveryFrameScript {
             newOptions.add(1, added)
 
             val oldOptionMap = (ReflectionUtils.invoke(
-                "getButtonToItemMap",
-                options
+                "getButtonToItemMap", options
             ) as Map<Any?, Any?>).toMap()
 
             options.restoreSavedOptions(newOptions)
@@ -96,9 +95,7 @@ class pc_FleetInteractionEveryFrame : EveryFrameScript {
                 val optionHandlingScriptObj = optionHandlingScriptField.get(oldKey)!!
                 val keyHandlerFields =
                     ReflectionUtils.findFieldsOfType(optionHandlingScriptObj, firstArgClassOfAltShortcut)
-                keyHandlerFields
-                    .mapNotNull { it.get(optionHandlingScriptObj) }
-                    .forEach { keyHandlerObj ->
+                keyHandlerFields.mapNotNull { it.get(optionHandlingScriptObj) }.forEach { keyHandlerObj ->
                         val keyField = ReflectionUtils.findFieldsOfType(keyHandlerObj, Int::class.java)[0]
                         val actualKey = keyField.get(keyHandlerObj) as Int
                         if (!(Keyboard.KEY_1..Keyboard.KEY_9).contains(actualKey)) {
