@@ -45,6 +45,21 @@ object ReflectionUtils {
         setFieldHandle.invoke(field, instanceToModify, newValue)
     }
 
+    fun setStatic(clazz: Class<*>, fieldName: String, newValue: Any?) {
+        var field: Any? = null
+
+        try {
+            field = clazz.getField(fieldName)
+        } catch (_: Exception) {
+        }
+        if (field == null) {
+            field = clazz.getDeclaredField(fieldName)
+        }
+
+        setFieldAccessibleHandle.invoke(field, true)
+        setFieldHandle.invoke(field, null, newValue)
+    }
+
     fun get(fieldName: String, instanceToGetFrom: Any): Any? {
         var field: Any? = null
 
@@ -58,6 +73,21 @@ object ReflectionUtils {
 
         setFieldAccessibleHandle.invoke(field, true)
         return getFieldHandle.invoke(field, instanceToGetFrom)
+    }
+
+    fun getStatic(clazz: Class<*>, fieldName: String): Any? {
+        var field: Any? = null
+
+        try {
+            field = clazz.getField(fieldName)
+        } catch (_: Exception) {
+        }
+        if (field == null) {
+            field = clazz.getDeclaredField(fieldName)
+        }
+
+        setFieldAccessibleHandle.invoke(field, true)
+        return getFieldHandle.invoke(field, null)
     }
 
     fun hasMethodOfName(name: String, instance: Any, contains: Boolean = false): Boolean {

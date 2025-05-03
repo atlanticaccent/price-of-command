@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/src/data.scripts.campaign.fleets/data.scripts.campaign.fleets.iml" filepath="$PROJECT_DIR$/src/data.scripts.campaign.fleets/data.scripts.campaign.fleets.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/price_of_command.iml" filepath="$PROJECT_DIR$/.idea/price_of_command.iml" />
     </modules>
   </component>

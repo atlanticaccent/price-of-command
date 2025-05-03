@@ -2,12 +2,11 @@ package com.price_of_command.conditions.scars.personality_change
 
 import com.fs.starfarer.api.GameState
 import com.fs.starfarer.api.Global
-import com.fs.starfarer.api.combat.BaseHullMod
-import com.fs.starfarer.api.combat.HullModEffect
-import com.fs.starfarer.api.combat.ShipAIConfig
-import com.fs.starfarer.api.combat.ShipAPI
+import com.fs.starfarer.api.combat.*
+import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.mission.FleetSide
 import com.price_of_command.conditions
+import com.price_of_command.playerFleet
 
 
 const val PERSONALITY_CHANGE_HMOD_ID = "poc_personality_change_hmod"

@@ -6,6 +6,8 @@ import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
+import com.fs.starfarer.api.impl.campaign.missions.hub.BaseHubMission.DaysElapsedChecker
+import com.fs.starfarer.api.util.IntervalUtil
 import com.price_of_command.conditions.Condition
 import com.price_of_command.conditions.Death
 import com.price_of_command.conditions.PostBattleListener
@@ -40,8 +42,15 @@ object ConditionManager : OverrideManager {
             person.stats.equals(stats)
         }?.toPair()
 
+    private var dayInterval: IntervalUtil = IntervalUtil(1f, 1f)
+
     internal object pc_ConditionManagerEveryFrame : EveryFrameScript {
         override fun advance(p0: Float) {
+            dayInterval.advance(Global.getSector().getClock().convertToDays(p0))
+            if (dayInterval.intervalElapsed()) {
+                // do thing
+            }
+
             if (afterActionReport != null) {
                 return
             }

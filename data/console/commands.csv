@@ -6,3 +6,5 @@ HealOfficer,com.price_of_command.commands.HealOfficer,"cheat",HealOfficer <Offic
 FatigueOfficer,com.price_of_command.commands.FatigueOfficer,"cheat",FatigueOfficer <Officer's name>,"You slavedriver"
 RestOfficer,com.price_of_command.commands.RestOfficer,"cheat",RestOfficer <Officer's name>,"You sandman"
 KillOfficer,com.price_of_command.commands.KillOfficer,"cheat",KillOfficer <Officer's name>,"You murderer"
+ClickMouse,com.price_of_command.commands.ClickMouse,"debug",ClickMouse,"Grabs current mouse position, waits five seconds, then (tries) to move it back to that position and execute a click. Close the console otherwise the click probably won't go through."
+RunMouseEvent,com.price_of_command.commands.RunMouseEvent,"debug",RunMouseEvent,"Runs events in global variable after 2 seconds"

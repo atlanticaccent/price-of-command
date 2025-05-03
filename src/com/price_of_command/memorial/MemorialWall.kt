@@ -97,7 +97,6 @@ class MemorialWall private constructor() : BaseIntelPlugin() {
             mid.setTitleOrbitronLarge()
             val title = mid.addTitle(deathData.person.nameString)
             val titleAnchor = mid.addSpacer(0f)
-            mid.addSpacer(6f)
 
             val heightSoFar = mid.heightSoFar
 

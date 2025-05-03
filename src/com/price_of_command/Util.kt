@@ -22,6 +22,8 @@ import lunalib.lunaUI.elements.LunaSpriteElement
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import java.util.*
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 fun Any.logger(): Logger {
     return Global.getLogger(this::class.java).apply { level = Level.ALL }
@@ -145,7 +147,7 @@ fun <T> forPlatform(
     win: () -> T,
     linux: () -> T,
     macos: () -> T,
-) : T = when {
+): T = when {
     os.contains("win") -> win()
     os.contains("nix") || os.contains("nux") || os.contains("aix") -> linux()
     os.contains("mac") -> macos()
@@ -154,10 +156,51 @@ fun <T> forPlatform(
 
 fun <T> forPlatform(
     win: T, linux: T, macos: T
-) : T = forPlatform(
-    { win },
-    { linux },
-    { macos }
-)
+): T = forPlatform({ win }, { linux }, { macos })
 
-fun <T, C: Collection<T>?> C.ifEmptyNull() = this?.ifEmpty { null }
+fun <T, C : Collection<T>?> C.ifEmptyNull() = this?.ifEmpty { null }
+
+// TODO: delegate that replaces property with null on get
+open class ReadOnceProperty<T>(var value: T, private val default: T) : ReadWriteProperty<Any?, T> {
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+        val temp = value
+        value = default
+        return temp
+    }
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+        this.value = value
+    }
+
+    fun bypass() {}
+}
+
+open class TakingProperty<T>(value: T?) : ReadOnceProperty<T?>(value, null) {
+    constructor() : this(null)
+}
+
+class CondTakingProperty<T>(private val block: () -> Boolean) : TakingProperty<T>() {
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+        return if (block()) {
+            value
+        } else {
+            super.getValue(thisRef, property)
+        }
+    }
+}
+
+fun Any.toPrettyDebugString(indentWidth: Int = 4) = buildString {
+    fun StringBuilder.indent(level: Int) = append("".padStart(level * indentWidth))
+    var ignoreSpace = false
+    var indentLevel = 0
+    this@toPrettyDebugString.toString().onEach {
+        when (it) {
+            '(', '[', '{' -> appendLine(it).indent(++indentLevel)
+            ')', ']', '}' -> appendLine().indent(--indentLevel).append(it)
+            ',' -> appendLine(it).indent(indentLevel).also { ignoreSpace = true }
+            ' ' -> if (ignoreSpace) ignoreSpace = false else append(it)
+            '=' -> append(" = ")
+            else -> append(it)
+        }
+    }
+}
